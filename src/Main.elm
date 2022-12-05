@@ -1,8 +1,10 @@
 port module Main exposing (main)
 
 import Browser
-import Html exposing (..)
-import Json.Decode as Decode exposing (Decoder, andThen, decodeValue, field, float, list, oneOf, string)
+import Canvas
+import Html exposing (Html)
+import Html.Attributes exposing (property, style)
+import Json.Decode as Decode exposing (Decoder, andThen, decodeValue, field, float, int, list, oneOf, string)
 
 
 main : Program () Model Msg
@@ -30,9 +32,30 @@ type Msg
 {- Bounds -}
 
 
-type alias Bounds =
-    { min : Float
-    , max : Float
+type alias BoundingRectangle =
+    { top : Int
+    , left : Int
+    , bottom : Int
+    , right : Int
+    }
+
+
+width : BoundingRectangle -> Int
+width bounds =
+    bounds.right - bounds.left
+
+
+height : BoundingRectangle -> Int
+height bounds =
+    bounds.bottom - bounds.top
+
+
+emptyBoundingRectangle : BoundingRectangle
+emptyBoundingRectangle =
+    { top = 0
+    , left = 0
+    , bottom = 0
+    , right = 0
     }
 
 
@@ -41,7 +64,7 @@ type alias Bounds =
 
 
 type alias Page =
-    { patterns : List PatternAnchor, articleHorizontalBounds : Bounds }
+    { patterns : List PatternAnchor, body : BoundingRectangle, article : BoundingRectangle }
 
 
 
@@ -69,10 +92,8 @@ emptyModel =
 emptyPage : Page
 emptyPage =
     { patterns = []
-    , articleHorizontalBounds =
-        { min = 0
-        , max = 0
-        }
+    , body = emptyBoundingRectangle
+    , article = emptyBoundingRectangle
     }
 
 
@@ -85,14 +106,21 @@ init _ =
 
 view : Model -> Html Msg
 view model =
-    div [] []
+    Canvas.toHtml ( width model.page.body, height model.page.body )
+        [ style "position" "absolute"
+        , style "height" "100%"
+        , style "width" "100%"
+        , style "top" "0"
+        , style "left" "0"
+        ]
+        []
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        PageUpdate { patterns, articleHorizontalBounds } ->
-            ( { page = Page patterns articleHorizontalBounds }, Cmd.none )
+        PageUpdate page ->
+            ( { page = page }, Cmd.none )
 
         ScrollEvent _ ->
             ( model, Cmd.none )
@@ -155,15 +183,20 @@ patternDecoder =
         (field "y" float)
 
 
-boundsDecoder : Decoder Bounds
-boundsDecoder =
-    Decode.map2 Bounds (field "min" float) (field "max" float)
+boundingRectangleDecoder : Decoder BoundingRectangle
+boundingRectangleDecoder =
+    Decode.map4 BoundingRectangle
+        (field "top" int)
+        (field "left" int)
+        (field "bottom" int)
+        (field "right" int)
 
 
 pageDecoder : Decoder Msg
 pageDecoder =
     Decode.map PageUpdate <|
-        Decode.map2
+        Decode.map3
             Page
             (field "patterns" (list patternDecoder))
-            (field "bounds" boundsDecoder)
+            (field "body" boundingRectangleDecoder)
+            (field "article" boundingRectangleDecoder)

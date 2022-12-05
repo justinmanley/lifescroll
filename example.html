@@ -4,9 +4,15 @@
     <meta charset="UTF-8">
     <title>Main</title>
     <script src="main.js"></script>
+    <style>
+        .body {
+            margin: 0;
+            position: relative;
+        }
+    </style>
 </head>
 
-<body>
+<body class="body">
     <div style="width: 600px; margin: 0 auto;">
         <div id="article">
             <p>
@@ -87,7 +93,8 @@
     <canvas id="canvas"></canvas>
     <script>
         const page = () => {
-            const pageBoundingRectangle = document.getElementById('article').getBoundingClientRect();
+            const body = document.querySelector('body').getBoundingClientRect();
+            const article = document.getElementById('article').getBoundingClientRect();
             return {
                 patterns: [...document.querySelectorAll('pattern-anchor')].map(patternAnchor => {
                     const boundingRectangle = patternAnchor.getBoundingClientRect();
@@ -98,10 +105,8 @@
                         y: boundingRectangle.y
                     }
                 }),
-                bounds: {
-                    min: pageBoundingRectangle.left,
-                    max: pageBoundingRectangle.right
-                }
+                body,
+                article
             };
         }
 
