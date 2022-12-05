@@ -1,0 +1,15 @@
+{
+  "name": "lifepage",
+  "version": "0.0.1",
+  "description": "Animate patterns from Conway's Game of Life in the margins of a webpage.",
+  "main": "src/Main.elm",
+  "dependencies": {
+    "elm-canvas": "^2.2.4"
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Justin Manley",
+  "license": "ISC"
+}

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Main</title>
     <script src="main.js"></script>
+    <script src="./node_modules/elm-canvas/elm-canvas.js"></script>
     <style>
         .body {
             margin: 0;
@@ -13,6 +14,7 @@
 </head>
 
 <body class="body">
+    <canvas id="canvas"></canvas>
     <div style="width: 600px; margin: 0 auto;">
         <div id="article">
             <p>
@@ -90,11 +92,14 @@
 
         </div>
     </div>
-    <canvas id="canvas"></canvas>
     <script>
         const page = () => {
             const body = document.querySelector('body').getBoundingClientRect();
-            const article = document.getElementById('article').getBoundingClientRect();
+            const articleElement = document.getElementById('article');
+            const article = articleElement.getBoundingClientRect();
+            const articleFontSizeInPixels = parseFloat(
+                getComputedStyle(articleElement.parentElement).fontSize
+            );
             return {
                 patterns: [...document.querySelectorAll('pattern-anchor')].map(patternAnchor => {
                     const boundingRectangle = patternAnchor.getBoundingClientRect();
@@ -106,7 +111,8 @@
                     }
                 }),
                 body,
-                article
+                article,
+                articleFontSizeInPixels,
             };
         }
 
