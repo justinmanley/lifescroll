@@ -36,22 +36,12 @@ type alias Bounds =
     }
 
 
-bounds : Float -> Float -> Bounds
-bounds min max =
-    { min = min, max = max }
-
-
 
 {- Page -}
 
 
 type alias Page =
     { patterns : List PatternAnchor, articleHorizontalBounds : Bounds }
-
-
-page : List PatternAnchor -> Bounds -> Page
-page patterns articleHorizontalBounds =
-    { patterns = patterns, articleHorizontalBounds = articleHorizontalBounds }
 
 
 
@@ -102,7 +92,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PageUpdate { patterns, articleHorizontalBounds } ->
-            ( { page = page patterns articleHorizontalBounds }, Cmd.none )
+            ( { page = Page patterns articleHorizontalBounds }, Cmd.none )
 
         ScrollEvent _ ->
             ( model, Cmd.none )
@@ -167,13 +157,13 @@ patternDecoder =
 
 boundsDecoder : Decoder Bounds
 boundsDecoder =
-    Decode.map2 bounds (field "min" float) (field "max" float)
+    Decode.map2 Bounds (field "min" float) (field "max" float)
 
 
 pageDecoder : Decoder Msg
 pageDecoder =
     Decode.map PageUpdate <|
         Decode.map2
-            page
+            Page
             (field "patterns" (list patternDecoder))
             (field "bounds" boundsDecoder)
