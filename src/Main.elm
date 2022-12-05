@@ -2,7 +2,7 @@ port module Main exposing (main)
 
 import Browser
 import Html exposing (..)
-import Json.Decode as Decode exposing (Decoder, decodeValue, field, float, list, oneOf, string)
+import Json.Decode as Decode exposing (Decoder, andThen, decodeValue, field, float, list, oneOf, string)
 
 
 main : Program () Model Msg
@@ -58,8 +58,14 @@ page patterns articleHorizontalBounds =
 {- PatternAnchor -}
 
 
+type Side
+    = Left
+    | Right
+
+
 type alias PatternAnchor =
     { id : String
+    , side : Side
     , x : Float
     , y : Float
     }
@@ -137,10 +143,24 @@ decoder =
         [ pageDecoder ]
 
 
+sideDecoder : String -> Decoder Side
+sideDecoder side =
+    case side of
+        "left" ->
+            Decode.succeed Left
+
+        "right" ->
+            Decode.succeed Right
+
+        _ ->
+            Decode.fail ""
+
+
 patternDecoder : Decoder PatternAnchor
 patternDecoder =
-    Decode.map3 PatternAnchor
+    Decode.map4 PatternAnchor
         (field "id" string)
+        (field "side" string |> andThen sideDecoder)
         (field "x" float)
         (field "y" float)
 
