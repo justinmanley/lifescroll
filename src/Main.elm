@@ -1,32 +1,159 @@
-module Main exposing (main)
+port module Main exposing (main)
 
 import Browser
 import Html exposing (..)
+import Json.Decode as Decode exposing (Decoder, decodeValue, field, float, list, oneOf, string)
 
-main : Program (Maybe Model) Model Msg
+
+main : Program () Model Msg
 main =
-    Browser.document
+    Browser.element
         { init = init
-        , view = \model -> { title = "A page", body = [view model] }
-        , update = update 
-        , subscriptions = \_ -> Sub.none
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
         }
 
-type alias Model = {}
 
-type Msg = NoOp
+type alias Model =
+    { page : Page
+    }
+
+
+type Msg
+    = ParsingError Decode.Error
+    | PageUpdate Page
+    | ScrollEvent Int
+
+
+
+{- Bounds -}
+
+
+type alias Bounds =
+    { min : Float
+    , max : Float
+    }
+
+
+bounds : Float -> Float -> Bounds
+bounds min max =
+    { min = min, max = max }
+
+
+
+{- Page -}
+
+
+type alias Page =
+    { patterns : List PatternAnchor, articleHorizontalBounds : Bounds }
+
+
+page : List PatternAnchor -> Bounds -> Page
+page patterns articleHorizontalBounds =
+    { patterns = patterns, articleHorizontalBounds = articleHorizontalBounds }
+
+
+
+{- PatternAnchor -}
+
+
+type alias PatternAnchor =
+    { id : String
+    , x : Float
+    , y : Float
+    }
+
 
 emptyModel : Model
-emptyModel = {}
+emptyModel =
+    { page = emptyPage }
 
-init : Maybe Model -> ( Model, Cmd Msg )
-init maybeModel =
-  ( Maybe.withDefault emptyModel maybeModel
-  , Cmd.none
-  )
+
+emptyPage : Page
+emptyPage =
+    { patterns = []
+    , articleHorizontalBounds =
+        { min = 0
+        , max = 0
+        }
+    }
+
+
+init : () -> ( Model, Cmd Msg )
+init _ =
+    ( emptyModel
+    , Cmd.none
+    )
+
 
 view : Model -> Html Msg
-view model = div [] []
+view model =
+    div [] []
+
 
 update : Msg -> Model -> ( Model, Cmd Msg )
-update msg model = (model, Cmd.none)
+update msg model =
+    case msg of
+        PageUpdate { patterns, articleHorizontalBounds } ->
+            ( { page = page patterns articleHorizontalBounds }, Cmd.none )
+
+        ScrollEvent _ ->
+            ( model, Cmd.none )
+
+        ParsingError error ->
+            ( Debug.log (Decode.errorToString error) model, Cmd.none )
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    Sub.map
+        (\value ->
+            case value of
+                Ok msg ->
+                    msg
+
+                Err error ->
+                    ParsingError error
+        )
+        (messageReceiver
+            (decodeValue decoder)
+        )
+
+
+port sendMessage : String -> Cmd msg
+
+
+
+{- Decoding messages from the page. -}
+
+
+port messageReceiver : (Decode.Value -> msg) -> Sub msg
+
+
+decoder : Decoder Msg
+decoder =
+    oneOf
+        [ pageDecoder ]
+
+
+patternDecoder : Decoder PatternAnchor
+patternDecoder =
+    Decode.map3 PatternAnchor
+        (field "id" string)
+        (field "x" float)
+        (field "y" float)
+
+
+boundsDecoder : Decoder Bounds
+boundsDecoder =
+    Decode.map2 bounds (field "min" float) (field "max" float)
+
+
+pageDecoder : Decoder Msg
+pageDecoder =
+    Decode.map PageUpdate <|
+        Decode.map2
+            page
+            (field "patterns" (list patternDecoder))
+            (field "bounds" boundsDecoder)
