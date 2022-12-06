@@ -82,7 +82,7 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PageUpdate page ->
-            ( { page = page, life = model.life }, Cmd.none )
+            ( { page = page, life = resizeLife model.page model.life }, Cmd.none )
 
         ScrollEvent _ ->
             ( model, Cmd.none )
@@ -105,6 +105,13 @@ subscriptions model =
         (messageReceiver
             (decodeValue decoder)
         )
+
+
+resizeLife : Page -> LifeGrid -> LifeGrid
+resizeLife page =
+    Life.resize
+        (BoundingRectangle.width page.body |> ceiling)
+        (BoundingRectangle.height page.body |> ceiling)
 
 
 port sendMessage : String -> Cmd msg
