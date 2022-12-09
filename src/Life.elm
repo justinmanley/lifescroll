@@ -52,25 +52,6 @@ resize newWidth newHeight grid =
         }
 
 
-type alias GridPatternAnchor =
-    PatternAnchor Int
-
-
-positionInGrid : Page -> PagePatternAnchor -> GridPatternAnchor
-positionInGrid page pattern =
-    let
-        row =
-            0
-
-        col =
-            0
-    in
-    { id = pattern.id
-    , side = pattern.side -- no longer necessary, but that's ok
-    , position = ( row, col )
-    }
-
-
 addPattern : List GridPosition -> LifeGrid -> LifeGrid
 addPattern pattern grid =
     let

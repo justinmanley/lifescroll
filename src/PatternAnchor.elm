@@ -14,6 +14,10 @@ type alias PagePatternAnchor =
     PatternAnchor Float
 
 
+type alias GridPatternAnchor =
+    PatternAnchor Int
+
+
 decoder : Decoder PagePatternAnchor
 decoder =
     Decode.map3 PatternAnchor

@@ -9,9 +9,10 @@ import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, field, float, oneOf, succeed)
 import Json.Encode as Encode
-import Life exposing (GridPatternAnchor, LifeGrid)
+import Life exposing (LifeGrid)
 import Loop exposing (for)
 import Page exposing (Page)
+import PatternAnchor exposing (GridPatternAnchor)
 import PatternDict exposing (PatternDict)
 import Patterns exposing (patternDict)
 import ScrollState exposing (ScrollState)
@@ -120,10 +121,6 @@ updateLife patternDict page life =
         resized =
             life
 
-        gridPatternAnchors : List GridPatternAnchor
-        gridPatternAnchors =
-            List.map (Life.positionInGrid page) page.patterns
-
         applyOffset : ( Int, Int ) -> GridPosition -> GridPosition
         applyOffset ( rowOffset, colOffset ) { row, col } =
             { row = rowOffset + row
@@ -143,7 +140,7 @@ updateLife patternDict page life =
 
         patterns : List (List GridPosition)
         patterns =
-            List.filterMap getPattern gridPatternAnchors
+            List.filterMap getPattern <| Page.gridPatternAnchors page
     in
     List.foldl Life.addPattern resized patterns
 
