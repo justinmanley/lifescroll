@@ -159,13 +159,6 @@ subscriptions model =
         (messageReceiver <| decodeValue decoder)
 
 
-resizeLife : Page -> LifeGrid -> LifeGrid
-resizeLife { body } =
-    Life.resize
-        (BoundingRectangle.width body |> ceiling)
-        (BoundingRectangle.height body |> ceiling)
-
-
 port sendMessage : Encode.Value -> Cmd msg
 
 

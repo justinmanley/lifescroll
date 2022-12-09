@@ -4,50 +4,42 @@ import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Color
 import GridPosition exposing (GridPosition)
+import Size2 exposing (Size2)
 
 
 type alias LifeGrid =
-    { width : Int
-    , height : Int
-    , cells : List GridPosition
-    }
+    List GridPosition
 
 
 empty : LifeGrid
 empty =
-    { width = 0
-    , height = 0
-    , cells = []
-    }
+    []
 
 
-resize : Int -> Int -> LifeGrid -> LifeGrid
-resize newWidth newHeight grid =
+resize : Size2 Int -> Size2 Int -> LifeGrid -> LifeGrid
+resize oldSize newSize grid =
     let
         toCenteredInNewGrid : GridPosition -> GridPosition
         toCenteredInNewGrid position =
-            { x = position.x - floor (toFloat newWidth / 2)
-            , y = position.y - floor (toFloat newHeight / 2)
+            { x = position.x - floor (toFloat newSize.width / 2)
+            , y = position.y - floor (toFloat newSize.height / 2)
             }
 
         fromCenteredInOldGrid : GridPosition -> GridPosition
         fromCenteredInOldGrid position =
-            { x = position.x + floor (toFloat grid.width / 2)
-            , y = position.y + floor (toFloat grid.height / 2)
+            { x = position.x + floor (toFloat oldSize.width / 2)
+            , y = position.y + floor (toFloat oldSize.height / 2)
             }
 
         oldIndexToNewIndex : GridPosition -> GridPosition
         oldIndexToNewIndex =
             fromCenteredInOldGrid >> toCenteredInNewGrid
     in
-    if newWidth == grid.width && newHeight == grid.height then
+    if newSize.width == oldSize.width && newSize.height == oldSize.height then
         grid
 
     else
-        { width = newWidth
-        , height = newHeight
-        , cells = List.map oldIndexToNewIndex grid.cells
-        }
+        List.map oldIndexToNewIndex grid
 
 
 addPattern : List GridPosition -> LifeGrid -> LifeGrid
@@ -70,11 +62,11 @@ addPattern pattern grid =
             else
                 cell :: cells
     in
-    { grid | cells = List.foldl withCell grid.cells pattern }
+    List.foldl withCell grid pattern
 
 
 render : Float -> LifeGrid -> Renderable
-render cellSize { cells } =
+render cellSize cells =
     let
         square point size =
             Canvas.rect point size size
