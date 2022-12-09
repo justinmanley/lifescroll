@@ -6,6 +6,7 @@
     "elm-version": "0.19.1",
     "dependencies": {
         "direct": {
+            "JohnBugner/elm-loop": "2.1.0",
             "Punie/elm-matrix": "2.0.0",
             "avh4/elm-color": "1.0.0",
             "elm/browser": "1.0.2",

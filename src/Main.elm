@@ -6,10 +6,12 @@ import Canvas
 import Dict
 import Html exposing (Html)
 import Html.Attributes exposing (style)
-import Json.Decode as Decode exposing (Decoder, decodeValue, oneOf)
+import Json.Decode as Decode exposing (Decoder, at, decodeValue, float, oneOf)
 import Life exposing (GridPatternAnchor, GridPosition, LifeGrid, Pattern, PatternDict)
+import Loop exposing (for)
 import Page exposing (Page)
 import Patterns exposing (patternDict)
+import ScrollState exposing (ScrollState)
 
 
 main : Program () Model Msg
@@ -25,19 +27,21 @@ main =
 type alias Model =
     { page : Page
     , life : LifeGrid
+    , scroll : ScrollState
     }
 
 
 type Msg
     = ParsingError Decode.Error
     | PageUpdate Page
-    | ScrollEvent Int
+    | ScrollPage Float
 
 
 emptyModel : Model
 emptyModel =
     { page = Page.empty
     , life = Life.empty
+    , scroll = ScrollState.empty
     }
 
 
@@ -71,10 +75,27 @@ update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PageUpdate page ->
-            ( { page = page, life = updateLife patternDict page model.life }, Cmd.none )
+            ( { model
+                | page = page
+                , life = updateLife patternDict page model.life
+              }
+            , Cmd.none
+            )
 
-        ScrollEvent _ ->
-            ( model, Cmd.none )
+        ScrollPage position ->
+            let
+                numSteps =
+                    max 0 <|
+                        ceiling <|
+                            (position - model.scroll.mostRecent)
+                                / model.page.articleFontSizeInPixels
+            in
+            ( { model
+                | life = for numSteps Life.next model.life
+                , scroll = ScrollState.update position model.scroll
+              }
+            , Cmd.none
+            )
 
         ParsingError error ->
             ( Debug.log (Decode.errorToString error) model, Cmd.none )
@@ -149,4 +170,6 @@ port messageReceiver : (Decode.Value -> msg) -> Sub msg
 decoder : Decoder Msg
 decoder =
     oneOf
-        [ Decode.map PageUpdate Page.decoder ]
+        [ Decode.map PageUpdate (at [ "PageUpdate" ] Page.decoder)
+        , Decode.map ScrollPage (at [ "ScrollPage", "scrollPosition" ] float)
+        ]

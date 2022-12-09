@@ -4,6 +4,7 @@ import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Color
 import Dict exposing (Dict)
+import Loop exposing (for)
 import Page exposing (Page)
 import PatternAnchor exposing (PagePatternAnchor, PatternAnchor)
 
@@ -123,3 +124,9 @@ render cellSize { cells } =
             square ( toFloat row * cellSize, toFloat col * cellSize ) cellSize
     in
     shapes [ fill Color.black ] <| List.map renderCell cells
+
+
+next : LifeGrid -> LifeGrid
+next =
+    -- TODO: implement.
+    identity

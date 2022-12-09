@@ -101,18 +101,20 @@
                 getComputedStyle(articleElement.parentElement).fontSize
             );
             return {
-                patterns: [...document.querySelectorAll('pattern-anchor')].map(patternAnchor => {
-                    const boundingRectangle = patternAnchor.getBoundingClientRect();
-                    return {
-                        id: patternAnchor.dataset.patternId,
-                        side: patternAnchor.dataset.side,
-                        x: boundingRectangle.x,
-                        y: boundingRectangle.y
-                    }
-                }),
-                body,
-                article,
-                articleFontSizeInPixels,
+                PageUpdate: {
+                    patterns: [...document.querySelectorAll('pattern-anchor')].map(patternAnchor => {
+                        const boundingRectangle = patternAnchor.getBoundingClientRect();
+                        return {
+                            id: patternAnchor.dataset.patternId,
+                            side: patternAnchor.dataset.side,
+                            x: boundingRectangle.x,
+                            y: boundingRectangle.y
+                        }
+                    }),
+                    body,
+                    article,
+                    articleFontSizeInPixels,
+                }
             };
         }
 
@@ -122,9 +124,17 @@
 
         app.ports.messageReceiver.send(page());
 
-        window.addEventListener("resize", (event) => {
-            app.ports.messageReceiver.send(page());
+        window.addEventListener("scroll", (event) => {
+            app.ports.messageReceiver.send({
+                ScrollPage: {
+                    scrollPosition: window.scrollY
+                }
+            });
         });
+
+        // window.addEventListener("resize", (event) => {
+        //     app.ports.messageReceiver.send(page());
+        // });
     </script>
 </body>
 
