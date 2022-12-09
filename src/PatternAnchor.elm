@@ -3,21 +3,23 @@ module PatternAnchor exposing (..)
 import Json.Decode as Decode exposing (Decoder, andThen, field, float, string)
 
 
-type alias PatternAnchor =
+type alias PatternAnchor a =
     { id : String
     , side : Side
-    , x : Float
-    , y : Float
+    , position : ( a, a )
     }
 
 
-decoder : Decoder PatternAnchor
+type alias PagePatternAnchor =
+    PatternAnchor Float
+
+
+decoder : Decoder PagePatternAnchor
 decoder =
-    Decode.map4 PatternAnchor
+    Decode.map3 PatternAnchor
         (field "id" string)
         (field "side" string |> andThen sideDecoder)
-        (field "x" float)
-        (field "y" float)
+        (Decode.map2 Tuple.pair (field "x" float) (field "y" float))
 
 
 type Side

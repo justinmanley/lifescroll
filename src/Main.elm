@@ -2,15 +2,14 @@ port module Main exposing (main)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Browser
-import Canvas exposing (Point, Shape, shapes)
-import Canvas.Settings exposing (fill)
-import Color
+import Canvas
+import Dict
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, decodeValue, oneOf)
-import Life exposing (LifeGrid)
+import Life exposing (GridPatternAnchor, GridPosition, LifeGrid, Pattern, PatternDict)
 import Page exposing (Page)
-import PatternAnchor exposing (PatternAnchor)
+import Patterns exposing (patternDict)
 
 
 main : Program () Model Msg
@@ -64,31 +63,56 @@ view model =
         , style "top" "0"
         , style "left" "0"
         ]
-        [ Debug.log "shapes" <| shapes [ fill Color.black ] <| List.map (viewPattern model.page.articleFontSizeInPixels) model.page.patterns
+        [ Life.render model.page.articleFontSizeInPixels model.life
         ]
-
-
-square : Point -> Float -> Shape
-square point size =
-    Canvas.rect point size size
-
-
-viewPattern : Float -> PatternAnchor -> Shape
-viewPattern size pattern =
-    square ( 10, 10 ) size
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
         PageUpdate page ->
-            ( { page = page, life = resizeLife model.page model.life }, Cmd.none )
+            ( { page = page, life = updateLife patternDict page model.life }, Cmd.none )
 
         ScrollEvent _ ->
             ( model, Cmd.none )
 
         ParsingError error ->
             ( Debug.log (Decode.errorToString error) model, Cmd.none )
+
+
+updateLife : PatternDict -> Page -> LifeGrid -> LifeGrid
+updateLife patternDict page life =
+    let
+        -- resized = resizeLife page life
+        resized =
+            life
+
+        gridPatternAnchors : List GridPatternAnchor
+        gridPatternAnchors =
+            List.map (Life.positionInGrid page) page.patterns
+
+        applyOffset : ( Int, Int ) -> GridPosition -> GridPosition
+        applyOffset ( rowOffset, colOffset ) { row, col } =
+            { row = rowOffset + row
+            , col = colOffset + col
+            }
+
+        getPattern : GridPatternAnchor -> Maybe Pattern
+        getPattern { id, position } =
+            case Dict.get id patternDict of
+                Nothing ->
+                    Debug.log ("Could not find pattern for id " ++ id) Nothing
+
+                Just pattern ->
+                    Just <|
+                        List.map (applyOffset position)
+                            pattern
+
+        patterns : List Pattern
+        patterns =
+            List.filterMap getPattern gridPatternAnchors
+    in
+    List.foldl Life.addPattern resized patterns
 
 
 subscriptions : Model -> Sub Msg
@@ -100,18 +124,16 @@ subscriptions model =
                     msg
 
                 Err error ->
-                    ParsingError error
+                    ParsingError (Debug.log "ParsingError" error)
         )
-        (messageReceiver
-            (decodeValue decoder)
-        )
+        (messageReceiver <| decodeValue decoder)
 
 
 resizeLife : Page -> LifeGrid -> LifeGrid
-resizeLife page =
+resizeLife { body } =
     Life.resize
-        (BoundingRectangle.width page.body |> ceiling)
-        (BoundingRectangle.height page.body |> ceiling)
+        (BoundingRectangle.width body |> ceiling)
+        (BoundingRectangle.height body |> ceiling)
 
 
 port sendMessage : String -> Cmd msg

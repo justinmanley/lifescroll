@@ -2,11 +2,11 @@ module Page exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Json.Decode as Decode exposing (Decoder, field, float, list)
-import PatternAnchor exposing (PatternAnchor)
+import PatternAnchor exposing (PagePatternAnchor)
 
 
 type alias Page =
-    { patterns : List PatternAnchor
+    { patterns : List PagePatternAnchor
     , body : BoundingRectangle
     , article : BoundingRectangle
     , articleFontSizeInPixels : Float
