@@ -2,8 +2,8 @@ module LifeCell exposing (..)
 
 
 type alias Position =
-    { row : Int
-    , col : Int
+    { y : Int
+    , x : Int
     }
 
 

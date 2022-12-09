@@ -129,8 +129,8 @@
                     const selector = `[data-pattern-id=${patternId}]`;
                     [...document.querySelectorAll(selector)].forEach(element => {
                         element.style.display = 'block';
-                        element.style.width = cellSizeInPixels * pattern.extent.columns;
-                        element.style.height = cellSizeInPixels * (pattern.extent.rows + 2);
+                        element.style.width = cellSizeInPixels * pattern.extent.width;
+                        element.style.height = cellSizeInPixels * (pattern.extent.height + 2);
                     });
                 });
             }

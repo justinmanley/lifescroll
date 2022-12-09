@@ -8,8 +8,8 @@ import Test exposing (Test, describe, test)
 
 testPattern : List GridPosition
 testPattern =
-    [ { row = 0, col = 0 }
-    , { row = 0, col = 1 }
+    [ { x = 0, y = 0 }
+    , { x = 1, y = 0 }
     ]
 
 

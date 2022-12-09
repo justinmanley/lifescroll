@@ -11,10 +11,10 @@ type alias Pattern =
     -- May represent the maximum bounds of the pattern (although
     -- the pattern may not achieve its maximum bounds in all
     -- directions on the same generation). For patterns which
-    -- grow infinitely, this will not represent the maximum
+    -- gy infinitely, this will not represent the maximum
     -- bounds, but merely a reasonable amount of space for the
-    -- pattern to grow before it infringes on the rest of the page.
-    , extent : { rows : Int, columns : Int }
+    -- pattern to gy before it infringes on the rest of the page.
+    , extent : { height : Int, width : Int }
     }
 
 
@@ -27,8 +27,8 @@ encode { extent } =
     Encode.object
         [ ( "extent"
           , Encode.object
-                [ ( "rows", Encode.int extent.rows )
-                , ( "columns", Encode.int extent.columns )
+                [ ( "height", Encode.int extent.height )
+                , ( "width", Encode.int extent.width )
                 ]
           )
         ]

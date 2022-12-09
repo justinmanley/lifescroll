@@ -39,14 +39,14 @@ patternAnchorToGrid page pattern =
         articleCenter =
             page.article.left + (BoundingRectangle.width page.article / 2)
 
-        row =
+        y =
             second pattern.position / page.cellSizeInPixels |> floor
 
-        col =
+        x =
             articleCenter / page.cellSizeInPixels |> floor
     in
     { id = pattern.id
-    , position = ( row, col )
+    , position = ( y, x )
     }
 
 

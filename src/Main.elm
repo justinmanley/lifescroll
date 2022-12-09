@@ -122,9 +122,9 @@ updateLife patternDict page life =
             life
 
         applyOffset : ( Int, Int ) -> GridPosition -> GridPosition
-        applyOffset ( rowOffset, colOffset ) { row, col } =
-            { row = rowOffset + row
-            , col = colOffset + col
+        applyOffset ( yOffset, xOffset ) { y, x } =
+            { x = xOffset + x
+            , y = yOffset + y
             }
 
         getPattern : GridPatternAnchor -> Maybe (List GridPosition)

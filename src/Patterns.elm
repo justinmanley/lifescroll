@@ -9,16 +9,16 @@ patternDict =
     Dict.fromList
         [ ( "beehive"
           , { extent =
-                { rows = 3
-                , columns = 4
+                { height = 3
+                , width = 4
                 }
             , cells =
-                [ { row = 0, col = 1 }
-                , { row = 0, col = 2 }
-                , { row = 1, col = 0 }
-                , { row = 1, col = 3 }
-                , { row = 2, col = 1 }
-                , { row = 2, col = 2 }
+                [ { x = 1, y = 0 }
+                , { x = 2, y = 0 }
+                , { x = 0, y = 1 }
+                , { x = 3, y = 1 }
+                , { x = 1, y = 2 }
+                , { x = 2, y = 2 }
                 ]
             }
           )

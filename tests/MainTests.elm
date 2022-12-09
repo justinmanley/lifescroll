@@ -16,10 +16,10 @@ testPatternDict =
     Dict.fromList
         [ ( "PatternWithMoreThanOneUniqueCell"
           , { cells =
-                [ { row = 0, col = 0 }
-                , { row = 1, col = 1 }
+                [ { x = 0, y = 0 }
+                , { x = 1, y = 1 }
                 ]
-            , extent = { rows = 1, columns = 2 }
+            , extent = { height = 1, width = 2 }
             }
           )
         ]
