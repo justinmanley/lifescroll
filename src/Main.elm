@@ -4,12 +4,15 @@ import BoundingRectangle exposing (BoundingRectangle)
 import Browser
 import Canvas
 import Dict
+import GridPosition exposing (GridPosition)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
-import Json.Decode as Decode exposing (Decoder, at, decodeValue, float, oneOf)
-import Life exposing (GridPatternAnchor, GridPosition, LifeGrid, Pattern, PatternDict)
+import Json.Decode as Decode exposing (Decoder, at, decodeValue, field, float, oneOf, succeed)
+import Json.Encode as Encode
+import Life exposing (GridPatternAnchor, LifeGrid)
 import Loop exposing (for)
 import Page exposing (Page)
+import PatternDict exposing (PatternDict)
 import Patterns exposing (patternDict)
 import ScrollState exposing (ScrollState)
 
@@ -33,6 +36,7 @@ type alias Model =
 
 type Msg
     = ParsingError Decode.Error
+    | GetPatterns
     | PageUpdate Page
     | ScrollPage Float
 
@@ -74,6 +78,14 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        GetPatterns ->
+            ( model
+            , sendMessage <|
+                Encode.object
+                    [ ( "patterns", PatternDict.encode patternDict )
+                    ]
+            )
+
         PageUpdate page ->
             ( { model
                 | page = page
@@ -118,7 +130,7 @@ updateLife patternDict page life =
             , col = colOffset + col
             }
 
-        getPattern : GridPatternAnchor -> Maybe Pattern
+        getPattern : GridPatternAnchor -> Maybe (List GridPosition)
         getPattern { id, position } =
             case Dict.get id patternDict of
                 Nothing ->
@@ -127,9 +139,9 @@ updateLife patternDict page life =
                 Just pattern ->
                     Just <|
                         List.map (applyOffset position)
-                            pattern
+                            pattern.cells
 
-        patterns : List Pattern
+        patterns : List (List GridPosition)
         patterns =
             List.filterMap getPattern gridPatternAnchors
     in
@@ -157,7 +169,7 @@ resizeLife { body } =
         (BoundingRectangle.height body |> ceiling)
 
 
-port sendMessage : String -> Cmd msg
+port sendMessage : Encode.Value -> Cmd msg
 
 
 
@@ -170,6 +182,7 @@ port messageReceiver : (Decode.Value -> msg) -> Sub msg
 decoder : Decoder Msg
 decoder =
     oneOf
-        [ Decode.map PageUpdate (at [ "PageUpdate" ] Page.decoder)
+        [ field "GetPatterns" <| succeed GetPatterns
+        , Decode.map PageUpdate (at [ "PageUpdate" ] Page.decoder)
         , Decode.map ScrollPage (at [ "ScrollPage", "scrollPosition" ] float)
         ]

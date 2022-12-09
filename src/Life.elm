@@ -3,24 +3,9 @@ module Life exposing (..)
 import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Color
-import Dict exposing (Dict)
-import Loop exposing (for)
+import GridPosition exposing (GridPosition)
 import Page exposing (Page)
 import PatternAnchor exposing (PagePatternAnchor, PatternAnchor)
-
-
-type alias GridPosition =
-    { row : Int
-    , col : Int
-    }
-
-
-type alias Pattern =
-    List GridPosition
-
-
-type alias PatternDict =
-    Dict String Pattern
 
 
 type alias LifeGrid =
@@ -86,7 +71,7 @@ positionInGrid page pattern =
     }
 
 
-addPattern : Pattern -> LifeGrid -> LifeGrid
+addPattern : List GridPosition -> LifeGrid -> LifeGrid
 addPattern pattern grid =
     let
         withCell : GridPosition -> List GridPosition -> List GridPosition
@@ -121,7 +106,7 @@ render cellSize { cells } =
                 { row, col } =
                     position
             in
-            square ( toFloat row * cellSize, toFloat col * cellSize ) cellSize
+            square ( toFloat col * cellSize, toFloat row * cellSize ) cellSize
     in
     shapes [ fill Color.black ] <| List.map renderCell cells
 

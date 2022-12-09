@@ -1,11 +1,12 @@
 module LifeTests exposing (..)
 
 import Expect
-import Life exposing (Pattern, addPattern)
+import GridPosition exposing (GridPosition)
+import Life exposing (addPattern)
 import Test exposing (Test, describe, test)
 
 
-testPattern : Pattern
+testPattern : List GridPosition
 testPattern =
     [ { row = 0, col = 0 }
     , { row = 0, col = 1 }

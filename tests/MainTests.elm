@@ -3,10 +3,11 @@ module MainTests exposing (..)
 import BoundingRectangle
 import Dict
 import Expect
-import Life exposing (PatternDict)
+import Life
 import Main exposing (updateLife)
 import Page exposing (Page)
 import PatternAnchor exposing (PagePatternAnchor, Side(..))
+import PatternDict exposing (PatternDict)
 import Test exposing (Test, describe, test)
 
 
@@ -14,9 +15,12 @@ testPatternDict : PatternDict
 testPatternDict =
     Dict.fromList
         [ ( "PatternWithMoreThanOneUniqueCell"
-          , [ { row = 0, col = 0 }
-            , { row = 1, col = 1 }
-            ]
+          , { cells =
+                [ { row = 0, col = 0 }
+                , { row = 1, col = 1 }
+                ]
+            , extent = { rows = 1, columns = 2 }
+            }
           )
         ]
 
@@ -45,7 +49,7 @@ suite =
                         { testPage | patterns = [ { testAnchor | id = "PatternWithMoreThanOneUniqueCell" } ] }
 
                     allPatternsCells =
-                        Dict.foldl (\_ patternCells cells -> List.append patternCells cells) [] testPatternDict
+                        Dict.foldl (\_ pattern cells -> List.append pattern.cells cells) [] testPatternDict
                 in
                 updateLife testPatternDict page Life.empty
                     |> (\{ cells } -> List.length cells)

@@ -122,7 +122,24 @@
             node: document.getElementById('canvas')
         });
 
-        app.ports.messageReceiver.send(page());
+        app.ports.sendMessage.subscribe(message => {
+            const { articleFontSizeInPixels } = page().PageUpdate;
+
+            if (message.hasOwnProperty("patterns")) {
+                Object.entries(message.patterns).forEach(([patternId, pattern]) => {
+                    const selector = `[data-pattern-id=${patternId}]`;
+                    [...document.querySelectorAll(selector)].forEach(element => {
+                        element.style.display = 'block';
+                        element.style.width = articleFontSizeInPixels * pattern.extent.columns;
+                        element.style.height = articleFontSizeInPixels * (pattern.extent.rows + 2);
+                    });
+                });
+            }
+
+            app.ports.messageReceiver.send(page());
+        });
+
+        app.ports.messageReceiver.send({ "GetPatterns": {} });
 
         window.addEventListener("scroll", (event) => {
             app.ports.messageReceiver.send({
