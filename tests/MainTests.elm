@@ -52,6 +52,6 @@ suite =
                         Dict.foldl (\_ pattern cells -> List.append pattern.cells cells) [] testPatternDict
                 in
                 updateLife testPatternDict page Life.empty
-                    |> (\{ cells } -> List.length cells)
+                    |> List.length
                     |> Expect.equal (List.length allPatternsCells)
         ]

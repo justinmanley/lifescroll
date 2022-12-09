@@ -1,12 +1,12 @@
 module LifeTests exposing (..)
 
 import Expect
-import GridPosition exposing (GridPosition)
 import Life exposing (addPattern)
 import Test exposing (Test, describe, test)
+import Vector2 exposing (Vector2)
 
 
-testPattern : List GridPosition
+testPattern : List (Vector2 Int)
 testPattern =
     [ { x = 0, y = 0 }
     , { x = 1, y = 0 }
@@ -24,8 +24,5 @@ suite =
         [ test "inserts every cell in a pattern into an empty LifeGrid" <|
             \_ ->
                 addPattern testPattern Life.empty
-                    |> (\{ cells } ->
-                            cells
-                       )
                     |> expectEqualLength testPattern
         ]

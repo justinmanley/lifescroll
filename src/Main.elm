@@ -4,7 +4,6 @@ import BoundingRectangle exposing (BoundingRectangle)
 import Browser
 import Canvas
 import Dict
-import GridPosition exposing (GridPosition)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, field, float, oneOf, succeed)
@@ -16,6 +15,7 @@ import PatternAnchor exposing (GridPatternAnchor)
 import PatternDict exposing (PatternDict)
 import Patterns exposing (patternDict)
 import ScrollState exposing (ScrollState)
+import Vector2 exposing (Vector2)
 
 
 main : Program () Model Msg
@@ -121,13 +121,13 @@ updateLife patternDict page life =
         resized =
             life
 
-        applyOffset : ( Int, Int ) -> GridPosition -> GridPosition
+        applyOffset : ( Int, Int ) -> Vector2 Int -> Vector2 Int
         applyOffset ( yOffset, xOffset ) { y, x } =
             { x = xOffset + x
             , y = yOffset + y
             }
 
-        getPattern : GridPatternAnchor -> Maybe (List GridPosition)
+        getPattern : GridPatternAnchor -> Maybe (List (Vector2 Int))
         getPattern { id, position } =
             case Dict.get id patternDict of
                 Nothing ->
@@ -138,7 +138,7 @@ updateLife patternDict page life =
                         List.map (applyOffset position)
                             pattern.cells
 
-        patterns : List (List GridPosition)
+        patterns : List (List (Vector2 Int))
         patterns =
             List.filterMap getPattern <| Page.gridPatternAnchors page
     in

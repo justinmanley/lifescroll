@@ -1,11 +1,11 @@
 module Pattern exposing (..)
 
-import GridPosition exposing (GridPosition)
 import Json.Encode as Encode
+import Vector2 exposing (Vector2)
 
 
 type alias Pattern =
-    { cells : List GridPosition
+    { cells : List (Vector2 Int)
 
     -- The amount of space that should be reserved on the page.
     -- May represent the maximum bounds of the pattern (although

@@ -3,12 +3,12 @@ module Life exposing (..)
 import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Color
-import GridPosition exposing (GridPosition)
 import Size2 exposing (Size2)
+import Vector2 exposing (Vector2)
 
 
 type alias LifeGrid =
-    List GridPosition
+    List (Vector2 Int)
 
 
 empty : LifeGrid
@@ -19,19 +19,19 @@ empty =
 resize : Size2 Int -> Size2 Int -> LifeGrid -> LifeGrid
 resize oldSize newSize grid =
     let
-        toCenteredInNewGrid : GridPosition -> GridPosition
+        toCenteredInNewGrid : Vector2 Int -> Vector2 Int
         toCenteredInNewGrid position =
             { x = position.x - floor (toFloat newSize.width / 2)
             , y = position.y - floor (toFloat newSize.height / 2)
             }
 
-        fromCenteredInOldGrid : GridPosition -> GridPosition
+        fromCenteredInOldGrid : Vector2 Int -> Vector2 Int
         fromCenteredInOldGrid position =
             { x = position.x + floor (toFloat oldSize.width / 2)
             , y = position.y + floor (toFloat oldSize.height / 2)
             }
 
-        oldIndexToNewIndex : GridPosition -> GridPosition
+        oldIndexToNewIndex : Vector2 Int -> Vector2 Int
         oldIndexToNewIndex =
             fromCenteredInOldGrid >> toCenteredInNewGrid
     in
@@ -42,13 +42,13 @@ resize oldSize newSize grid =
         List.map oldIndexToNewIndex grid
 
 
-addPattern : List GridPosition -> LifeGrid -> LifeGrid
+addPattern : List (Vector2 Int) -> LifeGrid -> LifeGrid
 addPattern pattern grid =
     let
-        withCell : GridPosition -> List GridPosition -> List GridPosition
+        withCell : Vector2 Int -> List (Vector2 Int) -> List (Vector2 Int)
         withCell cell cells =
             let
-                cellEquals : GridPosition -> GridPosition -> Bool
+                cellEquals : Vector2 comparable -> Vector2 comparable -> Bool
                 cellEquals c1 c2 =
                     if c1 == c2 then
                         Debug.log "found a conflict while attempting to insert pattern" True
@@ -71,7 +71,7 @@ render cellSize cells =
         square point size =
             Canvas.rect point size size
 
-        renderCell : GridPosition -> Shape
+        renderCell : Vector2 Int -> Shape
         renderCell position =
             let
                 { y, x } =
