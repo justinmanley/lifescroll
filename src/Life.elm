@@ -94,10 +94,10 @@ addPattern pattern grid =
                 cellEquals : GridPosition -> GridPosition -> Bool
                 cellEquals c1 c2 =
                     if c1 == c2 then
-                        Debug.log "found a conflict while attempting to insert pattern" False
+                        Debug.log "found a conflict while attempting to insert pattern" True
 
                     else
-                        True
+                        False
             in
             if List.any (cellEquals cell) cells then
                 cells

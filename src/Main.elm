@@ -1,4 +1,4 @@
-port module Main exposing (main)
+port module Main exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Browser
