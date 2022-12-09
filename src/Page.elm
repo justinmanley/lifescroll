@@ -46,7 +46,6 @@ patternAnchorToGrid page pattern =
             articleCenter / page.articleFontSizeInPixels |> floor
     in
     { id = pattern.id
-    , side = pattern.side -- no longer necessary, but that's ok
     , position = ( row, col )
     }
 

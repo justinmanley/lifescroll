@@ -6,7 +6,7 @@ import Expect
 import Life
 import Main exposing (updateLife)
 import Page exposing (Page)
-import PatternAnchor exposing (PagePatternAnchor, Side(..))
+import PatternAnchor exposing (PagePatternAnchor)
 import PatternDict exposing (PatternDict)
 import Test exposing (Test, describe, test)
 
@@ -36,7 +36,7 @@ testPage =
 
 testAnchor : PagePatternAnchor
 testAnchor =
-    { side = Left, position = ( 0, 0 ), id = "" }
+    { position = ( 0, 0 ), id = "" }
 
 
 suite : Test
