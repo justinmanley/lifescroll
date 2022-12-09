@@ -30,7 +30,7 @@ testPage =
     { patterns = []
     , body = BoundingRectangle.empty
     , article = BoundingRectangle.empty
-    , articleFontSizeInPixels = 10
+    , cellSizeInPixels = 10
     }
 
 

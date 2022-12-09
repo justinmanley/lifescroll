@@ -72,7 +72,7 @@ view model =
         , style "top" "0"
         , style "left" "0"
         ]
-        [ Life.render model.page.articleFontSizeInPixels model.life
+        [ Life.render model.page.cellSizeInPixels model.life
         ]
 
 
@@ -101,7 +101,7 @@ update msg model =
                     max 0 <|
                         ceiling <|
                             (position - model.scroll.mostRecent)
-                                / model.page.articleFontSizeInPixels
+                                / model.page.cellSizeInPixels
             in
             ( { model
                 | life = for numSteps Life.next model.life

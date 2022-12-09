@@ -112,7 +112,7 @@
                     }),
                     body,
                     article,
-                    articleFontSizeInPixels,
+                    cellSizeInPixels: articleFontSizeInPixels,
                 }
             };
         }
@@ -122,15 +122,15 @@
         });
 
         app.ports.sendMessage.subscribe(message => {
-            const { articleFontSizeInPixels } = page().PageUpdate;
+            const { cellSizeInPixels } = page().PageUpdate;
 
             if (message.hasOwnProperty("patterns")) {
                 Object.entries(message.patterns).forEach(([patternId, pattern]) => {
                     const selector = `[data-pattern-id=${patternId}]`;
                     [...document.querySelectorAll(selector)].forEach(element => {
                         element.style.display = 'block';
-                        element.style.width = articleFontSizeInPixels * pattern.extent.columns;
-                        element.style.height = articleFontSizeInPixels * (pattern.extent.rows + 2);
+                        element.style.width = cellSizeInPixels * pattern.extent.columns;
+                        element.style.height = cellSizeInPixels * (pattern.extent.rows + 2);
                     });
                 });
             }

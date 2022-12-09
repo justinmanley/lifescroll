@@ -10,7 +10,7 @@ type alias Page =
     { patterns : List PagePatternAnchor
     , body : BoundingRectangle
     , article : BoundingRectangle
-    , articleFontSizeInPixels : Float
+    , cellSizeInPixels : Float
     }
 
 
@@ -19,7 +19,7 @@ empty =
     { patterns = []
     , body = BoundingRectangle.empty
     , article = BoundingRectangle.empty
-    , articleFontSizeInPixels = 16 -- web default
+    , cellSizeInPixels = 16 -- web default
     }
 
 
@@ -30,7 +30,7 @@ decoder =
         (field "patterns" (list PatternAnchor.decoder))
         (field "body" BoundingRectangle.decoder)
         (field "article" BoundingRectangle.decoder)
-        (field "articleFontSizeInPixels" float)
+        (field "cellSizeInPixels" float)
 
 
 patternAnchorToGrid : Page -> PagePatternAnchor -> GridPatternAnchor
@@ -40,10 +40,10 @@ patternAnchorToGrid page pattern =
             page.article.left + (BoundingRectangle.width page.article / 2)
 
         row =
-            second pattern.position / page.articleFontSizeInPixels |> floor
+            second pattern.position / page.cellSizeInPixels |> floor
 
         col =
-            articleCenter / page.articleFontSizeInPixels |> floor
+            articleCenter / page.cellSizeInPixels |> floor
     in
     { id = pattern.id
     , position = ( row, col )
