@@ -15,7 +15,8 @@ import PatternAnchor exposing (GridPatternAnchor)
 import PatternDict exposing (PatternDict)
 import Patterns exposing (patternDict)
 import ScrollState exposing (ScrollState)
-import Vector2 exposing (Vector2)
+import Set exposing (Set)
+import Vector2 exposing (Vector2, x, y)
 
 
 main : Program () Model Msg
@@ -98,14 +99,15 @@ update msg model =
         ScrollPage position ->
             let
                 numSteps =
+                    -- Debug.log "numSteps" <|
                     max 0 <|
-                        ceiling <|
+                        floor <|
                             (position - model.scroll.mostRecent)
                                 / model.page.cellSizeInPixels
             in
             ( { model
                 | life = for numSteps Life.next model.life
-                , scroll = ScrollState.update position model.scroll
+                , scroll = Debug.log "scrollState" <| ScrollState.update position model.scroll
               }
             , Cmd.none
             )
@@ -122,12 +124,12 @@ updateLife patternDict page life =
             life
 
         applyOffset : ( Int, Int ) -> Vector2 Int -> Vector2 Int
-        applyOffset ( yOffset, xOffset ) { y, x } =
-            { x = xOffset + x
-            , y = yOffset + y
-            }
+        applyOffset ( yOffset, xOffset ) position =
+            ( xOffset + x position
+            , yOffset + y position
+            )
 
-        getPattern : GridPatternAnchor -> Maybe (List (Vector2 Int))
+        getPattern : GridPatternAnchor -> Maybe (Set (Vector2 Int))
         getPattern { id, position } =
             case Dict.get id patternDict of
                 Nothing ->
@@ -135,10 +137,10 @@ updateLife patternDict page life =
 
                 Just pattern ->
                     Just <|
-                        List.map (applyOffset position)
+                        Set.map (applyOffset position)
                             pattern.cells
 
-        patterns : List (List (Vector2 Int))
+        patterns : List (Set (Vector2 Int))
         patterns =
             List.filterMap getPattern <| Page.gridPatternAnchors page
     in

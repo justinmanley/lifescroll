@@ -8,6 +8,7 @@ import Main exposing (updateLife)
 import Page exposing (Page)
 import PatternAnchor exposing (PagePatternAnchor)
 import PatternDict exposing (PatternDict)
+import Set exposing (Set)
 import Test exposing (Test, describe, test)
 
 
@@ -16,9 +17,10 @@ testPatternDict =
     Dict.fromList
         [ ( "PatternWithMoreThanOneUniqueCell"
           , { cells =
-                [ { x = 0, y = 0 }
-                , { x = 1, y = 1 }
-                ]
+                Set.fromList
+                    [ ( 0, 0 )
+                    , ( 1, 1 )
+                    ]
             , extent = { height = 1, width = 2 }
             }
           )
@@ -49,9 +51,9 @@ suite =
                         { testPage | patterns = [ { testAnchor | id = "PatternWithMoreThanOneUniqueCell" } ] }
 
                     allPatternsCells =
-                        Dict.foldl (\_ pattern cells -> List.append pattern.cells cells) [] testPatternDict
+                        Dict.foldl (\_ pattern cells -> Set.union pattern.cells cells) Set.empty testPatternDict
                 in
                 updateLife testPatternDict page Life.empty
-                    |> List.length
-                    |> Expect.equal (List.length allPatternsCells)
+                    |> Set.size
+                    |> Expect.equal (Set.size allPatternsCells)
         ]
