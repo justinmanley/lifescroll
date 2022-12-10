@@ -2,6 +2,7 @@ module Patterns exposing (..)
 
 import Dict
 import PatternDict exposing (PatternDict)
+import Set
 
 
 patternDict : PatternDict
@@ -13,13 +14,40 @@ patternDict =
                 , width = 4
                 }
             , cells =
-                [ { x = 1, y = 0 }
-                , { x = 2, y = 0 }
-                , { x = 0, y = 1 }
-                , { x = 3, y = 1 }
-                , { x = 1, y = 2 }
-                , { x = 2, y = 2 }
-                ]
+                Set.fromList
+                    [ ( 1, 0 )
+                    , ( 2, 0 )
+                    , ( 0, 1 )
+                    , ( 3, 1 )
+                    , ( 1, 2 )
+                    , ( 2, 2 )
+                    ]
+            }
+          )
+        , ( "blinker"
+          , { extent = { height = 3, width = 3 }
+            , cells =
+                Set.fromList
+                    [ ( 0, 0 )
+                    , ( 0, 1 )
+                    , ( 0, 2 )
+                    ]
+            }
+          )
+        , ( "little-m"
+          , { extent = { height = 10, width = 10 } -- finesse!
+            , cells =
+                Set.fromList
+                    [ ( 0, 0 )
+                    , ( 0, 1 )
+                    , ( 0, 2 )
+                    , ( 1, 2 )
+                    , ( 2, 1 )
+                    , ( 3, 2 )
+                    , ( 4, 2 )
+                    , ( 4, 1 )
+                    , ( 4, 0 )
+                    ]
             }
           )
         ]
