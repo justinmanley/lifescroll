@@ -64,16 +64,20 @@ canvasDimensions rect =
 
 
 view : Model -> Html Msg
-view model =
+view { page, life } =
     Canvas.toHtml
-        (canvasDimensions model.page.body)
+        (canvasDimensions page.body)
         [ style "position" "absolute"
         , style "height" "100%"
         , style "width" "100%"
         , style "top" "0"
         , style "left" "0"
         ]
-        [ Life.render model.page.cellSizeInPixels model.life
+        [ Canvas.clear
+            ( page.body.left, page.body.top )
+            (BoundingRectangle.width page.body)
+            (BoundingRectangle.height page.body)
+        , Life.render page.cellSizeInPixels life
         ]
 
 
