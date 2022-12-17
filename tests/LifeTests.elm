@@ -1,7 +1,10 @@
 module LifeTests exposing (..)
 
-import Expect
+import Expect exposing (Expectation)
 import Life exposing (addPattern)
+import Life.TestData.Spaceship exposing (Spaceship, spaceships)
+import Life.TestData.StillLife exposing (StillLife, stillLives)
+import Loop exposing (for)
 import Set exposing (Set)
 import Test exposing (Test, describe, test)
 import Vector2 exposing (Vector2)
@@ -15,16 +18,36 @@ testPattern =
         ]
 
 
-expectEqualSize : Set a -> Set b -> Expect.Expectation
+expectEqualSize : Set a -> Set b -> Expectation
 expectEqualSize expected actual =
     Expect.equal (Set.size expected) (Set.size actual)
+
+
+testStillLifeDoesNotChange : StillLife -> Test
+testStillLifeDoesNotChange { name, cells } =
+    test ("still life " ++ name ++ " does not change") <|
+        \_ -> Expect.equal cells (Life.next cells)
+
+
+testSpaceshipIsDisplacedAfterPeriod : Spaceship -> Test
+testSpaceshipIsDisplacedAfterPeriod { name, cells, period, direction } =
+    test ("spaceship " ++ name ++ " is displaced by " ++ Vector2.toString (Vector2.map String.fromInt direction) ++ "after " ++ String.fromInt period) <|
+        \_ -> Expect.equal (Set.map (Vector2.fold (+) direction) cells) (for period Life.next cells)
 
 
 suite : Test
 suite =
     describe "Life"
-        [ test "inserts every cell in a pattern into an empty LifeGrid" <|
-            \_ ->
-                addPattern testPattern Life.empty
-                    |> expectEqualSize testPattern
+        [ describe "addPattern"
+            [ test "inserts every cell in a pattern into an empty LifeGrid" <|
+                \_ ->
+                    addPattern testPattern Life.empty
+                        |> expectEqualSize testPattern
+            ]
+        , describe "next"
+            [ describe "still lives" <|
+                List.map testStillLifeDoesNotChange stillLives
+            , describe "spaceships" <|
+                List.map testSpaceshipIsDisplacedAfterPeriod spaceships
+            ]
         ]
