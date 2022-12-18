@@ -3,13 +3,15 @@ module MainTests exposing (..)
 import BoundingRectangle
 import Dict
 import Expect
+import Fuzz exposing (intAtLeast)
 import Life
-import Main exposing (updateLife)
+import Main exposing (Model, Msg(..), emptyModel, lifeStepsFromScroll, scrolledCellsPerStep, updateLife)
 import Page exposing (Page)
 import PatternAnchor exposing (PagePatternAnchor)
 import PatternDict exposing (PatternDict)
-import Set exposing (Set)
-import Test exposing (Test, describe, test)
+import Set
+import Test exposing (Test, describe, fuzz, test)
+import Tuple
 
 
 testPatternDict : PatternDict
@@ -41,19 +43,58 @@ testAnchor =
     { position = ( 0, 0 ), id = "" }
 
 
+updateModel : Msg -> Model -> Model
+updateModel msg model =
+    Main.update msg model |> Tuple.first
+
+
 suite : Test
 suite =
     describe "Main"
-        [ test "inserts every cell in a pattern into an empty LifeGrid" <|
-            \() ->
-                let
-                    page =
-                        { testPage | patterns = [ { testAnchor | id = "PatternWithMoreThanOneUniqueCell" } ] }
+        [ describe "lifeStepsFromScroll"
+            [ fuzz (intAtLeast 0) "when starting from an empty page, advances Life by one generation for each unit of advance" <|
+                \numCellsScrolled ->
+                    let
+                        scrollPosition =
+                            Page.empty.cellSizeInPixels * toFloat numCellsScrolled * scrolledCellsPerStep
+                    in
+                    Expect.equal
+                        (lifeStepsFromScroll scrollPosition emptyModel)
+                        numCellsScrolled
+            , fuzz (intAtLeast 0) "when the page is almost scrolled to a unit boundary, advances Life by one generation upon reaching the unit boundary" <|
+                \numCellsScrolled ->
+                    let
+                        scrollPosition =
+                            Page.empty.cellSizeInPixels * toFloat numCellsScrolled * scrolledCellsPerStep
 
-                    allPatternsCells =
-                        Dict.foldl (\_ pattern cells -> Set.union pattern.cells cells) Set.empty testPatternDict
-                in
-                updateLife testPatternDict page Life.empty
-                    |> Set.size
-                    |> Expect.equal (Set.size allPatternsCells)
+                        previousScrollPosition =
+                            max 0 (scrollPosition - 0.1 * Page.empty.cellSizeInPixels * scrolledCellsPerStep)
+
+                        model =
+                            { emptyModel
+                                | scroll =
+                                    { furthest = previousScrollPosition
+                                    , mostRecent = previousScrollPosition
+                                    }
+                            }
+
+                        baseline =
+                            floor (previousScrollPosition / (Page.empty.cellSizeInPixels * scrolledCellsPerStep))
+                    in
+                    Expect.equal (lifeStepsFromScroll scrollPosition model) (numCellsScrolled - baseline)
+            ]
+        , describe "updateLife"
+            [ test "inserts every cell in a pattern into an empty LifeGrid" <|
+                \() ->
+                    let
+                        page =
+                            { testPage | patterns = [ { testAnchor | id = "PatternWithMoreThanOneUniqueCell" } ] }
+
+                        allPatternsCells =
+                            Dict.foldl (\_ pattern cells -> Set.union pattern.cells cells) Set.empty testPatternDict
+                    in
+                    updateLife testPatternDict page Life.empty
+                        |> Set.size
+                        |> Expect.equal (Set.size allPatternsCells)
+            ]
         ]

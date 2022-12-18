@@ -104,10 +104,7 @@ update msg model =
             let
                 numSteps =
                     -- Debug.log "numSteps" <|
-                    max 0 <|
-                        floor <|
-                            (position - model.scroll.mostRecent)
-                                / model.page.cellSizeInPixels
+                    lifeStepsFromScroll position model
             in
             ( { model
                 | life = for numSteps Life.next model.life
@@ -118,6 +115,22 @@ update msg model =
 
         ParsingError error ->
             ( Debug.log (Decode.errorToString error) model, Cmd.none )
+
+
+scrolledCellsPerStep : number
+scrolledCellsPerStep =
+    4
+
+
+lifeStepsFromScroll : Float -> Model -> Int
+lifeStepsFromScroll scrollPosition { page, scroll } =
+    let
+        toLifeGridCoordinates : Float -> Int
+        toLifeGridCoordinates pageCoordinate =
+            floor (pageCoordinate / (page.cellSizeInPixels * scrolledCellsPerStep))
+    in
+    max 0 <|
+        (toLifeGridCoordinates scrollPosition - toLifeGridCoordinates scroll.mostRecent)
 
 
 updateLife : PatternDict -> Page -> LifeGrid -> LifeGrid
