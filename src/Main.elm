@@ -60,7 +60,9 @@ init _ =
 
 canvasDimensions : BoundingRectangle -> ( Int, Int )
 canvasDimensions rect =
-    ( BoundingRectangle.width rect |> ceiling, BoundingRectangle.height rect |> ceiling )
+    ( BoundingRectangle.width rect |> ceiling
+    , BoundingRectangle.height rect |> ceiling
+    )
 
 
 view : Model -> Html Msg
@@ -103,12 +105,11 @@ update msg model =
         ScrollPage position ->
             let
                 numSteps =
-                    -- Debug.log "numSteps" <|
                     lifeStepsFromScroll position model
             in
             ( { model
                 | life = for numSteps Life.next model.life
-                , scroll = Debug.log "scrollState" <| ScrollState.update position model.scroll
+                , scroll = ScrollState.update position model.scroll
               }
             , Cmd.none
             )
