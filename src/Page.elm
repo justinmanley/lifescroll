@@ -1,9 +1,15 @@
 module Page exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
+import Dict
 import Json.Decode as Decode exposing (Decoder, field, float, list)
-import PatternAnchor exposing (GridPatternAnchor, PagePatternAnchor)
-import Vector2 exposing (y)
+import Maybe exposing (Maybe(..))
+import Pattern exposing (GridCells)
+import PatternAnchor exposing (PagePatternAnchor)
+import PatternDict exposing (PatternDict)
+import Set
+import Size2 exposing (Size2)
+import Vector2 exposing (Vector2, x, y)
 
 
 type alias Page =
@@ -33,8 +39,8 @@ decoder =
         (field "cellSizeInPixels" float)
 
 
-patternAnchorToGrid : Page -> PagePatternAnchor -> GridPatternAnchor
-patternAnchorToGrid page pattern =
+toAnchoredPattern : Page -> PatternDict -> PagePatternAnchor -> Maybe GridCells
+toAnchoredPattern page patterns anchor =
     let
         articleCenter =
             page.article.left + (BoundingRectangle.width page.article / 2)
@@ -42,17 +48,25 @@ patternAnchorToGrid page pattern =
         toGrid : Float -> Int
         toGrid f =
             f / page.cellSizeInPixels |> floor
+
+        offset =
+            Vector2.map toGrid
+                ( articleCenter
+                , y anchor.position
+                )
+
+        addHalfToY : Vector2 Int -> Int -> Vector2 Int
+        addHalfToY ( x2, y2 ) y1 =
+            ( x2, y1 // 2 + y2 )
     in
-    { id = pattern.id
-    , position =
-        Vector2.map toGrid
-            -- TODO: Figure out why it is necessary to flip x and y.
-            ( y pattern.position
-            , articleCenter
-            )
-    }
+    case Dict.get anchor.id patterns of
+        Nothing ->
+            Debug.log ("Could not find pattern for id " ++ anchor.id) Nothing
+
+        Just pattern ->
+            Just <| Set.map (Vector2.add <| addHalfToY offset pattern.extent.height) pattern.cells
 
 
-gridPatternAnchors : Page -> List GridPatternAnchor
-gridPatternAnchors page =
-    List.map (patternAnchorToGrid page) page.patterns
+anchoredPatterns : Page -> PatternDict -> List GridCells
+anchoredPatterns page patterns =
+    List.filterMap (toAnchoredPattern page patterns) page.patterns

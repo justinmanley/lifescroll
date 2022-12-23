@@ -2,11 +2,16 @@ module Pattern exposing (..)
 
 import Json.Encode as Encode
 import Set exposing (Set)
+import Size2 exposing (Size2)
 import Vector2 exposing (Vector2)
 
 
+type alias GridCells =
+    Set (Vector2 Int)
+
+
 type alias Pattern =
-    { cells : Set (Vector2 Int)
+    { cells : GridCells
 
     -- The amount of space that should be reserved on the page.
     -- May represent the maximum bounds of the pattern (although
@@ -15,7 +20,7 @@ type alias Pattern =
     -- gy infinitely, this will not represent the maximum
     -- bounds, but merely a reasonable amount of space for the
     -- pattern to gy before it infringes on the rest of the page.
-    , extent : { height : Int, width : Int }
+    , extent : Size2 Int
     }
 
 

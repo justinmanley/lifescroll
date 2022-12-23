@@ -8,18 +8,33 @@ import Tuple exposing (first, second)
 -- be inserted into a Set.
 
 
-type alias Vector2 a =
-    ( a, a )
+type alias Vector2 number =
+    ( number, number )
 
 
-x : Vector2 a -> a
+x : Vector2 number -> number
 x =
     first
 
 
-y : Vector2 a -> a
+y : Vector2 number -> number
 y =
     second
+
+
+add : Vector2 number -> Vector2 number -> Vector2 number
+add v1 v2 =
+    ( x v1 + x v2, y v1 + y v2 )
+
+
+subtract : Vector2 number -> Vector2 number -> Vector2 number
+subtract v1 v2 =
+    ( x v1 - x v2, y v1 - y v2 )
+
+
+min : Vector2 number -> Vector2 number -> Vector2 number
+min v1 v2 =
+    ( Basics.min (x v1) (x v2), Basics.min (y v1) (y v2) )
 
 
 map : (a -> b) -> Vector2 a -> Vector2 b

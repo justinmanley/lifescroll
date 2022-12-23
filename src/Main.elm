@@ -3,7 +3,6 @@ port module Main exposing (..)
 import BoundingRectangle exposing (BoundingRectangle)
 import Browser
 import Canvas
-import Dict
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, field, float, oneOf, succeed)
@@ -11,12 +10,9 @@ import Json.Encode as Encode
 import Life exposing (LifeGrid)
 import Loop exposing (for)
 import Page exposing (Page)
-import PatternAnchor exposing (GridPatternAnchor)
 import PatternDict exposing (PatternDict)
 import Patterns exposing (patternDict)
 import ScrollState exposing (ScrollState)
-import Set exposing (Set)
-import Vector2 exposing (Vector2, x, y)
 
 
 main : Program () Model Msg
@@ -97,7 +93,7 @@ update msg model =
         PageUpdate page ->
             ( { model
                 | page = page
-                , life = updateLife patternDict page model.life
+                , life = insertPatterns patternDict page model.life
               }
             , Cmd.none
             )
@@ -134,35 +130,9 @@ lifeStepsFromScroll scrollPosition { page, scroll } =
         (toLifeGridCoordinates scrollPosition - toLifeGridCoordinates scroll.mostRecent)
 
 
-updateLife : PatternDict -> Page -> LifeGrid -> LifeGrid
-updateLife patternDict page life =
-    let
-        -- resized = resizeLife page life
-        resized =
-            life
-
-        applyOffset : ( Int, Int ) -> Vector2 Int -> Vector2 Int
-        applyOffset ( yOffset, xOffset ) position =
-            ( xOffset + x position
-            , yOffset + y position
-            )
-
-        getPattern : GridPatternAnchor -> Maybe (Set (Vector2 Int))
-        getPattern { id, position } =
-            case Dict.get id patternDict of
-                Nothing ->
-                    Debug.log ("Could not find pattern for id " ++ id) Nothing
-
-                Just pattern ->
-                    Just <|
-                        Set.map (applyOffset position)
-                            pattern.cells
-
-        patterns : List (Set (Vector2 Int))
-        patterns =
-            List.filterMap getPattern <| Page.gridPatternAnchors page
-    in
-    List.foldl Life.addPattern resized patterns
+insertPatterns : PatternDict -> Page -> LifeGrid -> LifeGrid
+insertPatterns patternDict page life =
+    List.foldl Life.addPattern life <| Page.anchoredPatterns page patternDict
 
 
 subscriptions : Model -> Sub Msg
