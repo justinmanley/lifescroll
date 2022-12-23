@@ -47,15 +47,15 @@ resize oldSize newSize grid =
 addPattern : Set (Vector2 Int) -> LifeGrid -> LifeGrid
 addPattern pattern grid =
     let
-        withCell : Vector2 Int -> Set (Vector2 Int) -> Set (Vector2 Int)
-        withCell cell cells =
+        insertWithConflictLogging : Vector2 Int -> Set (Vector2 Int) -> Set (Vector2 Int)
+        insertWithConflictLogging cell cells =
             if Set.member cell cells then
                 Debug.log "found a conflict while attempting to insert pattern" cells
 
             else
                 Set.insert cell cells
     in
-    Set.foldl withCell grid pattern
+    Set.foldl insertWithConflictLogging grid pattern
 
 
 render : Float -> LifeGrid -> Renderable
