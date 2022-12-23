@@ -1,11 +1,12 @@
 module PatternAnchor exposing (..)
 
-import Json.Decode as Decode exposing (Decoder, andThen, field, float, string)
+import Json.Decode as Decode exposing (Decoder, field, float, string)
+import Vector2 exposing (Vector2)
 
 
 type alias PatternAnchor a =
     { id : String
-    , position : ( a, a )
+    , position : Vector2 a
     }
 
 

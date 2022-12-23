@@ -3,7 +3,7 @@ module Page exposing (..)
 import BoundingRectangle exposing (BoundingRectangle)
 import Json.Decode as Decode exposing (Decoder, field, float, list)
 import PatternAnchor exposing (GridPatternAnchor, PagePatternAnchor)
-import Tuple exposing (second)
+import Vector2 exposing (y)
 
 
 type alias Page =
@@ -39,14 +39,17 @@ patternAnchorToGrid page pattern =
         articleCenter =
             page.article.left + (BoundingRectangle.width page.article / 2)
 
-        y =
-            second pattern.position / page.cellSizeInPixels |> floor
-
-        x =
-            articleCenter / page.cellSizeInPixels |> floor
+        toGrid : Float -> Int
+        toGrid f =
+            f / page.cellSizeInPixels |> floor
     in
     { id = pattern.id
-    , position = ( y, x )
+    , position =
+        Vector2.map toGrid
+            -- TODO: Figure out why it is necessary to flip x and y.
+            ( y pattern.position
+            , articleCenter
+            )
     }
 
 

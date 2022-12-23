@@ -95,21 +95,33 @@
         </div>
     </div>
     <script>
+        const boundingRectangleWithRespectToDocument = element => {
+            // getBoundingClientRect() returns a bounding box relative to
+            // the viewport.
+            const { top, left, bottom, right } = element.getBoundingClientRect();
+            return {
+                top: window.scrollY + top,
+                left: window.scrollX + left,
+                bottom: window.scrollY + bottom,
+                right: window.scrollX + right
+            }
+        }
+
         const page = () => {
-            const body = document.querySelector('body').getBoundingClientRect();
+            const body = boundingRectangleWithRespectToDocument(document.querySelector('body'));
             const articleElement = document.getElementById('article');
-            const article = articleElement.getBoundingClientRect();
+            const article = boundingRectangleWithRespectToDocument(articleElement);
             const articleFontSizeInPixels = parseFloat(
                 getComputedStyle(articleElement.parentElement).fontSize
             );
             return {
                 PageUpdate: {
                     patterns: [...document.querySelectorAll('pattern-anchor')].map(patternAnchor => {
-                        const boundingRectangle = patternAnchor.getBoundingClientRect();
+                        const boundingRectangle = boundingRectangleWithRespectToDocument(patternAnchor);
                         return {
                             id: patternAnchor.dataset.patternId,
-                            x: boundingRectangle.x,
-                            y: boundingRectangle.y
+                            x: boundingRectangle.left,
+                            y: boundingRectangle.top
                         }
                     }),
                     body,
