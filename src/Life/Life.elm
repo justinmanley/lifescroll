@@ -1,11 +1,11 @@
-module Life exposing (..)
+module Life.Life exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Color
-import ConnectedComponent exposing (ConnectedComponent, connectedComponents)
-import Neighborhoods exposing (neighbors)
+import Life.ConnectedComponent exposing (ConnectedComponent, connectedComponents)
+import Life.Neighborhoods exposing (neighbors)
 import Set exposing (Set)
 import Set.Extra as Set
 import Size2 exposing (Size2)
@@ -87,15 +87,15 @@ nextInViewport viewport life =
         -- the viewport, with the part of the pattern within the
         -- viewport being evolved forward while the rest of the
         -- pattern remains static.
-        componentNext : ConnectedComponent -> LifeGrid
-        componentNext component =
+        nextComponent : ConnectedComponent -> LifeGrid
+        nextComponent component =
             if BoundingRectangle.contains viewport component.bounds then
                 next component.cells
 
             else
                 component.cells
     in
-    List.foldl Set.union Set.empty (List.map componentNext (connectedComponents life))
+    List.foldl Set.union Set.empty (List.map nextComponent (connectedComponents life))
 
 
 next : LifeGrid -> LifeGrid

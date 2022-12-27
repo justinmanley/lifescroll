@@ -3,11 +3,11 @@ module Page exposing (..)
 import BoundingRectangle exposing (BoundingRectangle)
 import Dict
 import Json.Decode as Decode exposing (Decoder, field, float, list)
+import Life.Pattern exposing (GridCells, Pattern)
+import Life.PatternDict exposing (PatternDict)
+import Life.Patterns exposing (verticalPadding)
 import Maybe exposing (Maybe(..))
-import Pattern exposing (GridCells, Pattern)
 import PatternAnchor exposing (PatternAnchor)
-import PatternDict exposing (PatternDict)
-import Patterns exposing (verticalPadding)
 import Set
 import Vector2 exposing (Vector2)
 

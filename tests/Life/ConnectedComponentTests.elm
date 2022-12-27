@@ -1,10 +1,10 @@
-module ConnectedComponentTests exposing (..)
+module Life.ConnectedComponentTests exposing (..)
 
-import ConnectedComponent exposing (connectedComponents)
 import Expect
 import Fuzz exposing (intRange)
+import Life.ConnectedComponent exposing (connectedComponents)
+import Life.Pattern exposing (GridCells)
 import List.Extra exposing (lift2)
-import Pattern exposing (GridCells)
 import Set
 import Test exposing (Test, describe, fuzz2, test)
 import Vector2 exposing (Vector2)

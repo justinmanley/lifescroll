@@ -5,13 +5,13 @@ import Browser
 import Canvas
 import Html exposing (Html)
 import Html.Attributes exposing (style)
-import Json.Decode as Decode exposing (Decoder, at, decodeValue, field, float, oneOf, succeed)
+import Json.Decode as Decode exposing (Decoder, at, decodeValue, field, oneOf, succeed)
 import Json.Encode as Encode
-import Life exposing (LifeGrid)
+import Life.Life exposing (LifeGrid)
+import Life.PatternDict exposing (PatternDict)
+import Life.Patterns exposing (patternDict)
 import Loop exposing (for)
 import Page exposing (Page)
-import PatternDict exposing (PatternDict)
-import Patterns exposing (patternDict)
 import ScrollState exposing (ScrollState)
 
 
@@ -42,7 +42,7 @@ type Msg
 emptyModel : Model
 emptyModel =
     { page = Page.empty
-    , life = Life.empty
+    , life = Life.Life.empty
     , scroll = ScrollState.empty
     }
 
@@ -75,7 +75,7 @@ view { page, life } =
             ( page.body.left, page.body.top )
             (BoundingRectangle.width page.body)
             (BoundingRectangle.height page.body)
-        , Life.render page.cellSizeInPixels life
+        , Life.Life.render page.cellSizeInPixels life
         ]
 
 
@@ -86,7 +86,7 @@ update msg model =
             ( model
             , sendMessage <|
                 Encode.object
-                    [ ( "patterns", PatternDict.encode patternDict )
+                    [ ( "patterns", Life.PatternDict.encode patternDict )
                     ]
             )
 
@@ -114,7 +114,7 @@ update msg model =
                     }
             in
             ( { model
-                | life = for numSteps (Life.nextInViewport gridViewport) model.life
+                | life = for numSteps (Life.Life.nextInViewport gridViewport) model.life
                 , scroll = ScrollState.update viewport.top model.scroll
               }
             , Cmd.none
@@ -142,7 +142,7 @@ lifeStepsFromScroll scrollPosition { page, scroll } =
 
 insertPatterns : PatternDict -> Page -> LifeGrid -> LifeGrid
 insertPatterns patternDict page life =
-    List.foldl Life.insertPattern life <| Page.gridCells page patternDict
+    List.foldl Life.Life.insertPattern life <| Page.gridCells page patternDict
 
 
 subscriptions : Model -> Sub Msg

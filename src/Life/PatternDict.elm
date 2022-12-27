@@ -1,8 +1,8 @@
-module PatternDict exposing (..)
+module Life.PatternDict exposing (..)
 
 import Dict exposing (Dict)
 import Json.Encode as Encode
-import Pattern exposing (Pattern)
+import Life.Pattern as Pattern exposing (Pattern)
 
 
 type alias PatternDict =

@@ -1,6 +1,6 @@
-module Neighborhoods exposing (..)
+module Life.Neighborhoods exposing (..)
 
-import ChebyshevCircle exposing (chebyshevCircle)
+import Life.ChebyshevCircle exposing (chebyshevCircle)
 import Set exposing (Set)
 import Vector2 exposing (Vector2)
 

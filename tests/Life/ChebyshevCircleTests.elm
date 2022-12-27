@@ -1,8 +1,8 @@
-module ChebyshevCircleTests exposing (..)
+module Life.ChebyshevCircleTests exposing (..)
 
-import ChebyshevCircle exposing (chebyshevCircle)
 import Expect
 import Fuzz exposing (intRange)
+import Life.ChebyshevCircle exposing (chebyshevCircle)
 import Set exposing (Set)
 import Test exposing (Test, describe, fuzz, test)
 import Vector2

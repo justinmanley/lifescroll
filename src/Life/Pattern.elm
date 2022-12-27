@@ -1,4 +1,4 @@
-module Pattern exposing (..)
+module Life.Pattern exposing (..)
 
 import Json.Encode as Encode
 import Set exposing (Set)

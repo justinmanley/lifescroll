@@ -1,9 +1,14 @@
-module Patterns exposing (..)
+module Life.Patterns exposing (..)
 
 import Dict
-import Pattern exposing (Pattern)
-import PatternDict exposing (PatternDict)
+import Life.Pattern exposing (Pattern)
+import Life.PatternDict exposing (PatternDict)
 import Set
+
+
+verticalPadding : Int
+verticalPadding =
+    1
 
 
 withVerticalPadding : Pattern -> Pattern
@@ -15,7 +20,7 @@ withVerticalPadding pattern =
     { pattern
         | extent =
             { extent
-                | height = extent.height + 2
+                | height = extent.height + verticalPadding -- at the top
             }
     }
 

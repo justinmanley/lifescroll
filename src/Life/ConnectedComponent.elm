@@ -1,8 +1,8 @@
-module ConnectedComponent exposing (..)
+module Life.ConnectedComponent exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
-import Neighborhoods exposing (extendedNeighbors, neighbors)
-import Pattern exposing (GridCells)
+import Life.Neighborhoods exposing (extendedNeighbors, neighbors)
+import Life.Pattern exposing (GridCells)
 import Set
 import Vector2 exposing (Vector2)
 

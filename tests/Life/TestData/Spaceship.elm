@@ -12,20 +12,25 @@ type alias Spaceship =
     }
 
 
+glider : Spaceship
+glider =
+    { name = "glider"
+    , cells =
+        Set.fromList
+            [ ( 0, 0 )
+            , ( 1, 0 )
+            , ( 2, 0 )
+            , ( 2, 1 )
+            , ( 1, 2 )
+            ]
+    , period = 4
+    , direction = ( 1, -1 )
+    }
+
+
 spaceships : List Spaceship
 spaceships =
-    [ { name = "glider"
-      , cells =
-            Set.fromList
-                [ ( 0, 0 )
-                , ( 1, 0 )
-                , ( 2, 0 )
-                , ( 2, 1 )
-                , ( 1, 2 )
-                ]
-      , period = 4
-      , direction = ( 1, -1 )
-      }
+    [ glider
     , { name = "lightweight spaceship"
       , cells =
             Set.fromList

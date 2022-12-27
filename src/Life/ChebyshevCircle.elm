@@ -1,4 +1,4 @@
-module ChebyshevCircle exposing (..)
+module Life.ChebyshevCircle exposing (..)
 
 import Set exposing (Set)
 import Vector2 exposing (Vector2)

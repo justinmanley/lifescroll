@@ -4,11 +4,11 @@ import BoundingRectangle
 import Dict
 import Expect
 import Fuzz exposing (intAtLeast)
-import Life
+import Life.Life
+import Life.PatternDict exposing (PatternDict)
 import Main exposing (Model, Msg(..), emptyModel, insertPatterns, lifeStepsFromScroll, scrolledCellsPerStep)
 import Page exposing (Page)
 import PatternAnchor exposing (PatternAnchor)
-import PatternDict exposing (PatternDict)
 import Set
 import Test exposing (Test, describe, fuzz, test)
 import Tuple
@@ -100,7 +100,7 @@ suite =
                         allPatternsCells =
                             Dict.foldl (\_ pattern cells -> Set.union pattern.cells cells) Set.empty testPatternDict
                     in
-                    insertPatterns testPatternDict page Life.empty
+                    insertPatterns testPatternDict page Life.Life.empty
                         |> Set.size
                         |> Expect.equal (Set.size allPatternsCells)
             ]
