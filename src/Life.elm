@@ -1,8 +1,10 @@
 module Life exposing (..)
 
+import BoundingRectangle exposing (BoundingRectangle)
 import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Color
+import Pattern exposing (GridCells, Pattern)
 import Set exposing (Set)
 import Set.Extra as Set
 import Size2 exposing (Size2)
@@ -78,6 +80,34 @@ render cellSize cells =
 toAliveCell : Vector2 Int -> LifeCell
 toAliveCell position =
     ( x position, y position, True )
+
+
+type alias ConnectedComponent =
+    { cells : GridCells
+    , bounds : BoundingRectangle Int
+    }
+
+
+connectedComponents : LifeGrid -> List ConnectedComponent
+connectedComponents life =
+    [ { cells = life
+      , bounds = BoundingRectangle.empty
+      }
+    ]
+
+
+nextInViewport : BoundingRectangle Int -> LifeGrid -> LifeGrid
+nextInViewport viewport life =
+    let
+        nextBasedOnViewport : ConnectedComponent -> LifeGrid
+        nextBasedOnViewport component =
+            if BoundingRectangle.contains viewport component.bounds then
+                next component.cells
+
+            else
+                component.cells
+    in
+    List.foldl Set.union Set.empty (List.map nextBasedOnViewport <| connectedComponents life)
 
 
 next : LifeGrid -> LifeGrid

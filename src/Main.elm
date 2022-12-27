@@ -36,7 +36,7 @@ type Msg
     = ParsingError Decode.Error
     | GetPatterns
     | PageUpdate Page
-    | ScrollPage Float
+    | ScrollPage (BoundingRectangle Float)
 
 
 emptyModel : Model
@@ -54,7 +54,7 @@ init _ =
     )
 
 
-canvasDimensions : BoundingRectangle -> ( Int, Int )
+canvasDimensions : BoundingRectangle Float -> ( Int, Int )
 canvasDimensions rect =
     ( BoundingRectangle.width rect |> ceiling
     , BoundingRectangle.height rect |> ceiling
@@ -98,14 +98,24 @@ update msg model =
             , Cmd.none
             )
 
-        ScrollPage position ->
+        ScrollPage viewport ->
             let
                 numSteps =
-                    lifeStepsFromScroll position model
+                    lifeStepsFromScroll viewport.top model
+
+                toGrid x =
+                    x / model.page.cellSizeInPixels |> floor
+
+                gridViewport =
+                    { top = toGrid viewport.top
+                    , left = toGrid viewport.left
+                    , bottom = toGrid viewport.bottom
+                    , right = toGrid viewport.right
+                    }
             in
             ( { model
-                | life = for numSteps Life.next model.life
-                , scroll = ScrollState.update position model.scroll
+                | life = for numSteps (Life.nextInViewport gridViewport) model.life
+                , scroll = ScrollState.update viewport.top model.scroll
               }
             , Cmd.none
             )
@@ -164,5 +174,5 @@ decoder =
     oneOf
         [ field "GetPatterns" <| succeed GetPatterns
         , Decode.map PageUpdate (at [ "PageUpdate" ] Page.decoder)
-        , Decode.map ScrollPage (at [ "ScrollPage", "scrollPosition" ] float)
+        , Decode.map ScrollPage (at [ "ScrollPage", "viewport" ] BoundingRectangle.decoder)
         ]

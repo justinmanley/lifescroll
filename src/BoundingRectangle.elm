@@ -3,25 +3,25 @@ module BoundingRectangle exposing (..)
 import Json.Decode as Decode exposing (Decoder, field, float)
 
 
-type alias BoundingRectangle =
-    { top : Float
-    , left : Float
-    , bottom : Float
-    , right : Float
+type alias BoundingRectangle number =
+    { top : number
+    , left : number
+    , bottom : number
+    , right : number
     }
 
 
-width : BoundingRectangle -> Float
+width : BoundingRectangle number -> number
 width bounds =
     bounds.right - bounds.left
 
 
-height : BoundingRectangle -> Float
+height : BoundingRectangle number -> number
 height bounds =
     bounds.bottom - bounds.top
 
 
-empty : BoundingRectangle
+empty : BoundingRectangle number
 empty =
     { top = 0
     , left = 0
@@ -30,7 +30,12 @@ empty =
     }
 
 
-decoder : Decoder BoundingRectangle
+contains : BoundingRectangle number -> BoundingRectangle number -> Bool
+contains b1 b2 =
+    True
+
+
+decoder : Decoder (BoundingRectangle Float)
 decoder =
     Decode.map4 BoundingRectangle
         (field "top" float)

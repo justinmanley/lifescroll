@@ -6,7 +6,7 @@ import Json.Decode as Decode exposing (Decoder, field, string)
 
 type alias PatternAnchor =
     { id : String
-    , bounds : BoundingRectangle
+    , bounds : BoundingRectangle Float
     }
 
 

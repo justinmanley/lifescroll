@@ -160,7 +160,12 @@
         window.addEventListener("scroll", (event) => {
             app.ports.messageReceiver.send({
                 ScrollPage: {
-                    scrollPosition: window.scrollY
+                    viewport: {
+                        top: window.scrollY,
+                        left: window.scrollX,
+                        bottom: window.scrollY + window.height,
+                        right: window.scrollX + window.width,
+                    }
                 }
             });
         });

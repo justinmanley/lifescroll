@@ -14,8 +14,8 @@ import Vector2 exposing (Vector2)
 
 type alias Page =
     { patterns : List PatternAnchor
-    , body : BoundingRectangle
-    , article : BoundingRectangle
+    , body : BoundingRectangle Float
+    , article : BoundingRectangle Float
     , cellSizeInPixels : Float
     }
 
