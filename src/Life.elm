@@ -44,8 +44,8 @@ resize oldSize newSize grid =
         Set.map oldIndexToNewIndex grid
 
 
-addPattern : Set (Vector2 Int) -> LifeGrid -> LifeGrid
-addPattern pattern grid =
+insertPattern : Set (Vector2 Int) -> LifeGrid -> LifeGrid
+insertPattern pattern grid =
     let
         insertWithConflictLogging : Vector2 Int -> Set (Vector2 Int) -> Set (Vector2 Int)
         insertWithConflictLogging cell cells =

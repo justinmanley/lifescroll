@@ -132,7 +132,7 @@ lifeStepsFromScroll scrollPosition { page, scroll } =
 
 insertPatterns : PatternDict -> Page -> LifeGrid -> LifeGrid
 insertPatterns patternDict page life =
-    List.foldl Life.addPattern life <| Page.anchoredPatterns page patternDict
+    List.foldl Life.insertPattern life <| Page.gridCells page patternDict
 
 
 subscriptions : Model -> Sub Msg

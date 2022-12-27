@@ -1,25 +1,17 @@
 module PatternAnchor exposing (..)
 
-import Json.Decode as Decode exposing (Decoder, field, float, string)
-import Vector2 exposing (Vector2)
+import BoundingRectangle exposing (BoundingRectangle)
+import Json.Decode as Decode exposing (Decoder, field, string)
 
 
-type alias PatternAnchor a =
+type alias PatternAnchor =
     { id : String
-    , position : Vector2 a
+    , bounds : BoundingRectangle
     }
 
 
-type alias PagePatternAnchor =
-    PatternAnchor Float
-
-
-type alias GridPatternAnchor =
-    PatternAnchor Int
-
-
-decoder : Decoder PagePatternAnchor
+decoder : Decoder PatternAnchor
 decoder =
     Decode.map2 PatternAnchor
         (field "id" string)
-        (Decode.map2 Tuple.pair (field "x" float) (field "y" float))
+        (field "bounds" BoundingRectangle.decoder)

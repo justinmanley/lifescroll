@@ -5,9 +5,9 @@ import Dict
 import Expect
 import Fuzz exposing (intAtLeast)
 import Life
-import Main exposing (Model, Msg(..), emptyModel, lifeStepsFromScroll, scrolledCellsPerStep, updateLife)
+import Main exposing (Model, Msg(..), emptyModel, insertPatterns, lifeStepsFromScroll, scrolledCellsPerStep)
 import Page exposing (Page)
-import PatternAnchor exposing (PagePatternAnchor)
+import PatternAnchor exposing (PatternAnchor)
 import PatternDict exposing (PatternDict)
 import Set
 import Test exposing (Test, describe, fuzz, test)
@@ -38,9 +38,16 @@ testPage =
     }
 
 
-testAnchor : PagePatternAnchor
+testAnchor : PatternAnchor
 testAnchor =
-    { position = ( 0, 0 ), id = "" }
+    { id = ""
+    , bounds =
+        { top = 0
+        , left = 0
+        , bottom = 10
+        , right = 10
+        }
+    }
 
 
 updateModel : Msg -> Model -> Model
@@ -93,7 +100,7 @@ suite =
                         allPatternsCells =
                             Dict.foldl (\_ pattern cells -> Set.union pattern.cells cells) Set.empty testPatternDict
                     in
-                    updateLife testPatternDict page Life.empty
+                    insertPatterns testPatternDict page Life.empty
                         |> Set.size
                         |> Expect.equal (Set.size allPatternsCells)
             ]

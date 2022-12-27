@@ -1,7 +1,7 @@
 module LifeTests exposing (..)
 
 import Expect exposing (Expectation)
-import Life exposing (addPattern)
+import Life exposing (insertPattern)
 import Life.TestData.Spaceship exposing (Spaceship, spaceships)
 import Life.TestData.StillLife exposing (StillLife, stillLives)
 import Loop exposing (for)
@@ -41,7 +41,7 @@ suite =
         [ describe "addPattern"
             [ test "inserts every cell in a pattern into an empty LifeGrid" <|
                 \_ ->
-                    addPattern testPattern Life.empty
+                    insertPattern testPattern Life.empty
                         |> expectEqualSize testPattern
             ]
         , describe "next"

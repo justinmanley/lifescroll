@@ -4,16 +4,15 @@ import BoundingRectangle exposing (BoundingRectangle)
 import Dict
 import Json.Decode as Decode exposing (Decoder, field, float, list)
 import Maybe exposing (Maybe(..))
-import Pattern exposing (GridCells)
-import PatternAnchor exposing (PagePatternAnchor)
+import Pattern exposing (GridCells, Pattern)
+import PatternAnchor exposing (PatternAnchor)
 import PatternDict exposing (PatternDict)
 import Set
-import Size2 exposing (Size2)
-import Vector2 exposing (Vector2, x, y)
+import Vector2 exposing (Vector2, y)
 
 
 type alias Page =
-    { patterns : List PagePatternAnchor
+    { patterns : List PatternAnchor
     , body : BoundingRectangle
     , article : BoundingRectangle
     , cellSizeInPixels : Float
@@ -39,8 +38,8 @@ decoder =
         (field "cellSizeInPixels" float)
 
 
-toAnchoredPattern : Page -> PatternDict -> PagePatternAnchor -> Maybe GridCells
-toAnchoredPattern page patterns anchor =
+patternAnchorToGridCells : Page -> PatternDict -> PatternAnchor -> Maybe GridCells
+patternAnchorToGridCells page patterns anchor =
     let
         articleCenter =
             page.article.left + (BoundingRectangle.width page.article / 2)
@@ -49,24 +48,20 @@ toAnchoredPattern page patterns anchor =
         toGrid f =
             f / page.cellSizeInPixels |> floor
 
-        offset =
-            Vector2.map toGrid
-                ( articleCenter
-                , y anchor.position
-                )
-
-        addHalfToY : Vector2 Int -> Int -> Vector2 Int
-        addHalfToY ( x2, y2 ) y1 =
-            ( x2, y1 // 2 + y2 )
+        offset : Pattern -> Vector2 Int
+        offset pattern =
+            ( toGrid articleCenter - pattern.extent.width // 2
+            , toGrid anchor.bounds.top + pattern.extent.height // 2
+            )
     in
     case Dict.get anchor.id patterns of
         Nothing ->
             Debug.log ("Could not find pattern for id " ++ anchor.id) Nothing
 
         Just pattern ->
-            Just <| Set.map (Vector2.add <| addHalfToY offset pattern.extent.height) pattern.cells
+            Just <| Set.map (Vector2.add <| offset pattern) pattern.cells
 
 
-anchoredPatterns : Page -> PatternDict -> List GridCells
-anchoredPatterns page patterns =
-    List.filterMap (toAnchoredPattern page patterns) page.patterns
+gridCells : Page -> PatternDict -> List GridCells
+gridCells page patterns =
+    List.filterMap (patternAnchorToGridCells page patterns) page.patterns
