@@ -7,8 +7,9 @@ import Maybe exposing (Maybe(..))
 import Pattern exposing (GridCells, Pattern)
 import PatternAnchor exposing (PatternAnchor)
 import PatternDict exposing (PatternDict)
+import Patterns exposing (verticalPadding)
 import Set
-import Vector2 exposing (Vector2, y)
+import Vector2 exposing (Vector2)
 
 
 type alias Page =
@@ -51,7 +52,7 @@ patternAnchorToGridCells page patterns anchor =
         offset : Pattern -> Vector2 Int
         offset pattern =
             ( toGrid articleCenter - pattern.extent.width // 2
-            , toGrid anchor.bounds.top + pattern.extent.height // 2
+            , toGrid anchor.bounds.top + verticalPadding
             )
     in
     case Dict.get anchor.id patterns of
