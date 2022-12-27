@@ -4,7 +4,8 @@ import BoundingRectangle exposing (BoundingRectangle)
 import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Color
-import Pattern exposing (GridCells, Pattern)
+import ConnectedComponent exposing (ConnectedComponent, connectedComponents)
+import Neighborhoods exposing (neighbors)
 import Set exposing (Set)
 import Set.Extra as Set
 import Size2 exposing (Size2)
@@ -77,37 +78,24 @@ render cellSize cells =
     shapes [ fill Color.black ] <| List.map renderCell <| Set.toList cells
 
 
-toAliveCell : Vector2 Int -> LifeCell
-toAliveCell position =
-    ( x position, y position, True )
-
-
-type alias ConnectedComponent =
-    { cells : GridCells
-    , bounds : BoundingRectangle Int
-    }
-
-
-connectedComponents : LifeGrid -> List ConnectedComponent
-connectedComponents life =
-    [ { cells = life
-      , bounds = BoundingRectangle.empty
-      }
-    ]
-
-
 nextInViewport : BoundingRectangle Int -> LifeGrid -> LifeGrid
 nextInViewport viewport life =
     let
-        nextBasedOnViewport : ConnectedComponent -> LifeGrid
-        nextBasedOnViewport component =
+        -- Dividing the Life grid into connected components and
+        -- applying the rules to entire components ensures that
+        -- patterns do not get corrupted as they cross over into
+        -- the viewport, with the part of the pattern within the
+        -- viewport being evolved forward while the rest of the
+        -- pattern remains static.
+        componentNext : ConnectedComponent -> LifeGrid
+        componentNext component =
             if BoundingRectangle.contains viewport component.bounds then
                 next component.cells
 
             else
                 component.cells
     in
-    List.foldl Set.union Set.empty (List.map nextBasedOnViewport <| connectedComponents life)
+    List.foldl Set.union Set.empty (List.map componentNext (connectedComponents life))
 
 
 next : LifeGrid -> LifeGrid
@@ -127,24 +115,6 @@ next grid =
 
 
 -- Only used to advance to the next generation.
-
-
-type alias LifeCell =
-    ( Int, Int, Bool )
-
-
-neighbors : Vector2 Int -> Set (Vector2 Int)
-neighbors ( cellX, cellY ) =
-    Set.fromList
-        [ ( cellX + 1, cellY )
-        , ( cellX + 1, cellY + 1 )
-        , ( cellX, cellY + 1 )
-        , ( cellX - 1, cellY + 1 )
-        , ( cellX - 1, cellY )
-        , ( cellX - 1, cellY - 1 )
-        , ( cellX, cellY - 1 )
-        , ( cellX + 1, cellY - 1 )
-        ]
 
 
 countLiveNeighbors : LifeGrid -> Vector2 Int -> Int
