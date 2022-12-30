@@ -24,6 +24,45 @@ type alias Pattern =
     }
 
 
+empty : Pattern
+empty =
+    { cells = Set.empty
+    , extent =
+        { width = 0
+        , height = 0
+        }
+    }
+
+
+setExtent : Pattern -> Size2 Int -> Pattern
+setExtent state size =
+    { state | extent = size }
+
+
+setCells : Pattern -> GridCells -> Pattern
+setCells pattern cells =
+    { pattern | cells = cells }
+
+
+verticalPadding : Int
+verticalPadding =
+    1
+
+
+withVerticalPadding : Pattern -> Pattern
+withVerticalPadding pattern =
+    let
+        extent =
+            pattern.extent
+    in
+    { pattern
+        | extent =
+            { extent
+                | height = extent.height + verticalPadding -- at the top
+            }
+    }
+
+
 
 -- Ignore cells for now because they are not needed.
 

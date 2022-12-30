@@ -5,11 +5,9 @@ import Browser
 import Canvas
 import Html exposing (Html)
 import Html.Attributes exposing (style)
-import Json.Decode as Decode exposing (Decoder, at, decodeValue, field, oneOf, succeed)
+import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
 import Json.Encode as Encode
 import Life.Life exposing (LifeGrid)
-import Life.PatternDict exposing (PatternDict)
-import Life.Patterns exposing (patternDict)
 import Loop exposing (for)
 import Page exposing (Page)
 import ScrollState exposing (ScrollState)
@@ -34,7 +32,6 @@ type alias Model =
 
 type Msg
     = ParsingError Decode.Error
-    | GetPatterns
     | PageUpdate Page
     | ScrollPage (BoundingRectangle Float)
 
@@ -82,18 +79,10 @@ view { page, life } =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        GetPatterns ->
-            ( model
-            , sendMessage <|
-                Encode.object
-                    [ ( "patterns", Life.PatternDict.encode patternDict )
-                    ]
-            )
-
         PageUpdate page ->
             ( { model
-                | page = page
-                , life = insertPatterns patternDict page model.life
+                | page = Debug.log "page" page
+                , life = insertPatterns page model.life
               }
             , Cmd.none
             )
@@ -140,9 +129,9 @@ lifeStepsFromScroll scrollPosition { page, scroll } =
         (toLifeGridCoordinates scrollPosition - toLifeGridCoordinates scroll.mostRecent)
 
 
-insertPatterns : PatternDict -> Page -> LifeGrid -> LifeGrid
-insertPatterns patternDict page life =
-    List.foldl Life.Life.insertPattern life <| Page.gridCells page patternDict
+insertPatterns : Page -> LifeGrid -> LifeGrid
+insertPatterns page life =
+    List.foldl Life.Life.insertPattern life <| Page.gridCells page
 
 
 subscriptions : Model -> Sub Msg
@@ -172,7 +161,6 @@ port messageReceiver : (Decode.Value -> msg) -> Sub msg
 decoder : Decoder Msg
 decoder =
     oneOf
-        [ field "GetPatterns" <| succeed GetPatterns
-        , Decode.map PageUpdate (at [ "PageUpdate" ] Page.decoder)
+        [ Decode.map PageUpdate (at [ "PageUpdate" ] Page.decoder)
         , Decode.map ScrollPage (at [ "ScrollPage", "viewport" ] BoundingRectangle.decoder)
         ]

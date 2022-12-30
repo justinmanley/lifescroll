@@ -1,17 +1,21 @@
 module MainTests exposing (..)
 
 import BoundingRectangle
-import Dict
+import Dict exposing (Dict)
 import Expect
 import Fuzz exposing (intAtLeast)
 import Life.Life
-import Life.PatternDict exposing (PatternDict)
+import Life.Pattern exposing (Pattern)
 import Main exposing (Model, Msg(..), emptyModel, insertPatterns, lifeStepsFromScroll, scrolledCellsPerStep)
 import Page exposing (Page)
 import PatternAnchor exposing (PatternAnchor)
 import Set
 import Test exposing (Test, describe, fuzz, test)
 import Tuple
+
+
+type alias PatternDict =
+    Dict String Pattern
 
 
 testPatternDict : PatternDict
@@ -47,6 +51,7 @@ testAnchor =
         , bottom = 10
         , right = 10
         }
+    , patternRle = "oo!"
     }
 
 
@@ -100,7 +105,7 @@ suite =
                         allPatternsCells =
                             Dict.foldl (\_ pattern cells -> Set.union pattern.cells cells) Set.empty testPatternDict
                     in
-                    insertPatterns testPatternDict page Life.Life.empty
+                    insertPatterns page Life.Life.empty
                         |> Set.size
                         |> Expect.equal (Set.size allPatternsCells)
             ]

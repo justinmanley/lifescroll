@@ -1,13 +1,12 @@
 module Page exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
-import Dict
 import Json.Decode as Decode exposing (Decoder, field, float, list)
-import Life.Pattern exposing (GridCells, Pattern)
-import Life.PatternDict exposing (PatternDict)
-import Life.Patterns exposing (verticalPadding)
+import Life.Pattern as Pattern exposing (GridCells, Pattern, withVerticalPadding)
+import Life.RleParser as RleParser
 import Maybe exposing (Maybe(..))
 import PatternAnchor exposing (PatternAnchor)
+import Result exposing (Result(..))
 import Set
 import Vector2 exposing (Vector2)
 
@@ -39,8 +38,8 @@ decoder =
         (field "cellSizeInPixels" float)
 
 
-patternAnchorToGridCells : Page -> PatternDict -> PatternAnchor -> Maybe GridCells
-patternAnchorToGridCells page patterns anchor =
+patternAnchorToGridCells : Page -> PatternAnchor -> Maybe GridCells
+patternAnchorToGridCells page anchor =
     let
         articleCenter =
             page.article.left + (BoundingRectangle.width page.article / 2)
@@ -52,17 +51,17 @@ patternAnchorToGridCells page patterns anchor =
         offset : Pattern -> Vector2 Int
         offset pattern =
             ( toGrid articleCenter - pattern.extent.width // 2
-            , toGrid anchor.bounds.top + verticalPadding
+            , toGrid anchor.bounds.top + Pattern.verticalPadding
             )
     in
-    case Dict.get anchor.id patterns of
-        Nothing ->
-            Debug.log ("Could not find pattern for id " ++ anchor.id) Nothing
+    case Result.map withVerticalPadding <| RleParser.parse anchor.patternRle of
+        Err err ->
+            Debug.log ("Could not parse pattern " ++ anchor.id ++ Debug.toString err) Nothing
 
-        Just pattern ->
+        Ok pattern ->
             Just <| Set.map (Vector2.add <| offset pattern) pattern.cells
 
 
-gridCells : Page -> PatternDict -> List GridCells
-gridCells page patterns =
-    List.filterMap (patternAnchorToGridCells page patterns) page.patterns
+gridCells : Page -> List GridCells
+gridCells page =
+    List.filterMap (patternAnchorToGridCells page) page.patterns

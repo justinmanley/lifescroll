@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Main</title>
     <script src="main.js"></script>
+    <script src="page.js"></script>
     <script src="./node_modules/elm-canvas/elm-canvas.js"></script>
     <style>
         .body {
@@ -21,6 +22,7 @@
     <canvas id="canvas"></canvas>
     <div style="width: 600px; margin: 0 auto;">
         <div id="article">
+
             <p>
                 I call our world Flatland, not because we call it so, but to make its nature clearer to you, my happy
                 readers, who are privileged to live in Space.
@@ -82,7 +84,11 @@
                 becomes larger; if he leaves us it becomes smaller: but still he looks like a straight line; be he a
                 Triangle, Square, Pentagon, Hexagon, Circle, what you will--a straight Line he looks and nothing else.
 
-                <pattern-anchor data-pattern-id="little-m"></pattern-anchor>
+                <!-- 
+                    Patterns must be saved as .txt rather than .rle in order for the
+                    Elm reactor to serve them as plain text files.
+                -->
+                <pattern-anchor src="patterns/beehive.txt"></pattern-anchor>
             </p>
 
             <p>
@@ -95,84 +101,13 @@
             <p>The above text is Chapter 1 of Edwin Abbot Abbot's <a
                     href="https://www.gutenberg.org/ebooks/201"><i>Flatland: A Romance of Many Dimensions</i></a>
                 (1884).</p>
-
         </div>
     </div>
     <script>
-        const boundingRectangleWithRespectToDocument = element => {
-            // getBoundingClientRect() returns a bounding box relative to
-            // the viewport.
-            const { top, left, bottom, right } = element.getBoundingClientRect();
-            return {
-                top: window.scrollY + top,
-                left: window.scrollX + left,
-                bottom: window.scrollY + bottom,
-                right: window.scrollX + right
-            }
-        }
-
-        const page = () => {
-            const body = boundingRectangleWithRespectToDocument(document.querySelector('body'));
-            const articleElement = document.getElementById('article');
-            const article = boundingRectangleWithRespectToDocument(articleElement);
-            const articleFontSizeInPixels = parseFloat(
-                getComputedStyle(articleElement.parentElement).fontSize
-            );
-            return {
-                PageUpdate: {
-                    patterns: [...document.querySelectorAll('pattern-anchor')].map(patternAnchor => {
-                        const boundingRectangle = boundingRectangleWithRespectToDocument(patternAnchor);
-                        return {
-                            id: patternAnchor.dataset.patternId,
-                            bounds: boundingRectangle,
-                        }
-                    }),
-                    body,
-                    article,
-                    cellSizeInPixels: articleFontSizeInPixels,
-                }
-            };
-        }
-
         const app = Elm.Main.init({
             node: document.getElementById('canvas')
         });
-
-        app.ports.sendMessage.subscribe(message => {
-            const { cellSizeInPixels } = page().PageUpdate;
-
-            if (message.hasOwnProperty("patterns")) {
-                Object.entries(message.patterns).forEach(([patternId, pattern]) => {
-                    const selector = `[data-pattern-id=${patternId}]`;
-                    [...document.querySelectorAll(selector)].forEach(element => {
-                        element.style.display = 'block';
-                        element.style.width = cellSizeInPixels * pattern.extent.width;
-                        element.style.height = cellSizeInPixels * pattern.extent.height;
-                    });
-                });
-            }
-
-            app.ports.messageReceiver.send(page());
-        });
-
-        app.ports.messageReceiver.send({ "GetPatterns": {} });
-
-        window.addEventListener("scroll", (event) => {
-            app.ports.messageReceiver.send({
-                ScrollPage: {
-                    viewport: {
-                        top: window.scrollY,
-                        left: window.scrollX,
-                        bottom: window.scrollY + window.innerHeight,
-                        right: window.scrollX + window.innerWidth,
-                    }
-                }
-            });
-        });
-
-        // window.addEventListener("resize", (event) => {
-        //     app.ports.messageReceiver.send(page());
-        // });
+        initialize(app);
     </script>
 </body>
 
