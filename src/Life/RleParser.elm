@@ -1,12 +1,34 @@
-module Life.RleParser exposing (parse)
+module Life.RleParser exposing (comment, parse)
 
-import Parser exposing (..)
+import Life.Pattern as Pattern exposing (GridCells, Pattern, setCells, setExtent)
+import Parser
+    exposing
+        ( (|.)
+        , (|=)
+        , DeadEnd
+        , Parser
+        , Step(..)
+        , chompUntil
+        , chompWhile
+        , end
+        , int
+        , loop
+        , map
+        , oneOf
+        , problem
+        , run
+        , succeed
+        , symbol
+        , token
+        )
+import Set
+import Size2 exposing (Size2)
 
 
 type alias GridState =
     { x : Int
     , y : Int
-    , cellList : List ( Int, Int )
+    , gridCells : GridCells
     }
 
 
@@ -16,36 +38,62 @@ type CellState
     | EmptyLine
 
 
-init =
+initGrid : GridState
+initGrid =
     { x = 0
     , y = 0
-    , cellList = []
+    , gridCells = Set.empty
     }
 
 
-parse : String -> Result (List DeadEnd) (List ( Int, Int ))
+parse : String -> Result (List DeadEnd) Pattern
 parse =
-    run cells
+    run lines
 
 
-cells : Parser (List ( Int, Int ))
+lines : Parser Pattern
+lines =
+    loop Pattern.empty line
+
+
+line : Pattern -> Parser (Step Pattern Pattern)
+line pattern =
+    oneOf
+        [ oneOf
+            [ succeed (Loop << setExtent pattern)
+                |= extent
+            , succeed (Done << setCells pattern)
+                |= cells
+            , succeed (Loop pattern)
+                |. comment
+            ]
+            |. spacesOrTabs
+            |. oneOf [ symbol "\n", end ]
+        , succeed (Done pattern)
+            |. end
+        ]
+
+
+cells : Parser GridCells
 cells =
-    loop init cellHelp
+    loop initGrid cell
 
 
-cellHelp : GridState -> Parser (Step GridState (List ( Int, Int )))
-cellHelp gridState =
+cell : GridState -> Parser (Step GridState GridCells)
+cell gridState =
     oneOf
         [ succeed (addCells gridState)
             |= int
             |= cellToken
         , succeed (addCells gridState 1)
             |= cellToken
-        , succeed (nextLine gridState 1)
+        , succeed (nextGridLine gridState 1)
             |. token "$"
-        , succeed (Done gridState.cellList)
+        , succeed (Done gridState.gridCells)
             |. token "!"
-        , succeed (Done gridState.cellList)
+        , succeed (Loop gridState)
+            |. symbol "\n"
+        , succeed (Done gridState.gridCells)
             |. end
         , problem "Invalid RLE string. I support only two states, so use `b` and `o` for cells"
         ]
@@ -60,7 +108,7 @@ cellToken =
         ]
 
 
-addCells : GridState -> Int -> CellState -> Step GridState (List ( Int, Int ))
+addCells : GridState -> Int -> CellState -> Step GridState GridCells
 addCells gridState count aliveOrDead =
     case aliveOrDead of
         Alive ->
@@ -72,31 +120,76 @@ addCells gridState count aliveOrDead =
                     List.range gridState.x (newX - 1)
 
                 cellsToAdd =
-                    List.map (\i -> ( i, gridState.y )) xRange
-
-                updatedState =
-                    { gridState | x = newX, cellList = gridState.cellList ++ cellsToAdd }
+                    List.map (\i -> ( i, gridState.y )) xRange |> Set.fromList
             in
-            Loop updatedState
+            Loop
+                { gridState
+                    | x = newX
+                    , gridCells = Set.union gridState.gridCells cellsToAdd
+                }
 
         Dead ->
-            let
-                newX =
-                    gridState.x + count
-
-                updatedState =
-                    { gridState | x = newX }
-            in
-            Loop updatedState
+            Loop { gridState | x = gridState.x + count }
 
         EmptyLine ->
-            nextLine gridState count
+            nextGridLine gridState count
 
 
-nextLine : GridState -> Int -> Step GridState (List ( Int, Int ))
-nextLine gridState count =
-    let
-        updatedState =
-            { gridState | x = 0, y = gridState.y + count }
-    in
-    Loop updatedState
+nextGridLine : GridState -> Int -> Step GridState GridCells
+nextGridLine gridState count =
+    Loop { gridState | x = 0, y = gridState.y + count }
+
+
+comment : Parser ()
+comment =
+    symbol "#"
+        |. oneOf
+            [ chompUntil "\n"
+            , chompWhile (always True)
+                |. end
+            ]
+
+
+
+-- Use this rather than Parser.spaces in order to
+-- be sensitive to line-endings.
+
+
+spacesOrTabs : Parser ()
+spacesOrTabs =
+    chompWhile (\c -> c == ' ' || c == '\t')
+
+
+rule : Parser ()
+rule =
+    spacesOrTabs
+        |. symbol ","
+        |. spacesOrTabs
+        |. token "rule"
+        |. spacesOrTabs
+        |. symbol "="
+        |. spacesOrTabs
+        |. token "B3/S23"
+
+
+extent : Parser (Size2 Int)
+extent =
+    succeed Size2
+        |. spacesOrTabs
+        |. symbol "x"
+        |. spacesOrTabs
+        |. symbol "="
+        |. spacesOrTabs
+        |= int
+        |. spacesOrTabs
+        |. symbol ","
+        |. spacesOrTabs
+        |. symbol "y"
+        |. spacesOrTabs
+        |. symbol "="
+        |. spacesOrTabs
+        |= int
+        |. oneOf
+            [ rule
+            , spacesOrTabs
+            ]
