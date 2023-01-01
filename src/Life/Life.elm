@@ -67,6 +67,7 @@ insertPattern pattern { cells, protected } =
     , protected =
         { bounds = pattern.bounds
         , movement = Nothing
+        , stepsElapsed = 0
         }
             :: protected
     }

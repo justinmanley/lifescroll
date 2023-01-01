@@ -3,14 +3,13 @@ module MainTests exposing (..)
 import BoundingRectangle
 import Dict exposing (Dict)
 import Expect
-import Fuzz exposing (intAtLeast)
 import Life.Life as Life
 import Life.Pattern exposing (Pattern)
-import Main exposing (Model, Msg(..), emptyModel, insertPatterns, lifeStepsFromScroll, scrolledCellsPerStep)
+import Main exposing (Model, Msg(..), insertPatterns)
 import Page exposing (Page)
 import PatternAnchor exposing (PatternAnchor)
 import Set
-import Test exposing (Test, describe, fuzz, test)
+import Test exposing (Test, describe, test)
 import Tuple
 
 
@@ -63,39 +62,7 @@ updateModel msg model =
 suite : Test
 suite =
     describe "Main"
-        [ describe "lifeStepsFromScroll"
-            [ fuzz (intAtLeast 0) "when starting from an empty page, advances Life by one generation for each unit of advance" <|
-                \numCellsScrolled ->
-                    let
-                        scrollPosition =
-                            Page.empty.cellSizeInPixels * toFloat numCellsScrolled * scrolledCellsPerStep
-                    in
-                    Expect.equal
-                        (lifeStepsFromScroll scrollPosition emptyModel)
-                        numCellsScrolled
-            , fuzz (intAtLeast 0) "when the page is almost scrolled to a unit boundary, advances Life by one generation upon reaching the unit boundary" <|
-                \numCellsScrolled ->
-                    let
-                        scrollPosition =
-                            Page.empty.cellSizeInPixels * toFloat numCellsScrolled * scrolledCellsPerStep
-
-                        previousScrollPosition =
-                            max 0 (scrollPosition - 0.1 * Page.empty.cellSizeInPixels * scrolledCellsPerStep)
-
-                        model =
-                            { emptyModel
-                                | scroll =
-                                    { furthest = previousScrollPosition
-                                    , mostRecent = previousScrollPosition
-                                    }
-                            }
-
-                        baseline =
-                            floor (previousScrollPosition / (Page.empty.cellSizeInPixels * scrolledCellsPerStep))
-                    in
-                    Expect.equal (lifeStepsFromScroll scrollPosition model) (numCellsScrolled - baseline)
-            ]
-        , describe "updateLife"
+        [ describe "updateLife"
             [ test "inserts every cell in a pattern into an empty GridCells" <|
                 \() ->
                     let

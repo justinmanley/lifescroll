@@ -9,7 +9,6 @@ import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
 import Json.Encode as Encode
 import Life.Life as Life exposing (LifeGrid)
 import Life.Viewport as Viewport
-import Loop exposing (for)
 import Page exposing (Page)
 import ScrollState exposing (ScrollState)
 
@@ -89,25 +88,8 @@ update msg model =
             )
 
         ScrollPage viewport ->
-            let
-                numSteps =
-                    lifeStepsFromScroll viewport.top model
-
-                toGrid x =
-                    x / model.page.cellSizeInPixels |> floor
-
-                gridViewport =
-                    { top = toGrid viewport.top
-                    , left = toGrid viewport.left
-                    , bottom = toGrid viewport.bottom
-                    , right = toGrid viewport.right
-                    }
-            in
             ( { model
-                | life =
-                    { cells = for numSteps (Viewport.next gridViewport model.life.protected) model.life.cells
-                    , protected = model.life.protected
-                    }
+                | life = Viewport.scroll model.page.cellSizeInPixels model.scroll.mostRecent viewport model.life
                 , scroll = ScrollState.update viewport.top model.scroll
               }
             , Cmd.none
@@ -115,22 +97,6 @@ update msg model =
 
         ParsingError error ->
             ( Debug.log (Decode.errorToString error) model, Cmd.none )
-
-
-scrolledCellsPerStep : number
-scrolledCellsPerStep =
-    4
-
-
-lifeStepsFromScroll : Float -> Model -> Int
-lifeStepsFromScroll scrollPosition { page, scroll } =
-    let
-        toGridCellsCoordinates : Float -> Int
-        toGridCellsCoordinates pageCoordinate =
-            floor (pageCoordinate / (page.cellSizeInPixels * scrolledCellsPerStep))
-    in
-    max 0 <|
-        (toGridCellsCoordinates scrollPosition - toGridCellsCoordinates scroll.mostRecent)
 
 
 insertPatterns : Page -> LifeGrid -> LifeGrid

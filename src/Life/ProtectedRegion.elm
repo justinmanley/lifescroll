@@ -18,4 +18,19 @@ type alias Movement =
 type alias ProtectedRegion =
     { bounds : BoundingRectangle Int
     , movement : Maybe Movement
+    , stepsElapsed : Int
     }
+
+
+isSteppable : BoundingRectangle Int -> ProtectedRegion -> Bool
+isSteppable viewport region =
+    BoundingRectangle.contains viewport region.bounds
+
+
+stepIfEligible : BoundingRectangle Int -> Int -> ProtectedRegion -> ProtectedRegion
+stepIfEligible viewport numSteps region =
+    if isSteppable viewport region then
+        { region | stepsElapsed = region.stepsElapsed + numSteps }
+
+    else
+        region
