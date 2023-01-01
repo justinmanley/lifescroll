@@ -7,7 +7,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
 import Json.Encode as Encode
-import Life.Life exposing (LifeGrid)
+import Life.Life as Life exposing (LifeGrid)
 import Loop exposing (for)
 import Page exposing (Page)
 import ScrollState exposing (ScrollState)
@@ -39,7 +39,7 @@ type Msg
 emptyModel : Model
 emptyModel =
     { page = Page.empty
-    , life = Life.Life.empty
+    , life = Life.empty
     , scroll = ScrollState.empty
     }
 
@@ -72,7 +72,7 @@ view { page, life } =
             ( page.body.left, page.body.top )
             (BoundingRectangle.width page.body)
             (BoundingRectangle.height page.body)
-        , Life.Life.render page.cellSizeInPixels life
+        , Life.render page.cellSizeInPixels life
         ]
 
 
@@ -103,7 +103,7 @@ update msg model =
                     }
             in
             ( { model
-                | life = for numSteps (Life.Life.nextInViewport gridViewport) model.life
+                | life = for numSteps (Life.nextInViewport gridViewport) model.life
                 , scroll = ScrollState.update viewport.top model.scroll
               }
             , Cmd.none
@@ -131,7 +131,7 @@ lifeStepsFromScroll scrollPosition { page, scroll } =
 
 insertPatterns : Page -> LifeGrid -> LifeGrid
 insertPatterns page life =
-    List.foldl Life.Life.insertPattern life <| Page.gridCells page
+    List.foldl Life.insertPattern life <| Page.gridCells page
 
 
 subscriptions : Model -> Sub Msg
