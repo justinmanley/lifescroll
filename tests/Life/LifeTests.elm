@@ -1,21 +1,30 @@
 module Life.LifeTests exposing (..)
 
 import Expect exposing (Expectation)
+import Life.BoundedGridCells exposing (BoundedGridCells)
 import Life.Life as Life exposing (insertPattern)
 import Life.TestData.Spaceship exposing (Spaceship, spaceships)
 import Life.TestData.StillLife exposing (StillLife, stillLives)
 import Loop exposing (for)
 import Set exposing (Set)
 import Test exposing (Test, describe, test)
-import Vector2 exposing (Vector2)
+import Vector2
 
 
-testPattern : Set (Vector2 Int)
+testPattern : BoundedGridCells
 testPattern =
-    Set.fromList
-        [ ( 0, 0 )
-        , ( 1, 0 )
-        ]
+    { cells =
+        Set.fromList
+            [ ( 0, 0 )
+            , ( 1, 0 )
+            ]
+    , bounds =
+        { top = 0
+        , left = 0
+        , right = 1
+        , bottom = 0
+        }
+    }
 
 
 expectEqualSize : Set a -> Set b -> Expectation
@@ -41,8 +50,11 @@ suite =
         [ describe "addPattern"
             [ test "inserts every cell in a pattern into an empty set of GridCells" <|
                 \_ ->
-                    insertPattern testPattern Life.empty
-                        |> expectEqualSize testPattern
+                    let
+                        grid =
+                            insertPattern testPattern Life.empty
+                    in
+                    expectEqualSize testPattern.cells grid.cells
             ]
         , describe "next"
             [ describe "still lives" <|

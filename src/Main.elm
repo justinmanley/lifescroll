@@ -7,8 +7,8 @@ import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
 import Json.Encode as Encode
-import Life.Life as Life
-import Life.Pattern exposing (GridCells)
+import Life.Life as Life exposing (LifeGrid)
+import Life.Viewport as Viewport
 import Loop exposing (for)
 import Page exposing (Page)
 import ScrollState exposing (ScrollState)
@@ -26,7 +26,7 @@ main =
 
 type alias Model =
     { page : Page
-    , life : GridCells
+    , life : LifeGrid
     , scroll : ScrollState
     }
 
@@ -73,7 +73,7 @@ view { page, life } =
             ( page.body.left, page.body.top )
             (BoundingRectangle.width page.body)
             (BoundingRectangle.height page.body)
-        , Life.render page.cellSizeInPixels life
+        , Life.render page.cellSizeInPixels life.cells
         ]
 
 
@@ -104,7 +104,10 @@ update msg model =
                     }
             in
             ( { model
-                | life = for numSteps (Life.nextInViewport gridViewport) model.life
+                | life =
+                    { cells = for numSteps (Viewport.next gridViewport model.life.protected) model.life.cells
+                    , protected = model.life.protected
+                    }
                 , scroll = ScrollState.update viewport.top model.scroll
               }
             , Cmd.none
@@ -130,7 +133,7 @@ lifeStepsFromScroll scrollPosition { page, scroll } =
         (toGridCellsCoordinates scrollPosition - toGridCellsCoordinates scroll.mostRecent)
 
 
-insertPatterns : Page -> GridCells -> GridCells
+insertPatterns : Page -> LifeGrid -> LifeGrid
 insertPatterns page life =
     List.foldl Life.insertPattern life <| Page.gridCells page
 

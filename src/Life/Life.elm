@@ -1,21 +1,29 @@
 module Life.Life exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle)
 import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Color
-import Life.ConnectedComponent exposing (ConnectedComponent, connectedComponents)
+import Life.BoundedGridCells exposing (BoundedGridCells)
+import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
-import Life.Pattern exposing (GridCells)
-import Set exposing (Set)
+import Life.ProtectedRegion exposing (ProtectedRegion)
+import Set
 import Set.Extra as Set
 import Size2 exposing (Size2)
 import Vector2 exposing (Vector2, x, y)
 
 
-empty : GridCells
+type alias LifeGrid =
+    { cells : GridCells
+    , protected : List ProtectedRegion
+    }
+
+
+empty : LifeGrid
 empty =
-    Set.empty
+    { cells = GridCells.empty
+    , protected = []
+    }
 
 
 resize : Size2 Int -> Size2 Int -> GridCells -> GridCells
@@ -44,18 +52,29 @@ resize oldSize newSize grid =
         Set.map oldIndexToNewIndex grid
 
 
-insertPattern : Set (Vector2 Int) -> GridCells -> GridCells
-insertPattern pattern grid =
+insertPattern : BoundedGridCells -> LifeGrid -> LifeGrid
+insertPattern pattern { cells, protected } =
     let
-        insertWithConflictLogging : Vector2 Int -> Set (Vector2 Int) -> Set (Vector2 Int)
-        insertWithConflictLogging cell cells =
-            if Set.member cell cells then
-                Debug.log "found a conflict while attempting to insert pattern" cells
+        insertWithConflictLogging : Vector2 Int -> GridCells -> GridCells
+        insertWithConflictLogging cell allCells =
+            if Set.member cell allCells then
+                Debug.log "found a conflict while attempting to insert pattern" allCells
 
             else
-                Set.insert cell cells
+                Set.insert cell allCells
     in
-    Set.foldl insertWithConflictLogging grid pattern
+    { cells = Set.foldl insertWithConflictLogging cells pattern.cells
+    , protected =
+        { bounds = pattern.bounds
+        , movement = Nothing
+        }
+            :: protected
+    }
+
+
+
+-- TODO: Consider rendering only the cells that are within the viewport +/- some margin
+-- in order to reduce the painting cost.
 
 
 render : Float -> GridCells -> Renderable
@@ -73,26 +92,6 @@ render cellSize cells =
                 cellSize
     in
     shapes [ fill Color.black ] <| List.map renderCell <| Set.toList cells
-
-
-nextInViewport : BoundingRectangle Int -> GridCells -> GridCells
-nextInViewport viewport life =
-    let
-        -- Dividing the Life grid into connected components and
-        -- applying the rules to entire components ensures that
-        -- patterns do not get corrupted as they cross over into
-        -- the viewport, with the part of the pattern within the
-        -- viewport being evolved forward while the rest of the
-        -- pattern remains static.
-        nextComponent : ConnectedComponent -> GridCells
-        nextComponent component =
-            if BoundingRectangle.contains viewport component.bounds then
-                next component.cells
-
-            else
-                component.cells
-    in
-    List.foldl Set.union Set.empty (List.map nextComponent (connectedComponents life))
 
 
 next : GridCells -> GridCells

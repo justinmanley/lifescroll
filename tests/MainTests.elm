@@ -106,7 +106,7 @@ suite =
                             Dict.foldl (\_ pattern cells -> Set.union pattern.cells cells) Set.empty testPatternDict
                     in
                     insertPatterns page Life.empty
-                        |> Set.size
+                        |> (\life -> Set.size life.cells)
                         |> Expect.equal (Set.size allPatternsCells)
             ]
         ]

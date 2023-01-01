@@ -1,6 +1,7 @@
 module Life.RleParser exposing (comment, parse)
 
-import Life.Pattern as Pattern exposing (GridCells, Pattern, setCells, setExtent)
+import Life.GridCells exposing (GridCells)
+import Life.Pattern as Pattern exposing (Pattern, setCells, setExtent)
 import Parser
     exposing
         ( (|.)

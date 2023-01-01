@@ -2,7 +2,8 @@ module Page exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Json.Decode as Decode exposing (Decoder, field, float, list)
-import Life.Pattern as Pattern exposing (GridCells, Pattern, withVerticalPadding)
+import Life.BoundedGridCells exposing (BoundedGridCells)
+import Life.Pattern as Pattern exposing (Pattern, withVerticalPadding)
 import Life.RleParser as RleParser
 import Maybe exposing (Maybe(..))
 import PatternAnchor exposing (PatternAnchor)
@@ -38,7 +39,7 @@ decoder =
         (field "cellSizeInPixels" float)
 
 
-patternAnchorToGridCells : Page -> PatternAnchor -> Maybe GridCells
+patternAnchorToGridCells : Page -> PatternAnchor -> Maybe BoundedGridCells
 patternAnchorToGridCells page anchor =
     let
         articleCenter =
@@ -59,9 +60,24 @@ patternAnchorToGridCells page anchor =
             Debug.log ("Could not parse pattern " ++ anchor.id ++ Debug.toString err) Nothing
 
         Ok pattern ->
-            Just <| Set.map (Vector2.add <| offset pattern) pattern.cells
+            let
+                start =
+                    offset pattern
+
+                ( left, top ) =
+                    start
+            in
+            Just <|
+                { cells = Set.map (Vector2.add start) pattern.cells
+                , bounds =
+                    { top = top
+                    , left = left
+                    , bottom = top + pattern.extent.height
+                    , right = left + pattern.extent.width
+                    }
+                }
 
 
-gridCells : Page -> List GridCells
+gridCells : Page -> List BoundedGridCells
 gridCells page =
     List.filterMap (patternAnchorToGridCells page) page.patterns

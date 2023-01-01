@@ -49,6 +49,11 @@ expand ( x, y ) { top, left, bottom, right } =
     }
 
 
+containsPoint : Vector2 number -> BoundingRectangle number -> Bool
+containsPoint ( x, y ) { top, left, bottom, right } =
+    (left <= x && x <= right) && (top <= y && y <= bottom)
+
+
 union : BoundingRectangle number -> BoundingRectangle number -> BoundingRectangle number
 union b1 b2 =
     { top = min b1.top b2.top
@@ -56,6 +61,32 @@ union b1 b2 =
     , bottom = max b1.bottom b2.bottom
     , right = max b1.right b2.right
     }
+
+
+intersect : BoundingRectangle number -> BoundingRectangle number -> BoundingRectangle number
+intersect b1 b2 =
+    { top = max b1.top b2.top
+    , left = max b1.left b2.left
+    , bottom = min b1.bottom b2.bottom
+    , right = min b1.right b2.right
+    }
+
+
+area : BoundingRectangle number -> number
+area bounds =
+    width bounds * height bounds
+
+
+hasPartialIntersection : BoundingRectangle number -> BoundingRectangle number -> Bool
+hasPartialIntersection a b =
+    let
+        intersectionArea =
+            area (intersect a b)
+
+        minArea =
+            min (area a) (area b)
+    in
+    0 < intersectionArea && intersectionArea < minArea
 
 
 decoder : Decoder (BoundingRectangle Float)
