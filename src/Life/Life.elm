@@ -6,22 +6,19 @@ import Canvas.Settings exposing (fill)
 import Color
 import Life.ConnectedComponent exposing (ConnectedComponent, connectedComponents)
 import Life.Neighborhoods exposing (neighbors)
+import Life.Pattern exposing (GridCells)
 import Set exposing (Set)
 import Set.Extra as Set
 import Size2 exposing (Size2)
 import Vector2 exposing (Vector2, x, y)
 
 
-type alias LifeGrid =
-    Set (Vector2 Int)
-
-
-empty : LifeGrid
+empty : GridCells
 empty =
     Set.empty
 
 
-resize : Size2 Int -> Size2 Int -> LifeGrid -> LifeGrid
+resize : Size2 Int -> Size2 Int -> GridCells -> GridCells
 resize oldSize newSize grid =
     let
         toCenteredInNewGrid : Vector2 Int -> Vector2 Int
@@ -47,7 +44,7 @@ resize oldSize newSize grid =
         Set.map oldIndexToNewIndex grid
 
 
-insertPattern : Set (Vector2 Int) -> LifeGrid -> LifeGrid
+insertPattern : Set (Vector2 Int) -> GridCells -> GridCells
 insertPattern pattern grid =
     let
         insertWithConflictLogging : Vector2 Int -> Set (Vector2 Int) -> Set (Vector2 Int)
@@ -61,7 +58,7 @@ insertPattern pattern grid =
     Set.foldl insertWithConflictLogging grid pattern
 
 
-render : Float -> LifeGrid -> Renderable
+render : Float -> GridCells -> Renderable
 render cellSize cells =
     let
         square point size =
@@ -78,7 +75,7 @@ render cellSize cells =
     shapes [ fill Color.black ] <| List.map renderCell <| Set.toList cells
 
 
-nextInViewport : BoundingRectangle Int -> LifeGrid -> LifeGrid
+nextInViewport : BoundingRectangle Int -> GridCells -> GridCells
 nextInViewport viewport life =
     let
         -- Dividing the Life grid into connected components and
@@ -87,7 +84,7 @@ nextInViewport viewport life =
         -- the viewport, with the part of the pattern within the
         -- viewport being evolved forward while the rest of the
         -- pattern remains static.
-        nextComponent : ConnectedComponent -> LifeGrid
+        nextComponent : ConnectedComponent -> GridCells
         nextComponent component =
             if BoundingRectangle.contains viewport component.bounds then
                 next component.cells
@@ -98,7 +95,7 @@ nextInViewport viewport life =
     List.foldl Set.union Set.empty (List.map nextComponent (connectedComponents life))
 
 
-next : LifeGrid -> LifeGrid
+next : GridCells -> GridCells
 next grid =
     let
         adjacentDeadCells =
@@ -117,12 +114,12 @@ next grid =
 -- Only used to advance to the next generation.
 
 
-countLiveNeighbors : LifeGrid -> Vector2 Int -> Int
+countLiveNeighbors : GridCells -> Vector2 Int -> Int
 countLiveNeighbors aliveCells cell =
     Set.filter (\c -> Set.member c aliveCells) (neighbors cell) |> Set.size
 
 
-shouldSurvive : LifeGrid -> Vector2 Int -> Bool
+shouldSurvive : GridCells -> Vector2 Int -> Bool
 shouldSurvive aliveCells aliveCell =
     let
         aliveNeighbors =
@@ -131,7 +128,7 @@ shouldSurvive aliveCells aliveCell =
     aliveNeighbors == 2 || aliveNeighbors == 3
 
 
-shouldBeBorn : LifeGrid -> Vector2 Int -> Bool
+shouldBeBorn : GridCells -> Vector2 Int -> Bool
 shouldBeBorn aliveCells deadCell =
     let
         aliveNeighbors =

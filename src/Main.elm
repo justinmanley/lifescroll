@@ -7,7 +7,8 @@ import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
 import Json.Encode as Encode
-import Life.Life as Life exposing (LifeGrid)
+import Life.Life as Life
+import Life.Pattern exposing (GridCells)
 import Loop exposing (for)
 import Page exposing (Page)
 import ScrollState exposing (ScrollState)
@@ -25,7 +26,7 @@ main =
 
 type alias Model =
     { page : Page
-    , life : LifeGrid
+    , life : GridCells
     , scroll : ScrollState
     }
 
@@ -121,15 +122,15 @@ scrolledCellsPerStep =
 lifeStepsFromScroll : Float -> Model -> Int
 lifeStepsFromScroll scrollPosition { page, scroll } =
     let
-        toLifeGridCoordinates : Float -> Int
-        toLifeGridCoordinates pageCoordinate =
+        toGridCellsCoordinates : Float -> Int
+        toGridCellsCoordinates pageCoordinate =
             floor (pageCoordinate / (page.cellSizeInPixels * scrolledCellsPerStep))
     in
     max 0 <|
-        (toLifeGridCoordinates scrollPosition - toLifeGridCoordinates scroll.mostRecent)
+        (toGridCellsCoordinates scrollPosition - toGridCellsCoordinates scroll.mostRecent)
 
 
-insertPatterns : Page -> LifeGrid -> LifeGrid
+insertPatterns : Page -> GridCells -> GridCells
 insertPatterns page life =
     List.foldl Life.insertPattern life <| Page.gridCells page
 

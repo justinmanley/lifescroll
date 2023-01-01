@@ -1,4 +1,4 @@
-module LifeTests exposing (..)
+module Life.LifeTests exposing (..)
 
 import Expect exposing (Expectation)
 import Life.Life as Life exposing (insertPattern)
@@ -39,7 +39,7 @@ suite : Test
 suite =
     describe "Life"
         [ describe "addPattern"
-            [ test "inserts every cell in a pattern into an empty LifeGrid" <|
+            [ test "inserts every cell in a pattern into an empty set of GridCells" <|
                 \_ ->
                     insertPattern testPattern Life.empty
                         |> expectEqualSize testPattern

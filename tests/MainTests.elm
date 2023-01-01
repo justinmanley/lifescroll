@@ -4,7 +4,7 @@ import BoundingRectangle
 import Dict exposing (Dict)
 import Expect
 import Fuzz exposing (intAtLeast)
-import Life
+import Life.Life as Life
 import Life.Pattern exposing (Pattern)
 import Main exposing (Model, Msg(..), emptyModel, insertPatterns, lifeStepsFromScroll, scrolledCellsPerStep)
 import Page exposing (Page)
@@ -96,7 +96,7 @@ suite =
                     Expect.equal (lifeStepsFromScroll scrollPosition model) (numCellsScrolled - baseline)
             ]
         , describe "updateLife"
-            [ test "inserts every cell in a pattern into an empty LifeGrid" <|
+            [ test "inserts every cell in a pattern into an empty GridCells" <|
                 \() ->
                     let
                         page =
