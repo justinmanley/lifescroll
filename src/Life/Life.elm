@@ -3,6 +3,7 @@ module Life.Life exposing (..)
 import BoundingRectangle exposing (BoundingRectangle)
 import Canvas exposing (Renderable, Shape, lineTo, path, shapes)
 import Canvas.Settings exposing (fill, stroke)
+import Canvas.Settings.Line exposing (lineWidth)
 import Color
 import DebugSettings exposing (withLogging)
 import Life.BoundedGridCells exposing (BoundedGridCells)
@@ -97,18 +98,22 @@ render cellSize cells =
     shapes [ fill Color.black ] <| List.map renderCell <| Set.toList cells
 
 
+debugStrokeHalfWidth =
+    2
+
+
 renderGrid : Float -> BoundingRectangle Float -> Renderable
 renderGrid cellSize page =
     let
         verticalLine : Float -> Shape
         verticalLine x =
-            path ( cellSize * x, cellSize * page.top )
-                [ lineTo ( cellSize * x, cellSize * page.bottom ) ]
+            path ( cellSize * x - debugStrokeHalfWidth, cellSize * page.top )
+                [ lineTo ( cellSize * x - debugStrokeHalfWidth, cellSize * page.bottom ) ]
 
         horizontalLine : Float -> Shape
         horizontalLine y =
-            path ( cellSize * page.left, cellSize * y )
-                [ lineTo ( cellSize * page.right, cellSize * y ) ]
+            path ( cellSize * page.left, cellSize * y - debugStrokeHalfWidth )
+                [ lineTo ( cellSize * page.right, cellSize * y - debugStrokeHalfWidth ) ]
 
         verticalLines : List Shape
         verticalLines =
@@ -120,7 +125,7 @@ renderGrid cellSize page =
             List.map (horizontalLine << toFloat) <|
                 List.range 0 (ceiling <| BoundingRectangle.height page / cellSize)
     in
-    shapes [ stroke Color.darkGray ] <|
+    shapes [ stroke Color.darkGray, lineWidth (debugStrokeHalfWidth * 2) ] <|
         List.append verticalLines horizontalLines
 
 
@@ -130,11 +135,14 @@ renderProtectedRegions cellSize protectedRegions =
         renderRegion : ProtectedRegion -> Shape
         renderRegion { bounds } =
             Canvas.rect
-                ( toFloat bounds.left * cellSize, toFloat bounds.top * cellSize )
-                (toFloat (BoundingRectangle.width bounds) * cellSize)
-                (toFloat (BoundingRectangle.height bounds) * cellSize)
+                ( toFloat bounds.left * cellSize - debugStrokeHalfWidth
+                , toFloat bounds.top * cellSize - debugStrokeHalfWidth
+                )
+                (toFloat (BoundingRectangle.width bounds) * cellSize + debugStrokeHalfWidth)
+                (toFloat (BoundingRectangle.height bounds) * cellSize + debugStrokeHalfWidth)
     in
-    shapes [ stroke Color.red ] <| List.map renderRegion protectedRegions
+    shapes [ stroke Color.red, lineWidth (debugStrokeHalfWidth * 2) ] <|
+        List.map renderRegion protectedRegions
 
 
 next : GridCells -> GridCells

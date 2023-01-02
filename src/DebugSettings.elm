@@ -47,4 +47,7 @@ decoder =
             , log = debug |> contains "log"
             }
     in
-    Decode.map decodeQueryString string
+    Decode.oneOf
+        [ Decode.map decodeQueryString string
+        , Decode.succeed empty
+        ]
