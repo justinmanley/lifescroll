@@ -10,7 +10,6 @@ import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
 import Set
 import Set.Extra as Set
-import Size2 exposing (Size2)
 import Vector2 exposing (Vector2, x, y)
 
 
@@ -25,32 +24,6 @@ empty =
     { cells = GridCells.empty
     , atomicUpdateRegions = []
     }
-
-
-resize : Size2 Int -> Size2 Int -> GridCells -> GridCells
-resize oldSize newSize grid =
-    let
-        toCenteredInNewGrid : Vector2 Int -> Vector2 Int
-        toCenteredInNewGrid position =
-            ( x position - floor (toFloat newSize.width / 2)
-            , y position - floor (toFloat newSize.height / 2)
-            )
-
-        fromCenteredInOldGrid : Vector2 Int -> Vector2 Int
-        fromCenteredInOldGrid position =
-            ( x position + floor (toFloat oldSize.width / 2)
-            , y position + floor (toFloat oldSize.height / 2)
-            )
-
-        oldIndexToNewIndex : Vector2 Int -> Vector2 Int
-        oldIndexToNewIndex =
-            fromCenteredInOldGrid >> toCenteredInNewGrid
-    in
-    if newSize.width == oldSize.width && newSize.height == oldSize.height then
-        grid
-
-    else
-        Set.map oldIndexToNewIndex grid
 
 
 
