@@ -1,6 +1,7 @@
 module MainTests exposing (..)
 
 import BoundingRectangle
+import DebugSettings
 import Dict exposing (Dict)
 import Expect
 import Life.Life as Life
@@ -37,6 +38,7 @@ testPage =
     { patterns = []
     , body = BoundingRectangle.empty
     , article = BoundingRectangle.empty
+    , debug = DebugSettings.allEnabled
     , cellSizeInPixels = 10
     }
 

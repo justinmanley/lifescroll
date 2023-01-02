@@ -1,8 +1,10 @@
 module Life.Life exposing (..)
 
-import Canvas exposing (Renderable, Shape, shapes)
-import Canvas.Settings exposing (fill)
+import BoundingRectangle exposing (BoundingRectangle)
+import Canvas exposing (Renderable, Shape, lineTo, path, shapes)
+import Canvas.Settings exposing (fill, stroke)
 import Color
+import DebugSettings exposing (withLogging)
 import Life.BoundedGridCells exposing (BoundedGridCells)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
@@ -52,13 +54,13 @@ resize oldSize newSize grid =
         Set.map oldIndexToNewIndex grid
 
 
-insertPattern : BoundedGridCells -> LifeGrid -> LifeGrid
-insertPattern pattern { cells, protected } =
+insertPattern : Bool -> BoundedGridCells -> LifeGrid -> LifeGrid
+insertPattern loggingEnabled pattern { cells, protected } =
     let
         insertWithConflictLogging : Vector2 Int -> GridCells -> GridCells
         insertWithConflictLogging cell allCells =
             if Set.member cell allCells then
-                Debug.log "found a conflict while attempting to insert pattern" allCells
+                withLogging loggingEnabled "found a conflict while attempting to insert pattern" allCells
 
             else
                 Set.insert cell allCells
@@ -93,6 +95,46 @@ render cellSize cells =
                 cellSize
     in
     shapes [ fill Color.black ] <| List.map renderCell <| Set.toList cells
+
+
+renderGrid : Float -> BoundingRectangle Float -> Renderable
+renderGrid cellSize page =
+    let
+        verticalLine : Float -> Shape
+        verticalLine x =
+            path ( cellSize * x, cellSize * page.top )
+                [ lineTo ( cellSize * x, cellSize * page.bottom ) ]
+
+        horizontalLine : Float -> Shape
+        horizontalLine y =
+            path ( cellSize * page.left, cellSize * y )
+                [ lineTo ( cellSize * page.right, cellSize * y ) ]
+
+        verticalLines : List Shape
+        verticalLines =
+            List.map (verticalLine << toFloat) <|
+                List.range 0 (ceiling <| BoundingRectangle.width page / cellSize)
+
+        horizontalLines : List Shape
+        horizontalLines =
+            List.map (horizontalLine << toFloat) <|
+                List.range 0 (ceiling <| BoundingRectangle.height page / cellSize)
+    in
+    shapes [ stroke Color.darkGray ] <|
+        List.append verticalLines horizontalLines
+
+
+renderProtectedRegions : Float -> List ProtectedRegion -> Renderable
+renderProtectedRegions cellSize protectedRegions =
+    let
+        renderRegion : ProtectedRegion -> Shape
+        renderRegion { bounds } =
+            Canvas.rect
+                ( toFloat bounds.left * cellSize, toFloat bounds.top * cellSize )
+                (toFloat (BoundingRectangle.width bounds) * cellSize)
+                (toFloat (BoundingRectangle.height bounds) * cellSize)
+    in
+    shapes [ stroke Color.red ] <| List.map renderRegion protectedRegions
 
 
 next : GridCells -> GridCells

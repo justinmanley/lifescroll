@@ -1,11 +1,13 @@
 module Page exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
+import DebugSettings exposing (DebugSettings, withLogging)
 import Json.Decode as Decode exposing (Decoder, field, float, list)
 import Life.BoundedGridCells exposing (BoundedGridCells)
 import Life.Pattern as Pattern exposing (Pattern, withVerticalPadding)
 import Life.RleParser as RleParser
 import Maybe exposing (Maybe(..))
+import Parser exposing (deadEndsToString)
 import PatternAnchor exposing (PatternAnchor)
 import Result exposing (Result(..))
 import Set
@@ -16,6 +18,7 @@ type alias Page =
     { patterns : List PatternAnchor
     , body : BoundingRectangle Float
     , article : BoundingRectangle Float
+    , debug : DebugSettings
     , cellSizeInPixels : Float
     }
 
@@ -25,17 +28,19 @@ empty =
     { patterns = []
     , body = BoundingRectangle.empty
     , article = BoundingRectangle.empty
+    , debug = DebugSettings.empty
     , cellSizeInPixels = 16 -- web default
     }
 
 
 decoder : Decoder Page
 decoder =
-    Decode.map4
+    Decode.map5
         Page
         (field "patterns" (list PatternAnchor.decoder))
         (field "body" BoundingRectangle.decoder)
         (field "article" BoundingRectangle.decoder)
+        (field "debug" DebugSettings.decoder)
         (field "cellSizeInPixels" float)
 
 
@@ -57,7 +62,7 @@ patternAnchorToGridCells page anchor =
     in
     case Result.map withVerticalPadding <| RleParser.parse anchor.patternRle of
         Err err ->
-            Debug.log ("Could not parse pattern " ++ anchor.id ++ Debug.toString err) Nothing
+            withLogging True ("Could not parse pattern " ++ anchor.id ++ deadEndsToString err) Nothing
 
         Ok pattern ->
             let

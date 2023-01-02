@@ -3,6 +3,8 @@ port module Main exposing (..)
 import BoundingRectangle exposing (BoundingRectangle)
 import Browser
 import Canvas
+import Canvas.Renderable as Renderable
+import DebugSettings exposing (withLogging)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
@@ -73,6 +75,16 @@ view { page, life } =
             (BoundingRectangle.width page.body)
             (BoundingRectangle.height page.body)
         , Life.render page.cellSizeInPixels life.cells
+        , if page.debug.grid then
+            Life.renderGrid page.cellSizeInPixels page.body
+
+          else
+            Renderable.empty
+        , if page.debug.protected then
+            Life.renderProtectedRegions page.cellSizeInPixels life.protected
+
+          else
+            Renderable.empty
         ]
 
 
@@ -81,7 +93,7 @@ update msg model =
     case msg of
         PageUpdate page ->
             ( { model
-                | page = Debug.log "page" page
+                | page = withLogging page.debug.log "page" page
                 , life = insertPatterns page model.life
               }
             , Cmd.none
@@ -96,12 +108,12 @@ update msg model =
             )
 
         ParsingError error ->
-            ( Debug.log (Decode.errorToString error) model, Cmd.none )
+            ( withLogging True (Decode.errorToString error) model, Cmd.none )
 
 
 insertPatterns : Page -> LifeGrid -> LifeGrid
 insertPatterns page life =
-    List.foldl Life.insertPattern life <| Page.gridCells page
+    List.foldl (Life.insertPattern page.debug.log) life <| Page.gridCells page
 
 
 subscriptions : Model -> Sub Msg
@@ -113,7 +125,7 @@ subscriptions model =
                     msg
 
                 Err error ->
-                    ParsingError (Debug.log "ParsingError" error)
+                    ParsingError error
         )
         (messageReceiver <| decodeValue decoder)
 

@@ -52,7 +52,7 @@ suite =
                 \_ ->
                     let
                         grid =
-                            insertPattern testPattern Life.empty
+                            insertPattern True testPattern Life.empty
                     in
                     expectEqualSize testPattern.cells grid.cells
             ]
