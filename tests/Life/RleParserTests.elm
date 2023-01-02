@@ -1,9 +1,13 @@
 module Life.RleParserTests exposing (..)
 
+import BoundingRectangle exposing (BoundingRectangle)
 import Expect
+import Life.GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern)
+import Life.ProtectedRegion as ProtectedRegion exposing (Movement, ProtectedRegion)
 import Life.RleParser as RleParser
 import Set
+import Size2 exposing (Size2)
 import Test exposing (..)
 import Vector2 exposing (Vector2)
 
@@ -19,18 +23,24 @@ suite =
                 Expect.equal (Ok Pattern.empty) (RleParser.parse "3b!")
         , test "parses one live cell" <|
             \_ ->
-                Expect.equal (Ok <| withoutExtent [ ( 0, 0 ) ]) (RleParser.parse "o!")
+                Expect.equal
+                    (Ok <| Set.fromList [ ( 0, 0 ) ])
+                    (RleParser.parse "o!" |> Result.map getCells)
         , test "parses multiple live cells" <|
             \_ ->
-                Expect.equal (Ok <| withoutExtent [ ( 0, 0 ), ( 1, 0 ), ( 2, 0 ) ]) (RleParser.parse "3o!")
+                Expect.equal
+                    (Ok <| Set.fromList [ ( 0, 0 ), ( 1, 0 ), ( 2, 0 ) ])
+                    (RleParser.parse "3o!" |> Result.map getCells)
         , test "parses combination of dead and live cells" <|
             \_ ->
-                Expect.equal (Ok <| withoutExtent [ ( 0, 0 ), ( 1, 0 ), ( 2, 0 ) ]) (RleParser.parse "3o2b!")
+                Expect.equal
+                    (Ok <| Set.fromList [ ( 0, 0 ), ( 1, 0 ), ( 2, 0 ) ])
+                    (RleParser.parse "3o2b!" |> Result.map getCells)
         , test "parses multiple lines" <|
             \_ ->
                 Expect.equal
                     (Ok <|
-                        withoutExtent
+                        Set.fromList
                             [ ( 0, 0 )
                             , ( 1, 0 )
                             , ( 2, 0 )
@@ -38,27 +48,25 @@ suite =
                             , ( 2, 1 )
                             ]
                     )
-                    (RleParser.parse "3o$obo!")
+                    (RleParser.parse "3o$obo!" |> Result.map getCells)
         , test "parses blank lines" <|
             \_ ->
-                Expect.equal (Ok <| withoutExtent [ ( 0, 0 ), ( 0, 2 ) ]) (RleParser.parse "o2$o!")
+                Expect.equal
+                    (Ok <| Set.fromList [ ( 0, 0 ), ( 0, 2 ) ])
+                    (RleParser.parse "o2$o!" |> Result.map getCells)
         , test "does not fail without trailing bang" <|
             \_ ->
                 Expect.equal
-                    (Ok <| withoutExtent [ ( 0, 0 ), ( 1, 0 ), ( 0, 1 ) ])
-                    (RleParser.parse "2o$ob")
+                    (Ok <| Set.fromList [ ( 0, 0 ), ( 1, 0 ), ( 0, 1 ) ])
+                    (RleParser.parse "2o$ob" |> Result.map getCells)
         , test "errors on an invalid rle string" <|
             \_ ->
                 Expect.err (RleParser.parse "$#df%%fsd$!$$")
         , test "parses extent" <|
             \_ ->
                 Expect.equal
-                    (Ok
-                        { extent = { width = 11, height = 13 }
-                        , cells = Set.empty
-                        }
-                    )
-                    (RleParser.parse "x = 11, y = 13")
+                    (Ok { width = 11, height = 13 })
+                    (RleParser.parse "x = 11, y = 13" |> Result.map getExtent)
         , test "parses a pattern consisting only of a comment" <|
             \_ ->
                 Expect.equal (Ok Pattern.empty) (RleParser.parse "#C   ")
@@ -74,6 +82,7 @@ suite =
                     (Ok <|
                         { extent = { width = 2, height = 3 }
                         , cells = Set.fromList [ ( 0, 0 ) ]
+                        , protected = ProtectedRegion.empty
                         }
                     )
                     (RleParser.parse "x = 2, y = 3\no!")
@@ -91,20 +100,105 @@ suite =
                                 , ( 3, 1 )
                                 ]
                         , extent = { height = 3, width = 4 }
+                        , protected = ProtectedRegion.empty
                         }
                     )
                     (RleParser.parse "#N Beehive\n#O John Conway\n#C An extremely common 6…eehive\nx = 4, y = 3, rule = B3/S23\nb2ob$o2bo$b2o!")
         , test "parses a pattern with grid cells across multiple lines" <|
             \_ ->
                 Expect.equal (Ok <| withoutExtent [ ( 0, 0 ), ( 1, 0 ) ]) (RleParser.parse "o\no!")
+        , test "parses a pattern with a movement comment" <|
+            \_ ->
+                Expect.equal
+                    (Ok <|
+                        Just
+                            { direction = ( 1, 2 )
+                            , speed = 3
+                            }
+                    )
+                    (RleParser.parse "# MOVEMENT DIRECTION (1,2) SPEED 3\no!" |> Result.map getMovement)
+        , test "parses a pattern with a movement comment with negative movement" <|
+            \_ ->
+                Expect.equal
+                    (Ok <|
+                        Just
+                            { direction = ( -1, 2 )
+                            , speed = 3
+                            }
+                    )
+                    (RleParser.parse "# MOVEMENT DIRECTION (-1,2) SPEED 3\no!" |> Result.map getMovement)
+        , test "parses a pattern with a protected region bounds comment" <|
+            \_ ->
+                Expect.equal
+                    (Ok <|
+                        { top = 1
+                        , left = 2
+                        , bottom = 3
+                        , right = 4
+                        }
+                    )
+                    (RleParser.parse "# MAXIMUM EXTENT TOP 1 LEFT 2 BOTTOM 3 RIGHT 4l\no!"
+                        |> Result.map getProtectedBounds
+                    )
+        , test "parses a pattern with protected region bounds comments" <|
+            \_ ->
+                Expect.equal
+                    (Ok <|
+                        { bounds =
+                            { top = 1
+                            , left = 2
+                            , bottom = 3
+                            , right = 4
+                            }
+                        , movement =
+                            Just
+                                { direction = ( 1, 2 )
+                                , speed = 3
+                                }
+                        , stepsElapsed = 0
+                        }
+                    )
+                    (RleParser.parse "# MOVEMENT DIRECTION (1,2) SPEED 3\n# MAXIMUM EXTENT TOP 1 LEFT 2 BOTTOM 3 RIGHT 4l\no!"
+                        |> Result.map getProtectedRegion
+                    )
         ]
 
 
 withoutExtent : List (Vector2 Int) -> Pattern
 withoutExtent cells =
-    { extent =
-        { width = 0
-        , height = 0
-        }
+    { extent = emptyExtent
     , cells = Set.fromList cells
+    , protected = ProtectedRegion.empty
     }
+
+
+emptyExtent : Size2 Int
+emptyExtent =
+    { width = 0
+    , height = 0
+    }
+
+
+getMovement : Pattern -> Maybe Movement
+getMovement pattern =
+    pattern.protected.movement
+
+
+getCells : Pattern -> GridCells
+getCells pattern =
+    pattern.cells
+
+
+getExtent : Pattern -> Size2 Int
+getExtent pattern =
+    pattern.extent
+
+
+getProtectedBounds : Pattern -> BoundingRectangle Int
+getProtectedBounds pattern =
+    pattern.protected.bounds
+
+
+getProtectedRegion : Pattern -> ProtectedRegion
+getProtectedRegion pattern =
+    pattern.protected

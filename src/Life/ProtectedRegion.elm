@@ -22,6 +22,14 @@ type alias ProtectedRegion =
     }
 
 
+empty : ProtectedRegion
+empty =
+    { bounds = BoundingRectangle.empty
+    , movement = Nothing
+    , stepsElapsed = 0
+    }
+
+
 isSteppable : BoundingRectangle Int -> ProtectedRegion -> Bool
 isSteppable viewport region =
     BoundingRectangle.contains viewport region.bounds

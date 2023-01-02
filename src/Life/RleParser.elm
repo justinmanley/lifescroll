@@ -1,7 +1,9 @@
 module Life.RleParser exposing (comment, parse)
 
+import BoundingRectangle exposing (BoundingRectangle)
 import Life.GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern, setCells, setExtent)
+import Life.ProtectedRegion exposing (Movement)
 import Parser
     exposing
         ( (|.)
@@ -12,7 +14,6 @@ import Parser
         , chompUntil
         , chompWhile
         , end
-        , int
         , loop
         , map
         , oneOf
@@ -22,8 +23,13 @@ import Parser
         , symbol
         , token
         )
+import Parser.Extra exposing (int)
 import Set
 import Size2 exposing (Size2)
+
+
+
+-- The built-in Parser.int does not support leading minus signs.
 
 
 type alias GridState =
@@ -65,8 +71,8 @@ line pattern =
                 |= extent
             , succeed (Done << setCells pattern)
                 |= cells
-            , succeed (Loop pattern)
-                |. comment
+            , succeed (Loop << addComment pattern)
+                |= comment
             ]
             |. spacesOrTabs
             |. oneOf [ symbol "\n", end ]
@@ -141,14 +147,100 @@ nextGridLine gridState count =
     Loop { gridState | x = 0, y = gridState.y + count }
 
 
-comment : Parser ()
+type Comment
+    = MovementComment Movement
+    | MaximumBoundsComment (BoundingRectangle Int)
+    | Ignored
+
+
+comment : Parser Comment
 comment =
-    symbol "#"
+    succeed identity
+        |. symbol "#"
+        |. spacesOrTabs
+        |= oneOf
+            -- These comment types are not included in the standard RLE spec:
+            -- https://conwaylife.com/wiki/Run_Length_Encoded.
+            [ succeed MovementComment |= movementComment
+            , succeed MaximumBoundsComment |= maximumComment
+            , succeed Ignored
+            ]
         |. oneOf
             [ chompUntil "\n"
             , chompWhile (always True)
                 |. end
             ]
+
+
+movementComment : Parser Movement
+movementComment =
+    let
+        toMovement : Int -> Int -> Int -> Movement
+        toMovement x y speed =
+            { direction = ( x, y )
+            , speed = speed
+            }
+    in
+    succeed toMovement
+        |. token "MOVEMENT"
+        |. spacesOrTabs
+        |. token "DIRECTION"
+        |. spacesOrTabs
+        |. symbol "("
+        |. spacesOrTabs
+        |= int
+        |. spacesOrTabs
+        |. symbol ","
+        |. spacesOrTabs
+        |= int
+        |. spacesOrTabs
+        |. symbol ")"
+        |. spacesOrTabs
+        |. symbol "SPEED"
+        |. spacesOrTabs
+        |= int
+
+
+maximumComment : Parser (BoundingRectangle Int)
+maximumComment =
+    succeed BoundingRectangle
+        |. token "MAXIMUM EXTENT"
+        |. spacesOrTabs
+        |. token "TOP"
+        |. spacesOrTabs
+        |= int
+        |. spacesOrTabs
+        |. token "LEFT"
+        |. spacesOrTabs
+        |= int
+        |. spacesOrTabs
+        |. token "BOTTOM"
+        |. spacesOrTabs
+        |= int
+        |. spacesOrTabs
+        |. token "RIGHT"
+        |. spacesOrTabs
+        |= int
+
+
+addComment : Pattern -> Comment -> Pattern
+addComment pattern c =
+    { pattern
+        | protected =
+            let
+                protected =
+                    pattern.protected
+            in
+            case c of
+                MovementComment movement ->
+                    { protected | movement = Just movement }
+
+                MaximumBoundsComment bounds ->
+                    { protected | bounds = bounds }
+
+                Ignored ->
+                    protected
+    }
 
 
 

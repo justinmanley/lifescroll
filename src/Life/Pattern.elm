@@ -2,6 +2,7 @@ module Life.Pattern exposing (..)
 
 import Json.Encode as Encode
 import Life.GridCells exposing (GridCells)
+import Life.ProtectedRegion as ProtectedRegion exposing (ProtectedRegion)
 import Set
 import Size2 exposing (Size2)
 
@@ -17,6 +18,7 @@ type alias Pattern =
     -- bounds, but merely a reasonable amount of space for the
     -- pattern to go before it infringes on the rest of the page.
     , extent : Size2 Int
+    , protected : ProtectedRegion
     }
 
 
@@ -27,6 +29,7 @@ empty =
         { width = 0
         , height = 0
         }
+    , protected = ProtectedRegion.empty
     }
 
 

@@ -6,6 +6,7 @@ import Dict exposing (Dict)
 import Expect
 import Life.Life as Life
 import Life.Pattern exposing (Pattern)
+import Life.ProtectedRegion as ProtectedRegion
 import Main exposing (Model, Msg(..), insertPatterns)
 import Page exposing (Page)
 import PatternAnchor exposing (PatternAnchor)
@@ -28,6 +29,7 @@ testPatternDict =
                     , ( 1, 1 )
                     ]
             , extent = { height = 1, width = 2 }
+            , protected = ProtectedRegion.empty
             }
           )
         ]
