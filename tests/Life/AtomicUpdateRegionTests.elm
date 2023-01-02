@@ -17,7 +17,7 @@ suite =
 
                         movement =
                             { direction = ( -1, 1 )
-                            , speed = 3
+                            , period = 3
                             }
 
                         bounds =

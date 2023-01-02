@@ -19,7 +19,7 @@ suite =
                 \numGliderSteps ->
                     let
                         numSteps =
-                            numGliderSteps * glider.movement.speed
+                            numGliderSteps * glider.movement.period
 
                         initial =
                             Spaceship.toLifeGrid glider
@@ -33,7 +33,7 @@ suite =
                 \numGliderSteps ->
                     let
                         numSteps =
-                            numGliderSteps * glider.movement.speed
+                            numGliderSteps * glider.movement.period
 
                         viewport =
                             glider |> inViewFor numSteps

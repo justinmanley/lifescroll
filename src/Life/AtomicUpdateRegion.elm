@@ -6,7 +6,7 @@ import Vector2 exposing (Vector2)
 
 type alias Movement =
     { direction : Vector2 Int
-    , speed : Int
+    , period : Int
     }
 
 
@@ -32,7 +32,7 @@ isSteppable viewport region =
 
 moveBy : Movement -> Int -> BoundingRectangle Int -> BoundingRectangle Int
 moveBy movement stepsElapsed bounds =
-    if (stepsElapsed |> modBy movement.speed) == 0 then
+    if (stepsElapsed |> modBy movement.period) == 0 then
         bounds |> offsetBy movement.direction
 
     else

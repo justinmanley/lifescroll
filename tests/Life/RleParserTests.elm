@@ -133,20 +133,20 @@ suite =
                     (Ok <|
                         Just
                             { direction = ( 1, 2 )
-                            , speed = 3
+                            , period = 3
                             }
                     )
-                    (RleParser.parse "# MOVEMENT DIRECTION (1,2) SPEED 3\no!" |> Result.map getMovement)
+                    (RleParser.parse "# MOVEMENT DIRECTION (1,2) PERIOD 3\no!" |> Result.map getMovement)
         , test "parses a pattern with a movement comment with negative movement" <|
             \_ ->
                 Expect.equal
                     (Ok <|
                         Just
                             { direction = ( -1, 2 )
-                            , speed = 3
+                            , period = 3
                             }
                     )
-                    (RleParser.parse "# MOVEMENT DIRECTION (-1,2) SPEED 3\no!" |> Result.map getMovement)
+                    (RleParser.parse "# MOVEMENT DIRECTION (-1,2) PERIOD 3\no!" |> Result.map getMovement)
         , test "parses a pattern with an atomic update region bounds comment" <|
             \_ ->
                 Expect.equal
@@ -173,12 +173,12 @@ suite =
                         , movement =
                             Just
                                 { direction = ( 1, 2 )
-                                , speed = 3
+                                , period = 3
                                 }
                         , stepsElapsed = 0
                         }
                     )
-                    (RleParser.parse "# MOVEMENT DIRECTION (1,2) SPEED 3\n# MAXIMUM EXTENT TOP 1 LEFT 2 BOTTOM 3 RIGHT 4l\no!"
+                    (RleParser.parse "# MOVEMENT DIRECTION (1,2) PERIOD 3\n# MAXIMUM EXTENT TOP 1 LEFT 2 BOTTOM 3 RIGHT 4l\no!"
                         |> Result.map getAtomicUpdateRegion
                     )
         ]

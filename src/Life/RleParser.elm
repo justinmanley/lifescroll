@@ -177,9 +177,9 @@ movementComment : Parser Movement
 movementComment =
     let
         toMovement : Int -> Int -> Int -> Movement
-        toMovement x y speed =
+        toMovement x y period =
             { direction = ( x, y )
-            , speed = speed
+            , period = period
             }
     in
     succeed toMovement
@@ -197,7 +197,7 @@ movementComment =
         |. spacesOrTabs
         |. symbol ")"
         |. spacesOrTabs
-        |. symbol "SPEED"
+        |. symbol "PERIOD"
         |. spacesOrTabs
         |= int
 

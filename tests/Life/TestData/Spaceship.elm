@@ -21,7 +21,7 @@ glider =
         , ( 1, 2 )
         ]
     , movement =
-        { speed = 4
+        { period = 4
         , direction = ( 1, -1 )
         }
     , atomicUpdateBounds =
@@ -48,7 +48,7 @@ lightweightSpaceship =
         , ( 3, 3 )
         ]
     , movement =
-        { speed = 4
+        { period = 4
         , direction = ( 2, 0 )
         }
     , atomicUpdateBounds =
@@ -105,10 +105,10 @@ toAtomicUpdateRegion spaceship =
 
 inViewFor : Int -> Spaceship -> BoundingRectangle Int
 inViewFor numSteps { atomicUpdateBounds, movement } =
-    { top = atomicUpdateBounds.top + (min 0 <| y movement.direction) * numSteps // movement.speed
-    , left = atomicUpdateBounds.left + (min 0 <| x movement.direction) * numSteps // movement.speed
-    , bottom = atomicUpdateBounds.bottom + (max 0 <| y movement.direction) * numSteps // movement.speed + 1
-    , right = atomicUpdateBounds.right + (max 0 <| x movement.direction) * numSteps // movement.speed + 1
+    { top = atomicUpdateBounds.top + (min 0 <| y movement.direction) * numSteps // movement.period
+    , left = atomicUpdateBounds.left + (min 0 <| x movement.direction) * numSteps // movement.period
+    , bottom = atomicUpdateBounds.bottom + (max 0 <| y movement.direction) * numSteps // movement.period + 1
+    , right = atomicUpdateBounds.right + (max 0 <| x movement.direction) * numSteps // movement.period + 1
     }
 
 
