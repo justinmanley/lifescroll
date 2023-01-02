@@ -2,9 +2,9 @@ module Life.RleParserTests exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Expect
+import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
 import Life.GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern)
-import Life.ProtectedRegion as ProtectedRegion exposing (Movement, ProtectedRegion)
 import Life.RleParser as RleParser
 import Set
 import Size2 exposing (Size2)
@@ -82,7 +82,7 @@ suite =
                     (Ok <|
                         { extent = { width = 2, height = 3 }
                         , cells = Set.fromList [ ( 0, 0 ) ]
-                        , protected = ProtectedRegion.empty
+                        , atomicUpdateRegion = AtomicUpdateRegion.empty
                         }
                     )
                     (RleParser.parse "x = 2, y = 3\no!")
@@ -100,7 +100,7 @@ suite =
                                 , ( 3, 1 )
                                 ]
                         , extent = { height = 3, width = 4 }
-                        , protected = ProtectedRegion.empty
+                        , atomicUpdateRegion = AtomicUpdateRegion.empty
                         }
                     )
                     (RleParser.parse "#N Beehive\n#O John Conway\n#C An extremely common 6…eehive\nx = 4, y = 3, rule = B3/S23\nb2ob$o2bo$b2o!")
@@ -127,7 +127,7 @@ suite =
                             }
                     )
                     (RleParser.parse "# MOVEMENT DIRECTION (-1,2) SPEED 3\no!" |> Result.map getMovement)
-        , test "parses a pattern with a protected region bounds comment" <|
+        , test "parses a pattern with an atomic update region bounds comment" <|
             \_ ->
                 Expect.equal
                     (Ok <|
@@ -138,9 +138,9 @@ suite =
                         }
                     )
                     (RleParser.parse "# MAXIMUM EXTENT TOP 1 LEFT 2 BOTTOM 3 RIGHT 4l\no!"
-                        |> Result.map getProtectedBounds
+                        |> Result.map getAtomicUpdateRegionBounds
                     )
-        , test "parses a pattern with protected region bounds comments" <|
+        , test "parses a pattern with atomic update region bounds comments" <|
             \_ ->
                 Expect.equal
                     (Ok <|
@@ -159,7 +159,7 @@ suite =
                         }
                     )
                     (RleParser.parse "# MOVEMENT DIRECTION (1,2) SPEED 3\n# MAXIMUM EXTENT TOP 1 LEFT 2 BOTTOM 3 RIGHT 4l\no!"
-                        |> Result.map getProtectedRegion
+                        |> Result.map getAtomicUpdateRegion
                     )
         ]
 
@@ -168,7 +168,7 @@ withoutExtent : List (Vector2 Int) -> Pattern
 withoutExtent cells =
     { extent = emptyExtent
     , cells = Set.fromList cells
-    , protected = ProtectedRegion.empty
+    , atomicUpdateRegion = AtomicUpdateRegion.empty
     }
 
 
@@ -181,7 +181,7 @@ emptyExtent =
 
 getMovement : Pattern -> Maybe Movement
 getMovement pattern =
-    pattern.protected.movement
+    pattern.atomicUpdateRegion.movement
 
 
 getCells : Pattern -> GridCells
@@ -194,11 +194,11 @@ getExtent pattern =
     pattern.extent
 
 
-getProtectedBounds : Pattern -> BoundingRectangle Int
-getProtectedBounds pattern =
-    pattern.protected.bounds
+getAtomicUpdateRegionBounds : Pattern -> BoundingRectangle Int
+getAtomicUpdateRegionBounds pattern =
+    pattern.atomicUpdateRegion.bounds
 
 
-getProtectedRegion : Pattern -> ProtectedRegion
-getProtectedRegion pattern =
-    pattern.protected
+getAtomicUpdateRegion : Pattern -> AtomicUpdateRegion
+getAtomicUpdateRegion pattern =
+    pattern.atomicUpdateRegion

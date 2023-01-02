@@ -48,15 +48,15 @@ toPattern cellSizeInPixels article anchor =
             Just <|
                 { cells = Set.map (Vector2.add start) pattern.cells
                 , extent = pattern.extent
-                , protected =
+                , atomicUpdateRegion =
                     { bounds =
-                        { top = top + pattern.protected.bounds.top
-                        , left = left + pattern.protected.bounds.left
-                        , bottom = top + BoundingRectangle.height pattern.protected.bounds
-                        , right = left + BoundingRectangle.width pattern.protected.bounds
+                        { top = top + pattern.atomicUpdateRegion.bounds.top
+                        , left = left + pattern.atomicUpdateRegion.bounds.left
+                        , bottom = top + BoundingRectangle.height pattern.atomicUpdateRegion.bounds
+                        , right = left + BoundingRectangle.width pattern.atomicUpdateRegion.bounds
                         }
-                    , movement = pattern.protected.movement
-                    , stepsElapsed = pattern.protected.stepsElapsed
+                    , movement = pattern.atomicUpdateRegion.movement
+                    , stepsElapsed = pattern.atomicUpdateRegion.stepsElapsed
                     }
                 }
 

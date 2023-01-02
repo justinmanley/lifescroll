@@ -6,7 +6,7 @@ import String exposing (contains)
 
 
 type alias DebugSettings =
-    { protected : Bool
+    { atomicUpdateRegions : Bool
     , grid : Bool
     , log : Bool
     }
@@ -14,7 +14,7 @@ type alias DebugSettings =
 
 empty : DebugSettings
 empty =
-    { protected = False
+    { atomicUpdateRegions = False
     , grid = False
     , log = False
     }
@@ -22,7 +22,7 @@ empty =
 
 allEnabled : DebugSettings
 allEnabled =
-    { protected = True
+    { atomicUpdateRegions = True
     , grid = True
     , log = True
     }
@@ -42,7 +42,7 @@ decoder =
     let
         decodeQueryString : String -> DebugSettings
         decodeQueryString debug =
-            { protected = debug |> contains "protected"
+            { atomicUpdateRegions = debug |> contains "atomicUpdateRegions"
             , grid = debug |> contains "grid"
             , log = debug |> contains "log"
             }

@@ -1,9 +1,9 @@
 module Life.RleParser exposing (comment, parse)
 
 import BoundingRectangle exposing (BoundingRectangle)
+import Life.AtomicUpdateRegion exposing (Movement)
 import Life.GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern, setCells, setExtent)
-import Life.ProtectedRegion exposing (Movement)
 import Parser
     exposing
         ( (|.)
@@ -226,20 +226,20 @@ maximumComment =
 addComment : Pattern -> Comment -> Pattern
 addComment pattern c =
     { pattern
-        | protected =
+        | atomicUpdateRegion =
             let
-                protected =
-                    pattern.protected
+                atomicUpdateRegion =
+                    pattern.atomicUpdateRegion
             in
             case c of
                 MovementComment movement ->
-                    { protected | movement = Just movement }
+                    { atomicUpdateRegion | movement = Just movement }
 
                 MaximumBoundsComment bounds ->
-                    { protected | bounds = bounds }
+                    { atomicUpdateRegion | bounds = bounds }
 
                 Ignored ->
-                    protected
+                    atomicUpdateRegion
     }
 
 

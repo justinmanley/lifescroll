@@ -1,26 +1,26 @@
 module Life.Viewport exposing (scroll, scrolledCellsPerStep)
 
 import BoundingRectangle exposing (BoundingRectangle)
+import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells exposing (GridCells)
 import Life.Life as Life exposing (LifeGrid)
-import Life.ProtectedRegion as ProtectedRegion exposing (ProtectedRegion)
 import Loop exposing (for)
 import Set
 import Vector2 exposing (Vector2)
 
 
-next : BoundingRectangle Int -> List ProtectedRegion -> GridCells -> GridCells
-next viewport protectedRegions cells =
+next : BoundingRectangle Int -> List AtomicUpdateRegion -> GridCells -> GridCells
+next viewport atomicUpdateRegions cells =
     let
-        isProtected : Vector2 Int -> ProtectedRegion -> Bool
-        isProtected cell { bounds } =
+        belongsToAtomicUpdateRegion : Vector2 Int -> AtomicUpdateRegion -> Bool
+        belongsToAtomicUpdateRegion cell { bounds } =
             (bounds |> BoundingRectangle.hasPartialIntersection viewport)
                 && (bounds |> BoundingRectangle.containsPoint cell)
 
         isSteppable : Vector2 Int -> Bool
         isSteppable cell =
             BoundingRectangle.containsPoint cell viewport
-                && not (List.any (isProtected cell) protectedRegions)
+                && not (List.any (belongsToAtomicUpdateRegion cell) atomicUpdateRegions)
 
         ( steppable, notSteppable ) =
             Set.partition isSteppable cells
@@ -29,7 +29,7 @@ next viewport protectedRegions cells =
 
 
 scroll : Float -> Float -> BoundingRectangle Float -> LifeGrid -> LifeGrid
-scroll cellSizeInPixels mostRecentScrollPosition viewport { protected, cells } =
+scroll cellSizeInPixels mostRecentScrollPosition viewport { atomicUpdateRegions, cells } =
     let
         toGridCellsCoordinates : Float -> Int
         toGridCellsCoordinates pageCoordinate =
@@ -50,8 +50,8 @@ scroll cellSizeInPixels mostRecentScrollPosition viewport { protected, cells } =
             , right = toGrid viewport.right
             }
     in
-    { cells = for numSteps (next gridViewport protected) cells
-    , protected = List.map (ProtectedRegion.stepIfEligible gridViewport numSteps) protected
+    { cells = for numSteps (next gridViewport atomicUpdateRegions) cells
+    , atomicUpdateRegions = List.map (AtomicUpdateRegion.stepIfEligible gridViewport numSteps) atomicUpdateRegions
     }
 
 

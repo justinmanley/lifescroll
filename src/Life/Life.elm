@@ -5,9 +5,9 @@ import Canvas exposing (Renderable, Shape, lineTo, path, shapes)
 import Canvas.Settings exposing (fill, stroke)
 import Canvas.Settings.Line exposing (lineWidth)
 import Color
+import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
-import Life.ProtectedRegion exposing (ProtectedRegion)
 import Set
 import Set.Extra as Set
 import Size2 exposing (Size2)
@@ -16,14 +16,14 @@ import Vector2 exposing (Vector2, x, y)
 
 type alias LifeGrid =
     { cells : GridCells
-    , protected : List ProtectedRegion
+    , atomicUpdateRegions : List AtomicUpdateRegion
     }
 
 
 empty : LifeGrid
 empty =
     { cells = GridCells.empty
-    , protected = []
+    , atomicUpdateRegions = []
     }
 
 
@@ -106,10 +106,10 @@ renderGrid cellSize page =
         List.append verticalLines horizontalLines
 
 
-renderProtectedRegions : Float -> List ProtectedRegion -> Renderable
-renderProtectedRegions cellSize protectedRegions =
+renderAtomicUpdateRegions : Float -> List AtomicUpdateRegion -> Renderable
+renderAtomicUpdateRegions cellSize atomicUpdateRegions =
     let
-        renderRegion : ProtectedRegion -> Shape
+        renderRegion : AtomicUpdateRegion -> Shape
         renderRegion { bounds } =
             Canvas.rect
                 ( toFloat bounds.left * cellSize - debugStrokeHalfWidth
@@ -119,7 +119,7 @@ renderProtectedRegions cellSize protectedRegions =
                 (toFloat (BoundingRectangle.height bounds) * cellSize + debugStrokeHalfWidth)
     in
     shapes [ stroke Color.red, lineWidth (debugStrokeHalfWidth * 2) ] <|
-        List.map renderRegion protectedRegions
+        List.map renderRegion atomicUpdateRegions
 
 
 next : GridCells -> GridCells

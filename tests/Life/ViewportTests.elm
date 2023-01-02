@@ -62,7 +62,7 @@ scrollSentinel numSteps currentPageScrollPositionToMostRecent =
 
         life =
             { cells = GridCells.empty
-            , protected =
+            , atomicUpdateRegions =
                 [ { bounds = sentinel
                   , movement = Nothing
                   , stepsElapsed = 0
@@ -75,7 +75,7 @@ scrollSentinel numSteps currentPageScrollPositionToMostRecent =
 
 stepsElapsed : LifeGrid -> Maybe Int
 stepsElapsed grid =
-    case grid.protected of
+    case grid.atomicUpdateRegions of
         [] ->
             Nothing
 

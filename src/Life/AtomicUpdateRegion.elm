@@ -1,4 +1,4 @@
-module Life.ProtectedRegion exposing (..)
+module Life.AtomicUpdateRegion exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Vector2 exposing (Vector2)
@@ -10,19 +10,14 @@ type alias Movement =
     }
 
 
-
--- TODO: Instead of 'protected', consider 'atomic,' meaning that
--- everything in the region must be updated, or nothing.
-
-
-type alias ProtectedRegion =
+type alias AtomicUpdateRegion =
     { bounds : BoundingRectangle Int
     , movement : Maybe Movement
     , stepsElapsed : Int
     }
 
 
-empty : ProtectedRegion
+empty : AtomicUpdateRegion
 empty =
     { bounds = BoundingRectangle.empty
     , movement = Nothing
@@ -30,12 +25,12 @@ empty =
     }
 
 
-isSteppable : BoundingRectangle Int -> ProtectedRegion -> Bool
+isSteppable : BoundingRectangle Int -> AtomicUpdateRegion -> Bool
 isSteppable viewport region =
     BoundingRectangle.contains viewport region.bounds
 
 
-stepIfEligible : BoundingRectangle Int -> Int -> ProtectedRegion -> ProtectedRegion
+stepIfEligible : BoundingRectangle Int -> Int -> AtomicUpdateRegion -> AtomicUpdateRegion
 stepIfEligible viewport numSteps region =
     if isSteppable viewport region then
         { region | stepsElapsed = region.stepsElapsed + numSteps }

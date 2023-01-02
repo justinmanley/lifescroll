@@ -4,9 +4,9 @@ import BoundingRectangle
 import DebugSettings
 import Dict exposing (Dict)
 import Expect exposing (Expectation)
+import Life.AtomicUpdateRegion as AtomicUpdateRegion
 import Life.Life as Life
 import Life.Pattern exposing (Pattern)
-import Life.ProtectedRegion as ProtectedRegion
 import Main exposing (Model, Msg(..), insertPattern, insertPatterns)
 import Page exposing (Page)
 import PatternAnchor exposing (PatternAnchor)
@@ -65,7 +65,7 @@ testPattern =
             , ( 1, 1 )
             ]
     , extent = { height = 1, width = 2 }
-    , protected = ProtectedRegion.empty
+    , atomicUpdateRegion = AtomicUpdateRegion.empty
     }
 
 

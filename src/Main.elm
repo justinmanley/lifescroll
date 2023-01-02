@@ -85,8 +85,8 @@ view { page, life } =
 
           else
             Renderable.empty
-        , if page.debug.protected then
-            Life.renderProtectedRegions page.cellSizeInPixels life.protected
+        , if page.debug.atomicUpdateRegions then
+            Life.renderAtomicUpdateRegions page.cellSizeInPixels life.atomicUpdateRegions
 
           else
             Renderable.empty
@@ -133,9 +133,9 @@ insertPattern loggingEnabled pattern grid =
                 Set.insert cell allCells
     in
     { cells = Set.foldl insertWithConflictLogging grid.cells pattern.cells
-    , protected =
-        pattern.protected
-            :: grid.protected
+    , atomicUpdateRegions =
+        pattern.atomicUpdateRegion
+            :: grid.atomicUpdateRegions
     }
 
 
