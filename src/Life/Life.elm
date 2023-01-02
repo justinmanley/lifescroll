@@ -5,8 +5,6 @@ import Canvas exposing (Renderable, Shape, lineTo, path, shapes)
 import Canvas.Settings exposing (fill, stroke)
 import Canvas.Settings.Line exposing (lineWidth)
 import Color
-import DebugSettings exposing (withLogging)
-import Life.BoundedGridCells exposing (BoundedGridCells)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
 import Life.ProtectedRegion exposing (ProtectedRegion)
@@ -53,27 +51,6 @@ resize oldSize newSize grid =
 
     else
         Set.map oldIndexToNewIndex grid
-
-
-insertPattern : Bool -> BoundedGridCells -> LifeGrid -> LifeGrid
-insertPattern loggingEnabled pattern { cells, protected } =
-    let
-        insertWithConflictLogging : Vector2 Int -> GridCells -> GridCells
-        insertWithConflictLogging cell allCells =
-            if Set.member cell allCells then
-                withLogging loggingEnabled "found a conflict while attempting to insert pattern" allCells
-
-            else
-                Set.insert cell allCells
-    in
-    { cells = Set.foldl insertWithConflictLogging cells pattern.cells
-    , protected =
-        { bounds = pattern.bounds
-        , movement = Nothing
-        , stepsElapsed = 0
-        }
-            :: protected
-    }
 
 
 

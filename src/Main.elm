@@ -9,10 +9,15 @@ import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
 import Json.Encode as Encode
+import Life.GridCells exposing (GridCells)
 import Life.Life as Life exposing (LifeGrid)
+import Life.Pattern exposing (Pattern)
 import Life.Viewport as Viewport
 import Page exposing (Page)
+import PatternAnchor exposing (PatternAnchor)
 import ScrollState exposing (ScrollState)
+import Set
+import Vector2 exposing (Vector2)
 
 
 main : Program () Model Msg
@@ -113,7 +118,25 @@ update msg model =
 
 insertPatterns : Page -> LifeGrid -> LifeGrid
 insertPatterns page life =
-    List.foldl (Life.insertPattern page.debug.log) life <| Page.gridCells page
+    List.foldl (insertPattern page.debug.log) life <| Page.patterns page
+
+
+insertPattern : Bool -> Pattern -> LifeGrid -> LifeGrid
+insertPattern loggingEnabled pattern grid =
+    let
+        insertWithConflictLogging : Vector2 Int -> GridCells -> GridCells
+        insertWithConflictLogging cell allCells =
+            if Set.member cell allCells then
+                withLogging loggingEnabled "found a conflict while attempting to insert pattern" allCells
+
+            else
+                Set.insert cell allCells
+    in
+    { cells = Set.foldl insertWithConflictLogging grid.cells pattern.cells
+    , protected =
+        pattern.protected
+            :: grid.protected
+    }
 
 
 subscriptions : Model -> Sub Msg
