@@ -89,6 +89,15 @@ hasPartialIntersection a b =
     0 < intersectionArea && intersectionArea < minArea
 
 
+offsetBy : Vector2 number -> BoundingRectangle number -> BoundingRectangle number
+offsetBy ( x, y ) bounds =
+    { top = y + bounds.top
+    , left = x + bounds.left
+    , bottom = y + height bounds
+    , right = x + width bounds
+    }
+
+
 decoder : Decoder (BoundingRectangle Float)
 decoder =
     Decode.map4 BoundingRectangle

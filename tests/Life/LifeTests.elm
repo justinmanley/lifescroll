@@ -29,6 +29,9 @@ testStillLifeDoesNotChange { name, cells } =
 
 
 testSpaceshipIsDisplacedAfterPeriod : Spaceship -> Test
-testSpaceshipIsDisplacedAfterPeriod { name, cells, period, direction } =
-    test ("spaceship " ++ name ++ " is displaced by " ++ Vector2.toString (Vector2.map String.fromInt direction) ++ "after " ++ String.fromInt period) <|
-        \_ -> Expect.equal (Set.map (Vector2.fold (+) direction) cells) (for period Life.next cells)
+testSpaceshipIsDisplacedAfterPeriod { name, cells, movement } =
+    test ("spaceship " ++ name ++ " is displaced by " ++ Vector2.toString (Vector2.map String.fromInt movement.direction) ++ "after " ++ String.fromInt movement.speed) <|
+        \_ ->
+            Expect.equal
+                (Set.map (Vector2.fold (+) movement.direction) (Set.fromList cells))
+                (for movement.speed Life.next (Set.fromList cells))

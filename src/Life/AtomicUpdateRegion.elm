@@ -1,6 +1,6 @@
 module Life.AtomicUpdateRegion exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle)
+import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import Vector2 exposing (Vector2)
 
 
@@ -30,10 +30,32 @@ isSteppable viewport region =
     BoundingRectangle.contains viewport region.bounds
 
 
-stepIfEligible : BoundingRectangle Int -> Int -> AtomicUpdateRegion -> AtomicUpdateRegion
-stepIfEligible viewport numSteps region =
+moveBy : Movement -> Int -> BoundingRectangle Int -> BoundingRectangle Int
+moveBy movement stepsElapsed bounds =
+    if (stepsElapsed |> modBy movement.speed) == 0 then
+        bounds |> offsetBy movement.direction
+
+    else
+        bounds
+
+
+next : BoundingRectangle Int -> AtomicUpdateRegion -> AtomicUpdateRegion
+next viewport region =
     if isSteppable viewport region then
-        { region | stepsElapsed = region.stepsElapsed + numSteps }
+        let
+            stepsElapsed =
+                region.stepsElapsed + 1
+        in
+        { region
+            | bounds =
+                case region.movement of
+                    Just movement ->
+                        region.bounds |> moveBy movement stepsElapsed
+
+                    Nothing ->
+                        region.bounds
+            , stepsElapsed = stepsElapsed
+        }
 
     else
         region

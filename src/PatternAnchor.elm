@@ -1,6 +1,6 @@
 module PatternAnchor exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle)
+import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (withLogging)
 import Json.Decode as Decode exposing (Decoder, field, string)
 import Life.Pattern as Pattern exposing (Pattern, withVerticalPadding)
@@ -41,20 +41,12 @@ toPattern cellSizeInPixels article anchor =
             let
                 start =
                     offset pattern
-
-                ( left, top ) =
-                    start
             in
             Just <|
                 { cells = Set.map (Vector2.add start) pattern.cells
                 , extent = pattern.extent
                 , atomicUpdateRegion =
-                    { bounds =
-                        { top = top + pattern.atomicUpdateRegion.bounds.top
-                        , left = left + pattern.atomicUpdateRegion.bounds.left
-                        , bottom = top + BoundingRectangle.height pattern.atomicUpdateRegion.bounds
-                        , right = left + BoundingRectangle.width pattern.atomicUpdateRegion.bounds
-                        }
+                    { bounds = pattern.atomicUpdateRegion.bounds |> offsetBy start
                     , movement = pattern.atomicUpdateRegion.movement
                     , stepsElapsed = pattern.atomicUpdateRegion.stepsElapsed
                     }

@@ -75,6 +75,7 @@ render cellSize cells =
     shapes [ fill Color.black ] <| List.map renderCell <| Set.toList cells
 
 
+debugStrokeHalfWidth : number
 debugStrokeHalfWidth =
     2
 

@@ -1,16 +1,15 @@
-module Life.Viewport exposing (scroll, scrolledCellsPerStep)
+module Life.Viewport exposing (next, scroll, scrolledCellsPerStep)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
-import Life.GridCells exposing (GridCells)
 import Life.Life as Life exposing (LifeGrid)
 import Loop exposing (for)
 import Set
 import Vector2 exposing (Vector2)
 
 
-next : BoundingRectangle Int -> List AtomicUpdateRegion -> GridCells -> GridCells
-next viewport atomicUpdateRegions cells =
+next : BoundingRectangle Int -> LifeGrid -> LifeGrid
+next viewport { cells, atomicUpdateRegions } =
     let
         belongsToAtomicUpdateRegion : Vector2 Int -> AtomicUpdateRegion -> Bool
         belongsToAtomicUpdateRegion cell { bounds } =
@@ -25,11 +24,13 @@ next viewport atomicUpdateRegions cells =
         ( steppable, notSteppable ) =
             Set.partition isSteppable cells
     in
-    Set.union (Life.next steppable) notSteppable
+    { cells = Set.union (Life.next steppable) notSteppable
+    , atomicUpdateRegions = List.map (AtomicUpdateRegion.next viewport) atomicUpdateRegions
+    }
 
 
 scroll : Float -> Float -> BoundingRectangle Float -> LifeGrid -> LifeGrid
-scroll cellSizeInPixels mostRecentScrollPosition viewport { atomicUpdateRegions, cells } =
+scroll cellSizeInPixels mostRecentScrollPosition viewport grid =
     let
         toGridCellsCoordinates : Float -> Int
         toGridCellsCoordinates pageCoordinate =
@@ -50,9 +51,7 @@ scroll cellSizeInPixels mostRecentScrollPosition viewport { atomicUpdateRegions,
             , right = toGrid viewport.right
             }
     in
-    { cells = for numSteps (next gridViewport atomicUpdateRegions) cells
-    , atomicUpdateRegions = List.map (AtomicUpdateRegion.stepIfEligible gridViewport numSteps) atomicUpdateRegions
-    }
+    for numSteps (next gridViewport) grid
 
 
 scrolledCellsPerStep : number
