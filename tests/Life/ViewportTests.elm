@@ -3,7 +3,7 @@ module Life.ViewportTests exposing (..)
 import BoundingRectangle exposing (BoundingRectangle, containsPoint)
 import Expect exposing (Expectation)
 import Fuzz exposing (intRange)
-import Life.GridCells as GridCells
+import Life.GridCells as GridCells exposing (GridCells)
 import Life.Life exposing (LifeGrid)
 import Life.TestData.Spaceship as Spaceship exposing (glider, inViewFor)
 import Life.Viewport as Viewport exposing (scrolledCellsPerStep)
@@ -35,9 +35,22 @@ suite =
         , describe "next"
             [ fuzz (intRange 0 10) "when the grid consists only of an atomic spaceship, the spaceship should always remain with the atomic update region" <|
                 \numSteps ->
-                    expectCellsToBeWithinAtomicUpdateRegion numSteps
-                        (glider |> inViewFor numSteps)
-                        (Spaceship.toLifeGrid glider)
+                    let
+                        viewport =
+                            glider |> inViewFor numSteps
+
+                        { atomicUpdateRegions, cells } =
+                            for numSteps (Viewport.next viewport) (Spaceship.toLifeGrid glider)
+                    in
+                    case atomicUpdateRegions of
+                        atomicUpdateRegion :: [] ->
+                            expectCellsToBeWithinBounds atomicUpdateRegion.bounds cells
+
+                        [] ->
+                            Expect.fail "Expected one atomic update region, but found none."
+
+                        _ ->
+                            Expect.fail "Expected one atomic update region, but found more than one."
             ]
         ]
 
@@ -94,34 +107,20 @@ stepsElapsed grid =
             Just region.stepsElapsed
 
 
-expectCellsToBeWithinAtomicUpdateRegion : Int -> BoundingRectangle Int -> LifeGrid -> Expectation
-expectCellsToBeWithinAtomicUpdateRegion numSteps viewport input =
+expectCellsToBeWithinBounds : BoundingRectangle Int -> GridCells -> Expectation
+expectCellsToBeWithinBounds bounds cells =
     let
-        { atomicUpdateRegions, cells } =
-            for numSteps (Viewport.next viewport) input
+        isCellOutsideBounds cell =
+            bounds |> not << containsPoint cell
+
+        cellsOutsideBounds =
+            Set.filter isCellOutsideBounds cells
     in
-    case atomicUpdateRegions of
-        atomicUpdateRegion :: [] ->
-            let
-                isCellOutsideBounds cell =
-                    atomicUpdateRegion.bounds |> not << containsPoint cell
-
-                cellsOutsideBounds =
-                    Set.filter isCellOutsideBounds cells
-            in
-            Expect.equalSets cellsOutsideBounds Set.empty
-                |> Expect.onFail
-                    ("Cells "
-                        ++ Debug.toString cellsOutsideBounds
-                        ++ " were outside the atomic update region"
-                        ++ Debug.toString atomicUpdateRegion.bounds
-                        ++ " after "
-                        ++ String.fromInt numSteps
-                        ++ " steps."
-                    )
-
-        [] ->
-            Expect.fail "Expected one atomic update region, but found none."
-
-        _ ->
-            Expect.fail "Expected one atomic update region, but found more than one."
+    Expect.equalSets cellsOutsideBounds Set.empty
+        |> Expect.onFail
+            ("Cells "
+                ++ Debug.toString cellsOutsideBounds
+                ++ " were outside the bounds "
+                ++ Debug.toString bounds
+                ++ "."
+            )

@@ -2,9 +2,11 @@ module Life.TestData.Spaceship exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
+import Life.GridCells as GridCells
 import Life.Life exposing (LifeGrid)
 import Life.Pattern exposing (Pattern)
 import Set
+import Size2
 import Vector2 exposing (Vector2, x, y)
 
 
@@ -69,18 +71,19 @@ type alias Spaceship =
 toPattern : Spaceship -> Pattern
 toPattern spaceship =
     let
-        bounds =
-            { top = List.foldl (y >> min) 0 spaceship.cells
-            , left = List.foldl (x >> min) 0 spaceship.cells
-            , bottom = List.foldl (y >> max) 0 spaceship.cells
-            , right = List.foldl (x >> max) 0 spaceship.cells
-            }
+        cells =
+            Set.fromList spaceship.cells
     in
-    { cells = Set.fromList spaceship.cells
+    { cells = cells
     , extent =
-        { width = BoundingRectangle.width bounds
-        , height = BoundingRectangle.height bounds
-        }
+        case GridCells.bounds cells of
+            Nothing ->
+                Size2.empty
+
+            Just bounds ->
+                { width = BoundingRectangle.width bounds
+                , height = BoundingRectangle.height bounds
+                }
     , atomicUpdateRegion = toAtomicUpdateRegion spaceship
     }
 
@@ -104,8 +107,8 @@ inViewFor : Int -> Spaceship -> BoundingRectangle Int
 inViewFor numSteps { atomicUpdateBounds, movement } =
     { top = atomicUpdateBounds.top + (min 0 <| y movement.direction) * numSteps // movement.speed
     , left = atomicUpdateBounds.left + (min 0 <| x movement.direction) * numSteps // movement.speed
-    , bottom = atomicUpdateBounds.left + (max 0 <| y movement.direction) * numSteps // movement.speed
-    , right = atomicUpdateBounds.left + (max 0 <| x movement.direction) * numSteps // movement.speed
+    , bottom = atomicUpdateBounds.bottom + (max 0 <| y movement.direction) * numSteps // movement.speed + 1
+    , right = atomicUpdateBounds.right + (max 0 <| x movement.direction) * numSteps // movement.speed + 1
     }
 
 

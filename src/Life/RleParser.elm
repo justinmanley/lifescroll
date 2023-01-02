@@ -2,7 +2,7 @@ module Life.RleParser exposing (comment, parse)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Life.AtomicUpdateRegion exposing (Movement)
-import Life.GridCells exposing (GridCells)
+import Life.GridCells as GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern, setCells, setExtent)
 import Parser
     exposing
@@ -24,6 +24,7 @@ import Parser
         , token
         )
 import Parser.Extra exposing (int)
+import Result
 import Set
 import Size2 exposing (Size2)
 
@@ -55,7 +56,7 @@ initGrid =
 
 parse : String -> Result (List DeadEnd) Pattern
 parse =
-    run lines
+    run lines >> Result.map setAtomicUpdateBoundsFromCellsIfEmpty
 
 
 lines : Parser Pattern
@@ -286,3 +287,26 @@ extent =
             [ rule
             , spacesOrTabs
             ]
+
+
+setAtomicUpdateBoundsFromCellsIfEmpty : Pattern -> Pattern
+setAtomicUpdateBoundsFromCellsIfEmpty pattern =
+    let
+        atomicUpdateRegion =
+            pattern.atomicUpdateRegion
+    in
+    if pattern.atomicUpdateRegion.bounds == BoundingRectangle.empty then
+        case GridCells.bounds pattern.cells of
+            Nothing ->
+                pattern
+
+            Just cellBounds ->
+                { pattern
+                    | atomicUpdateRegion =
+                        { atomicUpdateRegion
+                            | bounds = cellBounds
+                        }
+                }
+
+    else
+        pattern

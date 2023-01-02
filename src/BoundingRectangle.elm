@@ -93,8 +93,8 @@ offsetBy : Vector2 number -> BoundingRectangle number -> BoundingRectangle numbe
 offsetBy ( x, y ) bounds =
     { top = y + bounds.top
     , left = x + bounds.left
-    , bottom = y + height bounds
-    , right = x + width bounds
+    , bottom = y + bounds.bottom
+    , right = x + bounds.right
     }
 
 

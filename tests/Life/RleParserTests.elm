@@ -82,7 +82,16 @@ suite =
                     (Ok <|
                         { extent = { width = 2, height = 3 }
                         , cells = Set.fromList [ ( 0, 0 ) ]
-                        , atomicUpdateRegion = AtomicUpdateRegion.empty
+                        , atomicUpdateRegion =
+                            { bounds =
+                                { top = 0
+                                , left = 0
+                                , right = 1
+                                , bottom = 1
+                                }
+                            , movement = Nothing
+                            , stepsElapsed = 0
+                            }
                         }
                     )
                     (RleParser.parse "x = 2, y = 3\no!")
@@ -100,13 +109,24 @@ suite =
                                 , ( 3, 1 )
                                 ]
                         , extent = { height = 3, width = 4 }
-                        , atomicUpdateRegion = AtomicUpdateRegion.empty
+                        , atomicUpdateRegion =
+                            { bounds =
+                                { top = 0
+                                , left = 0
+                                , right = 4
+                                , bottom = 3
+                                }
+                            , movement = Nothing
+                            , stepsElapsed = 0
+                            }
                         }
                     )
                     (RleParser.parse "#N Beehive\n#O John Conway\n#C An extremely common 6…eehive\nx = 4, y = 3, rule = B3/S23\nb2ob$o2bo$b2o!")
         , test "parses a pattern with grid cells across multiple lines" <|
             \_ ->
-                Expect.equal (Ok <| withoutExtent [ ( 0, 0 ), ( 1, 0 ) ]) (RleParser.parse "o\no!")
+                Expect.equal
+                    (Ok <| Set.fromList [ ( 0, 0 ), ( 1, 0 ) ])
+                    (RleParser.parse "o\no!" |> Result.map getCells)
         , test "parses a pattern with a movement comment" <|
             \_ ->
                 Expect.equal
@@ -162,14 +182,6 @@ suite =
                         |> Result.map getAtomicUpdateRegion
                     )
         ]
-
-
-withoutExtent : List (Vector2 Int) -> Pattern
-withoutExtent cells =
-    { extent = emptyExtent
-    , cells = Set.fromList cells
-    , atomicUpdateRegion = AtomicUpdateRegion.empty
-    }
 
 
 emptyExtent : Size2 Int

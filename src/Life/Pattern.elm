@@ -34,8 +34,10 @@ empty =
 
 
 setExtent : Pattern -> Size2 Int -> Pattern
-setExtent state size =
-    { state | extent = size }
+setExtent pattern size =
+    { pattern
+        | extent = size
+    }
 
 
 setCells : Pattern -> GridCells -> Pattern
