@@ -31,8 +31,8 @@ empty =
 -- in order to reduce the painting cost.
 
 
-render : Float -> GridCells -> Renderable
-render cellSize cells =
+render : BoundingRectangle Float -> Float -> GridCells -> Renderable
+render viewport cellSize cells =
     let
         square point size =
             Canvas.rect point size size
@@ -40,8 +40,8 @@ render cellSize cells =
         renderCell : Vector2 Int -> Shape
         renderCell position =
             square
-                ( toFloat (x position) * cellSize
-                , toFloat (y position) * cellSize
+                ( toFloat (x position) * cellSize - viewport.left
+                , toFloat (y position) * cellSize - viewport.top
                 )
                 cellSize
     in
@@ -53,18 +53,32 @@ debugStrokeHalfWidth =
     2
 
 
-renderGrid : Float -> BoundingRectangle Float -> Renderable
-renderGrid cellSize page =
+renderGrid : BoundingRectangle Float -> Float -> BoundingRectangle Float -> Renderable
+renderGrid viewport cellSize page =
     let
         verticalLine : Float -> Shape
         verticalLine x =
-            path ( cellSize * x - debugStrokeHalfWidth, cellSize * page.top )
-                [ lineTo ( cellSize * x - debugStrokeHalfWidth, cellSize * page.bottom ) ]
+            path
+                ( cellSize * x - debugStrokeHalfWidth - viewport.left
+                , cellSize * page.top - viewport.top
+                )
+                [ lineTo
+                    ( cellSize * x - debugStrokeHalfWidth - viewport.left
+                    , cellSize * page.bottom - viewport.top
+                    )
+                ]
 
         horizontalLine : Float -> Shape
         horizontalLine y =
-            path ( cellSize * page.left, cellSize * y - debugStrokeHalfWidth )
-                [ lineTo ( cellSize * page.right, cellSize * y - debugStrokeHalfWidth ) ]
+            path
+                ( cellSize * page.left - viewport.left
+                , cellSize * y - debugStrokeHalfWidth - viewport.top
+                )
+                [ lineTo
+                    ( cellSize * page.right - viewport.left
+                    , cellSize * y - debugStrokeHalfWidth - viewport.top
+                    )
+                ]
 
         verticalLines : List Shape
         verticalLines =
@@ -80,14 +94,14 @@ renderGrid cellSize page =
         List.append verticalLines horizontalLines
 
 
-renderAtomicUpdateRegions : Float -> List AtomicUpdateRegion -> Renderable
-renderAtomicUpdateRegions cellSize atomicUpdateRegions =
+renderAtomicUpdateRegions : BoundingRectangle Float -> Float -> List AtomicUpdateRegion -> Renderable
+renderAtomicUpdateRegions viewport cellSize atomicUpdateRegions =
     let
         renderRegion : AtomicUpdateRegion -> Shape
         renderRegion { bounds } =
             Canvas.rect
-                ( toFloat bounds.left * cellSize - debugStrokeHalfWidth
-                , toFloat bounds.top * cellSize - debugStrokeHalfWidth
+                ( toFloat bounds.left * cellSize - debugStrokeHalfWidth - viewport.left
+                , toFloat bounds.top * cellSize - debugStrokeHalfWidth - viewport.top
                 )
                 (toFloat (BoundingRectangle.width bounds) * cellSize + debugStrokeHalfWidth)
                 (toFloat (BoundingRectangle.height bounds) * cellSize + debugStrokeHalfWidth)

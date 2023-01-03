@@ -34,6 +34,7 @@ type alias Model =
     { page : Page
     , life : LifeGrid
     , scroll : ScrollState
+    , viewport : BoundingRectangle Float
     }
 
 
@@ -48,6 +49,7 @@ emptyModel =
     { page = Page.empty
     , life = Life.empty
     , scroll = ScrollState.empty
+    , viewport = BoundingRectangle.empty
     }
 
 
@@ -65,11 +67,16 @@ canvasDimensions rect =
     )
 
 
+formatAsPixels : Float -> String
+formatAsPixels float =
+    String.fromFloat float ++ "px"
+
+
 view : Model -> Html Msg
-view { page, life } =
+view { page, life, viewport } =
     Canvas.toHtml
-        (canvasDimensions page.body)
-        [ style "position" "absolute"
+        (canvasDimensions viewport)
+        [ style "position" "fixed"
         , style "height" "100%"
         , style "width" "100%"
         , style "top" "0"
@@ -77,16 +84,16 @@ view { page, life } =
         ]
         [ Canvas.clear
             ( page.body.left, page.body.top )
-            (BoundingRectangle.width page.body)
-            (BoundingRectangle.height page.body)
-        , Life.render page.cellSizeInPixels life.cells
+            (BoundingRectangle.width viewport)
+            (BoundingRectangle.height viewport)
+        , Life.render viewport page.cellSizeInPixels life.cells
         , if page.debug.grid then
-            Life.renderGrid page.cellSizeInPixels page.body
+            Life.renderGrid viewport page.cellSizeInPixels page.body
 
           else
             Renderable.empty
         , if page.debug.atomicUpdateRegions then
-            Life.renderAtomicUpdateRegions page.cellSizeInPixels life.atomicUpdateRegions
+            Life.renderAtomicUpdateRegions viewport page.cellSizeInPixels life.atomicUpdateRegions
 
           else
             Renderable.empty
@@ -108,6 +115,7 @@ update msg model =
             ( { model
                 | life = Viewport.scroll model.page.cellSizeInPixels model.scroll.mostRecent viewport model.life
                 , scroll = ScrollState.update viewport.top model.scroll
+                , viewport = viewport
               }
             , Cmd.none
             )

@@ -29,6 +29,20 @@ const pageUpdate = patterns => {
     };
 }
 
+const scrollPage = () => {
+    return {
+        ScrollPage: {
+            viewport: {
+                top: window.scrollY,
+                left: window.scrollX,
+                bottom: window.scrollY + window.innerHeight,
+                right: window.scrollX + window.innerWidth,
+            }
+        }
+    }
+}
+
+
 const getCellSizeInPixels = () => {
     const articleElement = document.getElementById('article');
 
@@ -86,20 +100,12 @@ const getPatterns = () =>
     )
 
 const initialize = app => {
+    app.ports.messageReceiver.send(scrollPage());
     getPatterns().then(patterns => {
         app.ports.messageReceiver.send(pageUpdate(patterns));
     });
 
     window.addEventListener("scroll", (event) => {
-        app.ports.messageReceiver.send({
-            ScrollPage: {
-                viewport: {
-                    top: window.scrollY,
-                    left: window.scrollX,
-                    bottom: window.scrollY + window.innerHeight,
-                    right: window.scrollX + window.innerWidth,
-                }
-            }
-        });
+        app.ports.messageReceiver.send(scrollPage());
     });
 }
