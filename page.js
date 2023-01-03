@@ -61,10 +61,13 @@ const getCellSizeInPixels = () => {
 
 class PatternAnchor extends HTMLElement {
     async getPattern() {
+        const rle = await this.rle;
+        // The bounds must be calculated after the rle file has been fetched
+        // and parsed.
         const boundingRectangle = boundingRectangleWithRespectToDocument(this);
         return {
             id: this.id,
-            rle: await this.rle,
+            rle,
             bounds: boundingRectangle,
         };
     }
