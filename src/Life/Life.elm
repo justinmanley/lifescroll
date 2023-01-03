@@ -3,6 +3,7 @@ module Life.Life exposing (..)
 import BoundingRectangle exposing (BoundingRectangle)
 import Canvas exposing (Renderable, Shape, lineTo, path, shapes)
 import Canvas.Settings exposing (fill, stroke)
+import Canvas.Settings.Advanced exposing (transform, translate)
 import Canvas.Settings.Line exposing (lineWidth)
 import Color
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
@@ -40,12 +41,18 @@ render viewport cellSize cells =
         renderCell : Vector2 Int -> Shape
         renderCell position =
             square
-                ( toFloat (x position) * cellSize - viewport.left
-                , toFloat (y position) * cellSize - viewport.top
+                ( toFloat (x position) * cellSize
+                , toFloat (y position) * cellSize
                 )
                 cellSize
     in
-    shapes [ fill Color.black ] <| List.map renderCell <| Set.toList cells
+    shapes
+        [ fill Color.black
+        , transform [ translate -viewport.left -viewport.top ]
+        ]
+    <|
+        List.map renderCell <|
+            Set.toList cells
 
 
 debugStrokeHalfWidth : number
@@ -59,26 +66,14 @@ renderGrid viewport cellSize page =
         verticalLine : Float -> Shape
         verticalLine x =
             path
-                ( cellSize * x - debugStrokeHalfWidth - viewport.left
-                , cellSize * page.top - viewport.top
-                )
-                [ lineTo
-                    ( cellSize * x - debugStrokeHalfWidth - viewport.left
-                    , cellSize * page.bottom - viewport.top
-                    )
-                ]
+                ( cellSize * x - debugStrokeHalfWidth, cellSize * page.top )
+                [ lineTo ( cellSize * x - debugStrokeHalfWidth, cellSize * page.bottom ) ]
 
         horizontalLine : Float -> Shape
         horizontalLine y =
             path
-                ( cellSize * page.left - viewport.left
-                , cellSize * y - debugStrokeHalfWidth - viewport.top
-                )
-                [ lineTo
-                    ( cellSize * page.right - viewport.left
-                    , cellSize * y - debugStrokeHalfWidth - viewport.top
-                    )
-                ]
+                ( cellSize * page.left, cellSize * y - debugStrokeHalfWidth )
+                [ lineTo ( cellSize * page.right, cellSize * y - debugStrokeHalfWidth ) ]
 
         verticalLines : List Shape
         verticalLines =
@@ -90,7 +85,12 @@ renderGrid viewport cellSize page =
             List.map (horizontalLine << toFloat) <|
                 List.range 0 (ceiling <| BoundingRectangle.height page / cellSize)
     in
-    shapes [ stroke Color.darkGray, lineWidth (debugStrokeHalfWidth * 2) ] <|
+    shapes
+        [ stroke Color.darkGray
+        , lineWidth (debugStrokeHalfWidth * 2)
+        , transform [ translate -viewport.left -viewport.top ]
+        ]
+    <|
         List.append verticalLines horizontalLines
 
 
@@ -100,13 +100,19 @@ renderAtomicUpdateRegions viewport cellSize atomicUpdateRegions =
         renderRegion : AtomicUpdateRegion -> Shape
         renderRegion { bounds } =
             Canvas.rect
-                ( toFloat bounds.left * cellSize - debugStrokeHalfWidth - viewport.left
-                , toFloat bounds.top * cellSize - debugStrokeHalfWidth - viewport.top
+                ( toFloat bounds.left * cellSize - debugStrokeHalfWidth
+                , toFloat bounds.top * cellSize - debugStrokeHalfWidth
                 )
                 (toFloat (BoundingRectangle.width bounds) * cellSize + debugStrokeHalfWidth)
                 (toFloat (BoundingRectangle.height bounds) * cellSize + debugStrokeHalfWidth)
     in
-    shapes [ stroke Color.red, lineWidth (debugStrokeHalfWidth * 2) ] <|
+    shapes
+        [ stroke Color.red
+        , lineWidth
+            (debugStrokeHalfWidth * 2)
+        , transform [ translate -viewport.left -viewport.top ]
+        ]
+    <|
         List.map renderRegion atomicUpdateRegions
 
 
