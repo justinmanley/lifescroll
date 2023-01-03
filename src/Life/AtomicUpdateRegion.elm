@@ -1,6 +1,7 @@
 module Life.AtomicUpdateRegion exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle, offsetBy)
+import BoundingRectangle exposing (BoundingRectangle, offsetBy, vertical)
+import Interval exposing (Interval, contains)
 import Vector2 exposing (Vector2)
 
 
@@ -25,9 +26,10 @@ empty =
     }
 
 
-isSteppable : BoundingRectangle Int -> AtomicUpdateRegion -> Bool
-isSteppable viewport region =
-    BoundingRectangle.contains viewport region.bounds
+isSteppable : Interval Int -> AtomicUpdateRegion -> Bool
+isSteppable viewportVerticalBounds { bounds } =
+    viewportVerticalBounds
+        |> contains (vertical bounds)
 
 
 moveBy : Movement -> Int -> BoundingRectangle Int -> BoundingRectangle Int
@@ -39,9 +41,9 @@ moveBy movement stepsElapsed bounds =
         bounds
 
 
-next : BoundingRectangle Int -> AtomicUpdateRegion -> AtomicUpdateRegion
-next viewport region =
-    if isSteppable viewport region then
+next : Interval Int -> AtomicUpdateRegion -> AtomicUpdateRegion
+next viewportVerticalBounds region =
+    if isSteppable viewportVerticalBounds region then
         let
             stepsElapsed =
                 region.stepsElapsed + 1

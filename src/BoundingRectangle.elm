@@ -1,6 +1,7 @@
 module BoundingRectangle exposing (..)
 
 import Canvas.Settings.Text exposing (TextBaseLine(..))
+import Interval exposing (Interval)
 import Json.Decode as Decode exposing (Decoder, field, float)
 import Vector2 exposing (Vector2)
 
@@ -30,14 +31,6 @@ empty =
     , bottom = 0
     , right = 0
     }
-
-
-contains : BoundingRectangle number -> BoundingRectangle number -> Bool
-contains container query =
-    (container.top <= query.top)
-        && (container.left <= query.left)
-        && (query.bottom <= container.bottom)
-        && (query.right <= container.right)
 
 
 expand : Vector2 number -> BoundingRectangle number -> BoundingRectangle number
@@ -77,24 +70,19 @@ area bounds =
     width bounds * height bounds
 
 
-hasPartialIntersection : BoundingRectangle number -> BoundingRectangle number -> Bool
-hasPartialIntersection a b =
-    let
-        intersectionArea =
-            area (intersect a b)
-
-        minArea =
-            min (area a) (area b)
-    in
-    0 < intersectionArea && intersectionArea < minArea
-
-
 offsetBy : Vector2 number -> BoundingRectangle number -> BoundingRectangle number
 offsetBy ( x, y ) bounds =
     { top = y + bounds.top
     , left = x + bounds.left
     , bottom = y + bounds.bottom
     , right = x + bounds.right
+    }
+
+
+vertical : BoundingRectangle number -> Interval number
+vertical { top, bottom } =
+    { start = top
+    , end = bottom
     }
 
 

@@ -1,6 +1,7 @@
 module Life.Viewport exposing (next, scroll, scrolledCellsPerStep)
 
-import BoundingRectangle exposing (BoundingRectangle)
+import BoundingRectangle exposing (BoundingRectangle, vertical)
+import Interval exposing (containsValue)
 import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.Life as Life exposing (LifeGrid)
 import Loop exposing (for)
@@ -11,21 +12,24 @@ import Vector2 exposing (Vector2)
 next : BoundingRectangle Int -> LifeGrid -> LifeGrid
 next viewport { cells, atomicUpdateRegions } =
     let
-        belongsToAtomicUpdateRegion : Vector2 Int -> AtomicUpdateRegion -> Bool
-        belongsToAtomicUpdateRegion cell { bounds } =
-            (bounds |> BoundingRectangle.hasPartialIntersection viewport)
+        viewportVerticalBounds =
+            vertical viewport
+
+        belongsToFrozenAtomicUpdateRegion : Vector2 Int -> AtomicUpdateRegion -> Bool
+        belongsToFrozenAtomicUpdateRegion cell { bounds } =
+            (vertical bounds |> Interval.hasPartialIntersection viewportVerticalBounds)
                 && (bounds |> BoundingRectangle.containsPoint cell)
 
         isSteppable : Vector2 Int -> Bool
-        isSteppable cell =
-            BoundingRectangle.containsPoint cell viewport
-                && not (List.any (belongsToAtomicUpdateRegion cell) atomicUpdateRegions)
+        isSteppable ( x, y ) =
+            (viewportVerticalBounds |> containsValue y)
+                && not (List.any (belongsToFrozenAtomicUpdateRegion ( x, y )) atomicUpdateRegions)
 
         ( steppable, notSteppable ) =
             Set.partition isSteppable cells
     in
     { cells = Set.union (Life.next steppable) notSteppable
-    , atomicUpdateRegions = List.map (AtomicUpdateRegion.next viewport) atomicUpdateRegions
+    , atomicUpdateRegions = List.map (AtomicUpdateRegion.next viewportVerticalBounds) atomicUpdateRegions
     }
 
 
