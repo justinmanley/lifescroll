@@ -59,6 +59,8 @@ const getCellSizeInPixels = () => {
     return articleFontSizeInPixels;
 }
 
+const verticalPadding = 1;
+
 class PatternAnchor extends HTMLElement {
     async getPattern() {
         const rle = await this.rle;
@@ -80,8 +82,11 @@ class PatternAnchor extends HTMLElement {
                     const cellSizeInPixels = getCellSizeInPixels();
                     const [_, width, height] = [...rle.matchAll(/x = (\d+), y = (\d+)/g)][0];
 
+                    console.log('height', height);
+                    console.log('height + 2', height + 2)
+
                     this.style.display = 'block';
-                    this.style.height = cellSizeInPixels * height;
+                    this.style.height = cellSizeInPixels * (parseFloat(height) + 2 * verticalPadding);
 
                     return rle;
                 })
