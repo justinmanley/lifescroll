@@ -9,6 +9,7 @@ import Color
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
+import PatternAnchor exposing (PatternAnchor)
 import Set
 import Set.Extra as Set
 import Vector2 exposing (Vector2, x, y)
@@ -114,6 +115,28 @@ renderAtomicUpdateRegions viewport cellSize atomicUpdateRegions =
         ]
     <|
         List.map renderRegion atomicUpdateRegions
+
+
+renderLayoutRegions : BoundingRectangle Float -> List PatternAnchor -> Renderable
+renderLayoutRegions viewport anchors =
+    let
+        renderLayoutRegion : PatternAnchor -> Shape
+        renderLayoutRegion anchor =
+            Canvas.rect
+                ( anchor.bounds.left
+                , anchor.bounds.top
+                )
+                (BoundingRectangle.width anchor.bounds)
+                (BoundingRectangle.height anchor.bounds)
+    in
+    shapes
+        [ stroke Color.blue
+        , lineWidth
+            (debugStrokeHalfWidth * 2)
+        , transform [ translate -viewport.left -viewport.top ]
+        ]
+    <|
+        List.map renderLayoutRegion anchors
 
 
 next : GridCells -> GridCells

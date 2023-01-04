@@ -92,8 +92,13 @@ view { page, life, viewport } =
 
           else
             Renderable.empty
-        , if page.debug.atomicUpdateRegions then
+        , if page.debug.atomicUpdates then
             Life.renderAtomicUpdateRegions viewport page.cellSizeInPixels life.atomicUpdateRegions
+
+          else
+            Renderable.empty
+        , if page.debug.layout then
+            Life.renderLayoutRegions viewport page.anchors
 
           else
             Renderable.empty
