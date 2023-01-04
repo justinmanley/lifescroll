@@ -3,6 +3,7 @@ module BoundingRectangle exposing (..)
 import Canvas.Settings.Text exposing (TextBaseLine(..))
 import Interval exposing (Interval)
 import Json.Decode as Decode exposing (Decoder, field, float)
+import Json.Encode as Encode exposing (Value)
 import Vector2 exposing (Vector2)
 
 
@@ -93,3 +94,13 @@ decoder =
         (field "left" float)
         (field "bottom" float)
         (field "right" float)
+
+
+encode : (number -> Value) -> BoundingRectangle number -> Value
+encode encodeNumber { top, left, bottom, right } =
+    Encode.object
+        [ ( "top", encodeNumber top )
+        , ( "left", encodeNumber left )
+        , ( "bottom", encodeNumber bottom )
+        , ( "right", encodeNumber right )
+        ]

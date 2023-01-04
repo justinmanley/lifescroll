@@ -4,6 +4,7 @@ import BoundingRectangle exposing (BoundingRectangle)
 import Browser
 import Canvas
 import Canvas.Renderable as Renderable
+import Color
 import DebugSettings exposing (withLogging)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
@@ -93,7 +94,8 @@ view { page, life, viewport } =
           else
             Renderable.empty
         , if page.debug.atomicUpdates then
-            Life.renderAtomicUpdateRegions viewport page.cellSizeInPixels life.atomicUpdateRegions
+            Life.renderGridBounds viewport page.cellSizeInPixels Color.red <|
+                List.map (\{ bounds } -> bounds) life.atomicUpdateRegions
 
           else
             Renderable.empty
@@ -102,7 +104,23 @@ view { page, life, viewport } =
 
           else
             Renderable.empty
+        , if page.debug.reserved then
+            Life.renderGridBounds viewport page.cellSizeInPixels Color.purple (reservedRegions page)
+
+          else
+            Renderable.empty
         ]
+
+
+reservedRegions : Page -> List (BoundingRectangle Int)
+reservedRegions { cellSizeInPixels, anchors, article } =
+    let
+        reservedRegion : PatternAnchor -> Maybe (BoundingRectangle Int)
+        reservedRegion anchor =
+            PatternAnchor.toPattern cellSizeInPixels article anchor
+                |> Maybe.map (\pattern -> pattern.reserved)
+    in
+    List.filterMap reservedRegion anchors
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

@@ -5,7 +5,7 @@ import Canvas exposing (Renderable, Shape, lineTo, path, shapes)
 import Canvas.Settings exposing (fill, stroke)
 import Canvas.Settings.Advanced exposing (transform, translate)
 import Canvas.Settings.Line exposing (lineWidth)
-import Color
+import Color exposing (Color)
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
@@ -95,28 +95,6 @@ renderGrid viewport cellSize page =
         List.append verticalLines horizontalLines
 
 
-renderAtomicUpdateRegions : BoundingRectangle Float -> Float -> List AtomicUpdateRegion -> Renderable
-renderAtomicUpdateRegions viewport cellSize atomicUpdateRegions =
-    let
-        renderRegion : AtomicUpdateRegion -> Shape
-        renderRegion { bounds } =
-            Canvas.rect
-                ( toFloat bounds.left * cellSize - debugStrokeHalfWidth
-                , toFloat bounds.top * cellSize - debugStrokeHalfWidth
-                )
-                (toFloat (BoundingRectangle.width bounds) * cellSize + debugStrokeHalfWidth)
-                (toFloat (BoundingRectangle.height bounds) * cellSize + debugStrokeHalfWidth)
-    in
-    shapes
-        [ stroke Color.red
-        , lineWidth
-            (debugStrokeHalfWidth * 2)
-        , transform [ translate -viewport.left -viewport.top ]
-        ]
-    <|
-        List.map renderRegion atomicUpdateRegions
-
-
 renderLayoutRegions : BoundingRectangle Float -> List PatternAnchor -> Renderable
 renderLayoutRegions viewport anchors =
     let
@@ -137,6 +115,28 @@ renderLayoutRegions viewport anchors =
         ]
     <|
         List.map renderLayoutRegion anchors
+
+
+renderGridBounds : BoundingRectangle Float -> Float -> Color -> List (BoundingRectangle Int) -> Renderable
+renderGridBounds viewport cellSize color gridBoundingRectangles =
+    let
+        gridBoundsShape : BoundingRectangle Int -> Shape
+        gridBoundsShape bounds =
+            Canvas.rect
+                ( toFloat bounds.left * cellSize - debugStrokeHalfWidth
+                , toFloat bounds.top * cellSize - debugStrokeHalfWidth
+                )
+                (toFloat (BoundingRectangle.width bounds) * cellSize + debugStrokeHalfWidth)
+                (toFloat (BoundingRectangle.height bounds) * cellSize + debugStrokeHalfWidth)
+    in
+    shapes
+        [ stroke color
+        , lineWidth
+            (debugStrokeHalfWidth * 2)
+        , transform [ translate -viewport.left -viewport.top ]
+        ]
+    <|
+        List.map gridBoundsShape gridBoundingRectangles
 
 
 next : GridCells -> GridCells

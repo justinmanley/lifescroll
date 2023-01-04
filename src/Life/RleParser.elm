@@ -3,7 +3,7 @@ module Life.RleParser exposing (comment, parse)
 import BoundingRectangle exposing (BoundingRectangle)
 import Life.AtomicUpdateRegion exposing (Movement)
 import Life.GridCells as GridCells exposing (GridCells)
-import Life.Pattern as Pattern exposing (Pattern, setCells, setExtent)
+import Life.Pattern as Pattern exposing (Pattern, setCells, setReserved)
 import Parser
     exposing
         ( (|.)
@@ -68,7 +68,7 @@ line : Pattern -> Parser (Step Pattern Pattern)
 line pattern =
     oneOf
         [ oneOf
-            [ succeed (Loop << setExtent pattern)
+            [ succeed (Loop << setReserved pattern)
                 |= extent
             , succeed (Done << setCells pattern)
                 |= cells

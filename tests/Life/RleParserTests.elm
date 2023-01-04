@@ -80,7 +80,7 @@ suite =
             \_ ->
                 Expect.equal
                     (Ok <|
-                        { extent = { width = 2, height = 3 }
+                        { reserved = { width = 2, height = 3 }
                         , cells = Set.fromList [ ( 0, 0 ) ]
                         , atomicUpdateRegion =
                             { bounds =
@@ -108,7 +108,7 @@ suite =
                                 , ( 2, 2 )
                                 , ( 3, 1 )
                                 ]
-                        , extent = { height = 3, width = 4 }
+                        , reserved = { height = 3, width = 4 }
                         , atomicUpdateRegion =
                             { bounds =
                                 { top = 0
@@ -203,7 +203,7 @@ getCells pattern =
 
 getExtent : Pattern -> Size2 Int
 getExtent pattern =
-    pattern.extent
+    pattern.reserved
 
 
 getAtomicUpdateRegionBounds : Pattern -> BoundingRectangle Int

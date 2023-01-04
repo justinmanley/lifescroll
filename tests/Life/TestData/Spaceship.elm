@@ -75,7 +75,7 @@ toPattern spaceship =
             Set.fromList spaceship.cells
     in
     { cells = cells
-    , extent =
+    , reserved =
         case GridCells.bounds cells of
             Nothing ->
                 Size2.empty

@@ -7,6 +7,7 @@ import String exposing (contains)
 
 type alias DebugSettings =
     { atomicUpdates : Bool
+    , reserved : Bool
     , layout : Bool
     , grid : Bool
     , log : Bool
@@ -16,6 +17,7 @@ type alias DebugSettings =
 empty : DebugSettings
 empty =
     { atomicUpdates = False
+    , reserved = False
     , layout = False
     , grid = False
     , log = False
@@ -26,6 +28,7 @@ allEnabled : DebugSettings
 allEnabled =
     { atomicUpdates = True
     , layout = True
+    , reserved = True
     , grid = True
     , log = True
     }
@@ -46,6 +49,7 @@ decoder =
         decodeQueryString : String -> DebugSettings
         decodeQueryString debug =
             { atomicUpdates = debug |> contains "atomic-updates"
+            , reserved = debug |> contains "reserved"
             , layout = debug |> contains "layout"
             , grid = debug |> contains "grid"
             , log = debug |> contains "log"

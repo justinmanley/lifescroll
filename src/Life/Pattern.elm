@@ -1,6 +1,7 @@
 module Life.Pattern exposing (..)
 
-import Json.Encode as Encode
+import BoundingRectangle exposing (BoundingRectangle)
+import Json.Encode as Encode exposing (int)
 import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells exposing (GridCells)
 import Set
@@ -17,7 +18,7 @@ type alias Pattern =
     -- go infinitely, this will not represent the maximum
     -- bounds, but merely a reasonable amount of space for the
     -- pattern to go before it infringes on the rest of the page.
-    , extent : Size2 Int
+    , reserved : BoundingRectangle Int
     , atomicUpdateRegion : AtomicUpdateRegion
     }
 
@@ -25,18 +26,20 @@ type alias Pattern =
 empty : Pattern
 empty =
     { cells = Set.empty
-    , extent =
-        { width = 0
-        , height = 0
-        }
+    , reserved = BoundingRectangle.empty
     , atomicUpdateRegion = AtomicUpdateRegion.empty
     }
 
 
-setExtent : Pattern -> Size2 Int -> Pattern
-setExtent pattern size =
+setReserved : Pattern -> Size2 Int -> Pattern
+setReserved pattern size =
     { pattern
-        | extent = size
+        | reserved =
+            { top = 0
+            , left = 0
+            , bottom = size.height
+            , right = size.width
+            }
     }
 
 
@@ -54,12 +57,12 @@ withVerticalPadding : Pattern -> Pattern
 withVerticalPadding pattern =
     let
         extent =
-            pattern.extent
+            pattern.reserved
     in
     { pattern
-        | extent =
+        | reserved =
             { extent
-                | height = extent.height + verticalPadding -- at the top
+                | top = extent.top - verticalPadding
             }
     }
 
@@ -69,12 +72,9 @@ withVerticalPadding pattern =
 
 
 encode : Pattern -> Encode.Value
-encode { extent } =
+encode { reserved } =
     Encode.object
         [ ( "extent"
-          , Encode.object
-                [ ( "height", Encode.int extent.height )
-                , ( "width", Encode.int extent.width )
-                ]
+          , BoundingRectangle.encode int reserved
           )
         ]

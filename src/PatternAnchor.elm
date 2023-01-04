@@ -29,7 +29,7 @@ toPattern cellSizeInPixels article anchor =
 
         offset : Pattern -> Vector2 Int
         offset pattern =
-            ( toGrid articleCenter - pattern.extent.width // 2
+            ( toGrid articleCenter - BoundingRectangle.width pattern.reserved // 2
             , toGrid anchor.bounds.top + Pattern.verticalPadding
             )
     in
@@ -44,7 +44,7 @@ toPattern cellSizeInPixels article anchor =
             in
             Just <|
                 { cells = Set.map (Vector2.add start) pattern.cells
-                , extent = pattern.extent
+                , reserved = pattern.reserved |> offsetBy start
                 , atomicUpdateRegion =
                     { bounds = pattern.atomicUpdateRegion.bounds |> offsetBy start
                     , movement = pattern.atomicUpdateRegion.movement
