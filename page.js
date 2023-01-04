@@ -59,6 +59,7 @@ const getCellSizeInPixels = () => {
     return articleFontSizeInPixels;
 }
 
+// TODO: Consolidate this with the verticalPadding specified in Elm.
 const verticalPadding = 1;
 
 class PatternAnchor extends HTMLElement {
@@ -81,9 +82,6 @@ class PatternAnchor extends HTMLElement {
                 .then(rle => {
                     const cellSizeInPixels = getCellSizeInPixels();
                     const [_, width, height] = [...rle.matchAll(/x = (\d+), y = (\d+)/g)][0];
-
-                    console.log('height', height);
-                    console.log('height + 2', height + 2)
 
                     this.style.display = 'block';
                     this.style.height = cellSizeInPixels * (parseFloat(height) + 2 * verticalPadding);
