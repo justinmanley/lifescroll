@@ -51,14 +51,22 @@ renderGrid viewport cellSize page =
 renderLayoutRegions : BoundingRectangle Float -> List PatternAnchor -> Renderable
 renderLayoutRegions viewport anchors =
     let
-        renderLayoutRegion : PatternAnchor -> Shape
+        renderLayoutRegion : PatternAnchor -> List Shape
         renderLayoutRegion anchor =
-            Canvas.rect
+            let
+                anchorHalfWidth =
+                    anchor.bounds.left + BoundingRectangle.width anchor.bounds / 2
+            in
+            [ Canvas.rect
                 ( anchor.bounds.left
                 , anchor.bounds.top
                 )
                 (BoundingRectangle.width anchor.bounds)
                 (BoundingRectangle.height anchor.bounds)
+            , path ( anchorHalfWidth, anchor.bounds.top )
+                [ lineTo ( anchorHalfWidth, anchor.bounds.bottom )
+                ]
+            ]
     in
     shapes
         [ stroke Color.blue
@@ -67,7 +75,7 @@ renderLayoutRegions viewport anchors =
         , transform [ translate -viewport.left -viewport.top ]
         ]
     <|
-        List.map renderLayoutRegion anchors
+        List.concatMap renderLayoutRegion anchors
 
 
 renderGridBounds : BoundingRectangle Float -> Float -> Color -> List (BoundingRectangle Int) -> Renderable
