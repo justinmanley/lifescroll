@@ -81,7 +81,6 @@ class PatternAnchor extends HTMLElement {
                     const [_, width, height] = [...rle.matchAll(/x = (\d+), y = (\d+)/g)][0];
 
                     this.style.display = 'block';
-                    this.style.width = cellSizeInPixels * width;
                     this.style.height = cellSizeInPixels * height;
 
                     return rle;
