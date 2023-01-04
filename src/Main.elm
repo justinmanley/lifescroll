@@ -10,6 +10,7 @@ import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
 import Json.Encode as Encode
+import Life.Debug as Life
 import Life.GridCells exposing (GridCells)
 import Life.Life as Life exposing (LifeGrid)
 import Life.Pattern exposing (Pattern)
