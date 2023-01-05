@@ -42,6 +42,7 @@ const scrollPage = () => {
     }
 }
 
+let fontSizeToCellSize = fontSize => fontSize;
 
 const getCellSizeInPixels = () => {
     const articleElement = document.getElementById('article');
@@ -56,11 +57,11 @@ const getCellSizeInPixels = () => {
 
     articleElement.removeChild(testElement);
 
-    return articleFontSizeInPixels;
+    return fontSizeToCellSize(articleFontSizeInPixels);
 }
 
-// TODO: Consolidate this with the verticalPadding specified in Elm.
 const verticalPadding = 1;
+
 
 class PatternAnchor extends HTMLElement {
     async getPattern() {
@@ -97,6 +98,8 @@ class PatternAnchor extends HTMLElement {
 
 customElements.define('pattern-anchor', PatternAnchor);
 
+
+
 const getPatterns = () =>
     Promise.all(
         [...document.querySelectorAll('pattern-anchor')].map(
@@ -104,7 +107,11 @@ const getPatterns = () =>
         )
     )
 
-const initialize = app => {
+const initialize = (app, options) => {
+    if (options.fontSizeToCellSize) {
+        fontSizeToCellSize = options.fontSizeToCellSize;
+    }
+
     app.ports.messageReceiver.send(scrollPage());
     getPatterns().then(patterns => {
         app.ports.messageReceiver.send(pageUpdate(patterns));

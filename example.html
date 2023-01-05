@@ -111,7 +111,7 @@
         const app = Elm.Main.init({
             node: document.getElementById('canvas')
         });
-        initialize(app);
+        initialize(app, { fontSizeToCellSize: fontSize => fontSize / 2 });
     </script>
 </body>
 
