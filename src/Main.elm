@@ -16,7 +16,6 @@ import Life.Life as Life exposing (LifeGrid)
 import Life.Pattern exposing (Pattern)
 import Life.Viewport as Viewport
 import Page exposing (Page)
-import PatternAnchor exposing (PatternAnchor)
 import ScrollState exposing (ScrollState)
 import Set
 import Vector2 exposing (Vector2)
@@ -105,23 +104,7 @@ view { page, life, viewport } =
 
           else
             Renderable.empty
-        , if page.debug.reserved then
-            Life.renderGridBounds viewport page.cellSizeInPixels Color.purple (reservedRegions page)
-
-          else
-            Renderable.empty
         ]
-
-
-reservedRegions : Page -> List (BoundingRectangle Int)
-reservedRegions { cellSizeInPixels, anchors, article } =
-    let
-        reservedRegion : PatternAnchor -> Maybe (BoundingRectangle Int)
-        reservedRegion anchor =
-            PatternAnchor.toPattern cellSizeInPixels article anchor
-                |> Maybe.map (\pattern -> pattern.reserved)
-    in
-    List.filterMap reservedRegion anchors
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )

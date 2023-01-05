@@ -3,7 +3,7 @@ module Life.RleParser exposing (comment, parse)
 import BoundingRectangle exposing (BoundingRectangle)
 import Life.AtomicUpdateRegion exposing (Movement)
 import Life.GridCells as GridCells exposing (GridCells)
-import Life.Pattern as Pattern exposing (Pattern, setCells, setReserved)
+import Life.Pattern as Pattern exposing (Pattern, setCells)
 import Parser
     exposing
         ( (|.)
@@ -68,8 +68,8 @@ line : Pattern -> Parser (Step Pattern Pattern)
 line pattern =
     oneOf
         [ oneOf
-            [ succeed (Loop << setReserved pattern)
-                |= extent
+            [ succeed (Loop pattern)
+                |. extent
             , succeed (Done << setCells pattern)
                 |= cells
             , succeed (Loop << addComment pattern)
@@ -150,6 +150,8 @@ nextGridLine gridState count =
 
 type Comment
     = MovementComment Movement
+      -- Maximum bounds coordinates are relative to the upper-leftmost live cell
+      -- in the pattern (i.e. the first generation of the pattern).
     | MaximumBoundsComment (BoundingRectangle Int)
     | Ignored
 

@@ -3,8 +3,10 @@ module PatternAnchor exposing (..)
 import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (withLogging)
 import Json.Decode as Decode exposing (Decoder, field, string)
-import Life.Pattern as Pattern exposing (Pattern, withVerticalPadding)
+import Life.GridCells as GridCells exposing (GridCells)
+import Life.Pattern exposing (Pattern, verticalPadding)
 import Life.RleParser as RleParser
+import Maybe exposing (withDefault)
 import Parser exposing (deadEndsToString)
 import Set
 import Vector2 exposing (Vector2)
@@ -27,24 +29,26 @@ toPattern cellSizeInPixels article anchor =
         toGrid f =
             f / cellSizeInPixels |> floor
 
-        offset : Pattern -> Vector2 Int
-        offset pattern =
-            ( toGrid articleCenter - BoundingRectangle.width pattern.reserved // 2
-            , toGrid anchor.bounds.top + Pattern.verticalPadding
+        offset : BoundingRectangle Int -> Vector2 Int
+        offset bounds =
+            ( toGrid articleCenter - BoundingRectangle.width bounds // 2
+            , toGrid (anchor.bounds.top + BoundingRectangle.height anchor.bounds / 2) - BoundingRectangle.height bounds // 2
             )
     in
-    case Result.map withVerticalPadding <| RleParser.parse anchor.patternRle of
+    case RleParser.parse anchor.patternRle of
         Err err ->
             withLogging True ("Could not parse pattern " ++ anchor.id ++ deadEndsToString err) Nothing
 
         Ok pattern ->
             let
+                initialBounds =
+                    GridCells.bounds pattern.cells |> withDefault BoundingRectangle.empty
+
                 start =
-                    offset pattern
+                    offset initialBounds
             in
             Just <|
                 { cells = Set.map (Vector2.add start) pattern.cells
-                , reserved = pattern.reserved |> offsetBy start
                 , atomicUpdateRegion =
                     { bounds = pattern.atomicUpdateRegion.bounds |> offsetBy start
                     , movement = pattern.atomicUpdateRegion.movement

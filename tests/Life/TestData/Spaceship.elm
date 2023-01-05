@@ -75,15 +75,6 @@ toPattern spaceship =
             Set.fromList spaceship.cells
     in
     { cells = cells
-    , reserved =
-        case GridCells.bounds cells of
-            Nothing ->
-                Size2.empty
-
-            Just bounds ->
-                { width = BoundingRectangle.width bounds
-                , height = BoundingRectangle.height bounds
-                }
     , atomicUpdateRegion = toAtomicUpdateRegion spaceship
     }
 

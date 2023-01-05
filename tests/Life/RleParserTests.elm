@@ -2,14 +2,13 @@ module Life.RleParserTests exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Expect
-import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
+import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
 import Life.GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern)
 import Life.RleParser as RleParser
 import Set
 import Size2 exposing (Size2)
 import Test exposing (..)
-import Vector2 exposing (Vector2)
 
 
 suite : Test
@@ -62,11 +61,6 @@ suite =
         , test "errors on an invalid rle string" <|
             \_ ->
                 Expect.err (RleParser.parse "$#df%%fsd$!$$")
-        , test "parses extent" <|
-            \_ ->
-                Expect.equal
-                    (Ok { width = 11, height = 13 })
-                    (RleParser.parse "x = 11, y = 13" |> Result.map getExtent)
         , test "parses a pattern consisting only of a comment" <|
             \_ ->
                 Expect.equal (Ok Pattern.empty) (RleParser.parse "#C   ")
@@ -80,8 +74,7 @@ suite =
             \_ ->
                 Expect.equal
                     (Ok <|
-                        { reserved = { width = 2, height = 3 }
-                        , cells = Set.fromList [ ( 0, 0 ) ]
+                        { cells = Set.fromList [ ( 0, 0 ) ]
                         , atomicUpdateRegion =
                             { bounds =
                                 { top = 0
@@ -108,7 +101,6 @@ suite =
                                 , ( 2, 2 )
                                 , ( 3, 1 )
                                 ]
-                        , reserved = { height = 3, width = 4 }
                         , atomicUpdateRegion =
                             { bounds =
                                 { top = 0
@@ -199,11 +191,6 @@ getMovement pattern =
 getCells : Pattern -> GridCells
 getCells pattern =
     pattern.cells
-
-
-getExtent : Pattern -> Size2 Int
-getExtent pattern =
-    pattern.reserved
 
 
 getAtomicUpdateRegionBounds : Pattern -> BoundingRectangle Int
