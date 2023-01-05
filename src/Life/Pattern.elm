@@ -23,8 +23,3 @@ empty =
 setCells : Pattern -> GridCells -> Pattern
 setCells pattern cells =
     { pattern | cells = cells }
-
-
-verticalPadding : number
-verticalPadding =
-    1

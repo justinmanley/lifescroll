@@ -4,7 +4,6 @@ import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (withLogging)
 import Json.Decode as Decode exposing (Decoder, field, string)
 import Life.GridCells as GridCells exposing (GridCells)
-import Life.Pattern exposing (Pattern, verticalPadding)
 import Life.RleParser as RleParser
 import Maybe exposing (withDefault)
 import Parser exposing (deadEndsToString)
