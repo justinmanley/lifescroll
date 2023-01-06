@@ -108,7 +108,7 @@ const getPatterns = () =>
     )
 
 const initialize = (app, options) => {
-    if (options.fontSizeToCellSize) {
+    if (options && options.fontSizeToCellSize) {
         fontSizeToCellSize = options.fontSizeToCellSize;
     }
 
