@@ -1,7 +1,7 @@
 module Life.Viewport exposing (next, scroll, scrolledCellsPerStep)
 
 import BoundingRectangle exposing (BoundingRectangle, vertical)
-import Interval exposing (containsValue)
+import Interval exposing (Interval, containsValue)
 import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.Life as Life exposing (LifeGrid)
 import Loop exposing (for)
@@ -9,11 +9,27 @@ import Set
 import Vector2 exposing (Vector2)
 
 
+numProtectedBottomCells : number
+numProtectedBottomCells =
+    6
+
+
+steppableVerticalBounds : BoundingRectangle Int -> Interval Int
+steppableVerticalBounds viewport =
+    let
+        viewportVerticalBounds =
+            vertical viewport
+    in
+    { start = viewportVerticalBounds.start
+    , end = viewportVerticalBounds.end - numProtectedBottomCells
+    }
+
+
 next : BoundingRectangle Int -> LifeGrid -> LifeGrid
 next viewport { cells, atomicUpdateRegions } =
     let
         viewportVerticalBounds =
-            vertical viewport
+            steppableVerticalBounds viewport
 
         belongsToFrozenAtomicUpdateRegion : Vector2 Int -> AtomicUpdateRegion -> Bool
         belongsToFrozenAtomicUpdateRegion cell { bounds } =
