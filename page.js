@@ -62,8 +62,31 @@ const getCellSizeInPixels = () => {
 
 const verticalPadding = 1;
 
-
 class PatternAnchor extends HTMLElement {
+    /*
+     * It is important that this is not called until all pattern anchors have their
+     * size set. If this is called before all pattern anchors have their size set,
+     * the pattern anchor may shift position after getPattern() has calculated the
+     * bounding rectangle and sent it to Elm. This will result in the pattern being
+     * rendered in the wrong place on the page.
+     * 
+     * This race condition can be seen by adding a delay to the RLE response:
+     *   const delay = (ms) => {
+     *     return new Promise(resolve => setTimeout(resolve, ms));
+     *   }
+     * 
+     * And: 
+     *   this.rle = fetch(newValue)
+     *     .then(async response => {
+     *       await delay(Math.random() * 2000);
+     *      return response.text()
+     *     })
+     *
+     * Keeping this dynamic rather than requiring developers to statically specify the
+     * height and width of each PatternAnchor maintains flexibility for different layout
+     * options in the future (for example, laying out patterns in the margin on desktop
+     * which would mean the pattern anchors wouldn't take up any vertical space).
+     */
     async getPattern() {
         const rle = await this.rle;
         // The bounds must be calculated after the rle file has been fetched
@@ -76,15 +99,19 @@ class PatternAnchor extends HTMLElement {
         };
     }
 
+    async loaded() {
+        await this.rle;
+        return this;
+    }
+
     attributeChangedCallback(name, oldValue, newValue) {
         if (name === 'src') {
             this.rle = fetch(newValue)
-                .then(response => response.text())
+                .then(async response => response.text())
                 .then(rle => {
                     const cellSizeInPixels = getCellSizeInPixels();
                     const [_, width, height] = [...rle.matchAll(/x = (\d+), y = (\d+)/g)][0];
 
-                    this.style.display = 'block';
                     this.style.height = cellSizeInPixels * (parseFloat(height) + 2 * verticalPadding);
 
                     return rle;
@@ -99,13 +126,19 @@ class PatternAnchor extends HTMLElement {
 customElements.define('pattern-anchor', PatternAnchor);
 
 
+const getPatternAnchors = () =>
+    [...document.querySelectorAll('pattern-anchor')];
 
-const getPatterns = () =>
-    Promise.all(
-        [...document.querySelectorAll('pattern-anchor')].map(
-            patternAnchor => patternAnchor.getPattern()
+const onPatternsLoaded = async () => {
+    const patternAnchors = await Promise.all(
+        getPatternAnchors().map(
+            patternAnchor => patternAnchor.loaded()
         )
-    )
+    );
+    return Promise.all(patternAnchors.map(
+        patternAnchor => patternAnchor.getPattern()
+    ));
+};
 
 const initialize = (app, options) => {
     if (options && options.fontSizeToCellSize) {
@@ -113,7 +146,8 @@ const initialize = (app, options) => {
     }
 
     app.ports.messageReceiver.send(scrollPage());
-    getPatterns().then(patterns => {
+
+    onPatternsLoaded().then(patterns => {
         app.ports.messageReceiver.send(pageUpdate(patterns));
     });
 
