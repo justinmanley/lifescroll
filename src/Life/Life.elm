@@ -41,6 +41,11 @@ toggleCell position grid =
         Set.insert position grid
 
 
+gridLineHalfWidth : number
+gridLineHalfWidth =
+    2
+
+
 render : BoundingRectangle Float -> Float -> GridCells -> Renderable
 render viewport cellSize cells =
     let
@@ -50,10 +55,10 @@ render viewport cellSize cells =
         renderCell : Vector2 Int -> Shape
         renderCell position =
             square
-                ( toFloat (x position) * cellSize
+                ( toFloat (x position) * cellSize + gridLineHalfWidth
                 , toFloat (y position) * cellSize
                 )
-                cellSize
+                (cellSize - 2 * gridLineHalfWidth)
 
         gridViewport =
             PageCoordinates.toGrid cellSize viewport
