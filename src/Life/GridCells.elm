@@ -27,8 +27,3 @@ bounds cells =
                 , bottom = Set.foldl (y >> max) 0 cells + 1
                 , right = Set.foldl (x >> max) 0 cells + 1
                 }
-
-
-toGrid : Float -> Float -> Int
-toGrid cellSizeInPixels x =
-    x / cellSizeInPixels |> floor

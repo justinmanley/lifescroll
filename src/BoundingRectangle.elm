@@ -48,6 +48,11 @@ containsPoint ( x, y ) { top, left, bottom, right } =
     (left <= x && x <= right) && (top <= y && y <= bottom)
 
 
+pointIsContainedIn : BoundingRectangle number -> Vector2 number -> Bool
+pointIsContainedIn bounds cell =
+    containsPoint cell bounds
+
+
 union : BoundingRectangle number -> BoundingRectangle number -> BoundingRectangle number
 union b1 b2 =
     { top = min b1.top b2.top

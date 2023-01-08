@@ -1,6 +1,6 @@
 module Life.Life exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle)
+import BoundingRectangle exposing (BoundingRectangle, pointIsContainedIn)
 import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Canvas.Settings.Advanced exposing (transform, translate)
@@ -8,6 +8,7 @@ import Color
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
+import PageCoordinates
 import Set
 import Set.Extra as Set
 import Vector2 exposing (Vector2, x, y)
@@ -53,6 +54,9 @@ render viewport cellSize cells =
                 , toFloat (y position) * cellSize
                 )
                 cellSize
+
+        gridViewport =
+            PageCoordinates.toGrid cellSize viewport
     in
     shapes
         [ fill Color.black
@@ -60,7 +64,8 @@ render viewport cellSize cells =
         ]
     <|
         List.map renderCell <|
-            Set.toList cells
+            List.filter (pointIsContainedIn gridViewport) <|
+                Set.toList cells
 
 
 next : GridCells -> GridCells

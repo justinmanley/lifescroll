@@ -3,9 +3,10 @@ module Life.Viewport exposing (next, scroll, scrolledCellsPerStep, toggleCell)
 import BoundingRectangle exposing (BoundingRectangle, vertical)
 import Interval exposing (Interval, containsValue)
 import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
-import Life.GridCells exposing (toGrid)
 import Life.Life as Life exposing (LifeGrid)
 import Loop exposing (for)
+import PageCoordinate
+import PageCoordinates
 import Set
 import Vector2 exposing (Vector2)
 
@@ -62,15 +63,8 @@ scroll cellSizeInPixels mostRecentScrollPosition viewport grid =
                 -- pixelsToSteps must be applied separately in order to capture the difference
                 -- between flooring the two values.
                 (pixelsToSteps viewport.top - pixelsToSteps mostRecentScrollPosition)
-
-        gridViewport =
-            { top = toGrid cellSizeInPixels viewport.top
-            , left = toGrid cellSizeInPixels viewport.left
-            , bottom = toGrid cellSizeInPixels viewport.bottom
-            , right = toGrid cellSizeInPixels viewport.right
-            }
     in
-    for numSteps (next gridViewport) grid
+    for numSteps (next <| PageCoordinates.toGrid cellSizeInPixels viewport) grid
 
 
 scrolledCellsPerStep : number
@@ -82,7 +76,7 @@ toggleCell : Float -> Vector2 Float -> LifeGrid -> LifeGrid
 toggleCell cellSizeInPixels position grid =
     let
         gridPosition =
-            Vector2.map (toGrid cellSizeInPixels) position
+            Vector2.map (PageCoordinate.toGrid cellSizeInPixels) position
     in
     { grid
         | cells = Life.toggleCell gridPosition grid.cells
