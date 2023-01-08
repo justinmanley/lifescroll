@@ -2,6 +2,7 @@ port module Main exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Browser
+import Browser.Events exposing (onClick)
 import Canvas
 import Canvas.Renderable as Renderable
 import Color
@@ -42,6 +43,7 @@ type alias Model =
 type Msg
     = ParsingError Decode.Error
     | PageUpdate Page
+    | Click (Vector2 Float)
     | ScrollPage (BoundingRectangle Float)
 
 
@@ -127,6 +129,11 @@ update msg model =
             , Cmd.none
             )
 
+        Click position ->
+            ( { model | life = Viewport.toggleCell model.page.cellSizeInPixels position model.life }
+            , Cmd.none
+            )
+
         ParsingError error ->
             ( withLogging True (Decode.errorToString error) model, Cmd.none )
 
@@ -156,16 +163,19 @@ insertPattern loggingEnabled pattern grid =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.map
-        (\value ->
-            case value of
-                Ok msg ->
-                    msg
+    Sub.batch
+        [ Sub.map
+            (\value ->
+                case value of
+                    Ok msg ->
+                        msg
 
-                Err error ->
-                    ParsingError error
-        )
-        (messageReceiver <| decodeValue decoder)
+                    Err error ->
+                        ParsingError error
+            )
+            (messageReceiver <| decodeValue decoder)
+        , onClick clickDecoder
+        ]
 
 
 port sendMessage : Encode.Value -> Cmd msg
@@ -176,6 +186,14 @@ port sendMessage : Encode.Value -> Cmd msg
 
 
 port messageReceiver : (Decode.Value -> msg) -> Sub msg
+
+
+clickDecoder : Decoder Msg
+clickDecoder =
+    Decode.map2 (\a b -> Click ( a, b ))
+        -- pageX and pageY are relative to the viewport, not the entire page.
+        (Decode.field "pageX" Decode.float)
+        (Decode.field "pageY" Decode.float)
 
 
 decoder : Decoder Msg

@@ -9,6 +9,11 @@ type alias GridCells =
     Set (Vector2 Int)
 
 
+empty : GridCells
+empty =
+    Set.empty
+
+
 bounds : GridCells -> Maybe (BoundingRectangle Int)
 bounds cells =
     case Set.toList cells of
@@ -24,6 +29,6 @@ bounds cells =
                 }
 
 
-empty : GridCells
-empty =
-    Set.empty
+toGrid : Float -> Float -> Int
+toGrid cellSizeInPixels x =
+    x / cellSizeInPixels |> floor

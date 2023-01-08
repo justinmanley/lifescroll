@@ -3,7 +3,7 @@ module PatternAnchor exposing (..)
 import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (withLogging)
 import Json.Decode as Decode exposing (Decoder, field, string)
-import Life.GridCells as GridCells
+import Life.GridCells as GridCells exposing (toGrid)
 import Life.Pattern exposing (Pattern)
 import Life.RleParser as RleParser
 import Maybe exposing (withDefault)
@@ -25,14 +25,10 @@ toPattern cellSizeInPixels article anchor =
         articleCenter =
             article.left + (BoundingRectangle.width article / 2)
 
-        toGrid : Float -> Int
-        toGrid f =
-            f / cellSizeInPixels |> floor
-
         offset : BoundingRectangle Int -> Vector2 Int
         offset bounds =
-            ( toGrid articleCenter - BoundingRectangle.width bounds // 2
-            , toGrid (anchor.bounds.top + BoundingRectangle.height anchor.bounds / 2) - BoundingRectangle.height bounds // 2
+            ( toGrid cellSizeInPixels articleCenter - BoundingRectangle.width bounds // 2
+            , toGrid cellSizeInPixels (anchor.bounds.top + BoundingRectangle.height anchor.bounds / 2) - BoundingRectangle.height bounds // 2
             )
     in
     case RleParser.parse anchor.patternRle of

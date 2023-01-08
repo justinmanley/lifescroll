@@ -1,8 +1,9 @@
-module Life.Viewport exposing (next, scroll, scrolledCellsPerStep)
+module Life.Viewport exposing (next, scroll, scrolledCellsPerStep, toggleCell)
 
 import BoundingRectangle exposing (BoundingRectangle, vertical)
 import Interval exposing (Interval, containsValue)
 import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import Life.GridCells exposing (toGrid)
 import Life.Life as Life exposing (LifeGrid)
 import Loop exposing (for)
 import Set
@@ -52,23 +53,21 @@ next viewport { cells, atomicUpdateRegions } =
 scroll : Float -> Float -> BoundingRectangle Float -> LifeGrid -> LifeGrid
 scroll cellSizeInPixels mostRecentScrollPosition viewport grid =
     let
-        toGridCellsCoordinates : Float -> Int
-        toGridCellsCoordinates pageCoordinate =
+        pixelsToSteps : Float -> Int
+        pixelsToSteps pageCoordinate =
             floor (pageCoordinate / (cellSizeInPixels * scrolledCellsPerStep))
 
         numSteps =
             max 0 <|
-                (toGridCellsCoordinates viewport.top - toGridCellsCoordinates mostRecentScrollPosition)
-
-        toGrid : Float -> Int
-        toGrid x =
-            x / cellSizeInPixels |> floor
+                -- pixelsToSteps must be applied separately in order to capture the difference
+                -- between flooring the two values.
+                (pixelsToSteps viewport.top - pixelsToSteps mostRecentScrollPosition)
 
         gridViewport =
-            { top = toGrid viewport.top
-            , left = toGrid viewport.left
-            , bottom = toGrid viewport.bottom
-            , right = toGrid viewport.right
+            { top = toGrid cellSizeInPixels viewport.top
+            , left = toGrid cellSizeInPixels viewport.left
+            , bottom = toGrid cellSizeInPixels viewport.bottom
+            , right = toGrid cellSizeInPixels viewport.right
             }
     in
     for numSteps (next gridViewport) grid
@@ -77,3 +76,14 @@ scroll cellSizeInPixels mostRecentScrollPosition viewport grid =
 scrolledCellsPerStep : number
 scrolledCellsPerStep =
     4
+
+
+toggleCell : Float -> Vector2 Float -> LifeGrid -> LifeGrid
+toggleCell cellSizeInPixels position grid =
+    let
+        gridPosition =
+            Vector2.map (toGrid cellSizeInPixels) position
+    in
+    { grid
+        | cells = Life.toggleCell gridPosition grid.cells
+    }

@@ -31,6 +31,15 @@ empty =
 -- in order to reduce the painting cost.
 
 
+toggleCell : Vector2 Int -> GridCells -> GridCells
+toggleCell position grid =
+    if Set.member position grid then
+        Set.remove position grid
+
+    else
+        Set.insert position grid
+
+
 render : BoundingRectangle Float -> Float -> GridCells -> Renderable
 render viewport cellSize cells =
     let
