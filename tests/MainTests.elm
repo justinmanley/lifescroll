@@ -4,7 +4,6 @@ import BoundingRectangle
 import DebugSettings
 import Dict exposing (Dict)
 import Expect exposing (Expectation)
-import Life.AtomicUpdateRegion as AtomicUpdateRegion
 import Life.Life as Life
 import Life.Pattern exposing (Pattern)
 import Main exposing (Model, Msg(..), insertPattern, insertPatterns)
@@ -64,7 +63,7 @@ testPattern =
             [ ( 0, 0 )
             , ( 1, 1 )
             ]
-    , atomicUpdateRegion = AtomicUpdateRegion.empty
+    , atomicUpdateRegions = []
     }
 
 

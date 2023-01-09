@@ -1,8 +1,7 @@
 module Life.RleParser.RleParserTests exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle)
 import Expect
-import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
+import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern)
 import Life.RleParser.RleParser as RleParser
@@ -75,16 +74,7 @@ suite =
                 Expect.equal
                     (Ok <|
                         { cells = Set.fromList [ ( 0, 0 ) ]
-                        , atomicUpdateRegion =
-                            { bounds =
-                                { top = 0
-                                , left = 0
-                                , right = 1
-                                , bottom = 1
-                                }
-                            , movement = Nothing
-                            , stepsElapsed = 0
-                            }
+                        , atomicUpdateRegions = []
                         }
                     )
                     (RleParser.parse "x = 2, y = 3\no!")
@@ -101,16 +91,8 @@ suite =
                                 , ( 2, 2 )
                                 , ( 3, 1 )
                                 ]
-                        , atomicUpdateRegion =
-                            { bounds =
-                                { top = 0
-                                , left = 0
-                                , right = 4
-                                , bottom = 3
-                                }
-                            , movement = Nothing
-                            , stepsElapsed = 0
-                            }
+                        , atomicUpdateRegions =
+                            []
                         }
                     )
                     (RleParser.parse "#N Beehive\n#O John Conway\n#C An extremely common 6…eehive\nx = 4, y = 3, rule = B3/S23\nb2ob$o2bo$b2o!")
@@ -123,35 +105,41 @@ suite =
             \_ ->
                 Expect.equal
                     (Ok <|
-                        { top = 1
-                        , left = 2
-                        , bottom = 3
-                        , right = 4
-                        }
+                        [ { bounds =
+                                { top = 1
+                                , left = 2
+                                , bottom = 3
+                                , right = 4
+                                }
+                          , movement = Nothing
+                          , stepsElapsed = 0
+                          }
+                        ]
                     )
                     (RleParser.parse "# maximum extent top 1 left 2 bottom 3 right 4\no!"
-                        |> Result.map getAtomicUpdateRegionBounds
+                        |> Result.map getAtomicUpdateRegions
                     )
         , test "parses a pattern with atomic update region bounds comments" <|
             \_ ->
                 Expect.equal
                     (Ok <|
-                        { bounds =
-                            { top = 1
-                            , left = 2
-                            , bottom = 3
-                            , right = 4
-                            }
-                        , movement =
-                            Just
-                                { direction = ( 1, 2 )
-                                , period = 3
+                        [ { bounds =
+                                { top = 1
+                                , left = 2
+                                , bottom = 3
+                                , right = 4
                                 }
-                        , stepsElapsed = 0
-                        }
+                          , movement =
+                                Just
+                                    { direction = ( 1, 2 )
+                                    , period = 3
+                                    }
+                          , stepsElapsed = 0
+                          }
+                        ]
                     )
                     (RleParser.parse "# maximum extent top 1 left 2 bottom 3 right 4 moves in direction (1,2) with period 3\no!"
-                        |> Result.map getAtomicUpdateRegion
+                        |> Result.map getAtomicUpdateRegions
                     )
         ]
 
@@ -163,21 +151,11 @@ emptyExtent =
     }
 
 
-getMovement : Pattern -> Maybe Movement
-getMovement pattern =
-    pattern.atomicUpdateRegion.movement
-
-
 getCells : Pattern -> GridCells
 getCells pattern =
     pattern.cells
 
 
-getAtomicUpdateRegionBounds : Pattern -> BoundingRectangle Int
-getAtomicUpdateRegionBounds pattern =
-    pattern.atomicUpdateRegion.bounds
-
-
-getAtomicUpdateRegion : Pattern -> AtomicUpdateRegion
-getAtomicUpdateRegion pattern =
-    pattern.atomicUpdateRegion
+getAtomicUpdateRegions : Pattern -> List AtomicUpdateRegion
+getAtomicUpdateRegions pattern =
+    pattern.atomicUpdateRegions

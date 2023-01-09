@@ -12,6 +12,8 @@ type alias Movement =
 
 
 type alias AtomicUpdateRegion =
+    -- Bounds x coordinates are relative to the leftmost live cell,
+    -- while y coordinates are relative to the topmost live cell.
     { bounds : BoundingRectangle Int
     , movement : Maybe Movement
     , stepsElapsed : Int

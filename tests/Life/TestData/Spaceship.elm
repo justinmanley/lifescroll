@@ -74,7 +74,7 @@ toPattern spaceship =
             Set.fromList spaceship.cells
     in
     { cells = cells
-    , atomicUpdateRegion = toAtomicUpdateRegion spaceship
+    , atomicUpdateRegions = [ toAtomicUpdateRegion spaceship ]
     }
 
 

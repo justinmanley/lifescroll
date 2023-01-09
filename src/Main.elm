@@ -156,8 +156,7 @@ insertPattern loggingEnabled pattern grid =
     in
     { cells = Set.foldl insertWithConflictLogging grid.cells pattern.cells
     , atomicUpdateRegions =
-        pattern.atomicUpdateRegion
-            :: grid.atomicUpdateRegions
+        List.append grid.atomicUpdateRegions pattern.atomicUpdateRegions
     }
 
 

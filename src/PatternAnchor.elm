@@ -3,6 +3,7 @@ module PatternAnchor exposing (..)
 import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (withLogging)
 import Json.Decode as Decode exposing (Decoder, field, string)
+import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells
 import Life.Pattern exposing (Pattern)
 import Life.RleParser.RleParser as RleParser
@@ -43,14 +44,16 @@ toPattern cellSizeInPixels article anchor =
 
                 start =
                     offset initialBounds
+
+                offsetAtomicUpdateRegion : AtomicUpdateRegion -> AtomicUpdateRegion
+                offsetAtomicUpdateRegion atomicUpdateRegion =
+                    { atomicUpdateRegion
+                        | bounds = atomicUpdateRegion.bounds |> offsetBy start
+                    }
             in
             Just <|
                 { cells = Set.map (Vector2.add start) pattern.cells
-                , atomicUpdateRegion =
-                    { bounds = pattern.atomicUpdateRegion.bounds |> offsetBy start
-                    , movement = pattern.atomicUpdateRegion.movement
-                    , stepsElapsed = pattern.atomicUpdateRegion.stepsElapsed
-                    }
+                , atomicUpdateRegions = List.map offsetAtomicUpdateRegion pattern.atomicUpdateRegions
                 }
 
 

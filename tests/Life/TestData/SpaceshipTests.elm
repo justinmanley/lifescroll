@@ -7,7 +7,7 @@ import Life.TestData.Spaceship as Spaceship exposing (glider, inViewFor)
 import Life.Viewport as Viewport
 import Loop exposing (for)
 import Set
-import Test exposing (Test, describe, fuzz, test)
+import Test exposing (Test, describe, fuzz)
 import Vector2 exposing (Vector2)
 
 

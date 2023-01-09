@@ -1,8 +1,7 @@
 module Life.RleParser.RleParser exposing (comment, parse)
 
-import BoundingRectangle as BoundingRectangle
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
-import Life.GridCells as GridCells exposing (GridCells)
+import Life.GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern, setCells)
 import Life.RleParser.AtomicUpdateRegionParser exposing (atomicUpdateRegion)
 import Parser
@@ -25,7 +24,6 @@ import Parser
         , token
         )
 import Parser.Extra exposing (int, spacesOrTabs)
-import Result
 import Set
 import Size2 exposing (Size2)
 
@@ -53,7 +51,7 @@ initGrid =
 
 parse : String -> Result (List DeadEnd) Pattern
 parse =
-    run lines >> Result.map setAtomicUpdateBoundsFromCellsIfEmpty
+    run lines
 
 
 lines : Parser Pattern
@@ -171,13 +169,13 @@ comment =
 addComment : Pattern -> Comment -> Pattern
 addComment pattern c =
     { pattern
-        | atomicUpdateRegion =
+        | atomicUpdateRegions =
             case c of
                 AtomicUpdateRegionComment atomicUpdateRegion ->
-                    atomicUpdateRegion
+                    atomicUpdateRegion :: pattern.atomicUpdateRegions
 
                 Ignored ->
-                    pattern.atomicUpdateRegion
+                    pattern.atomicUpdateRegions
     }
 
 
@@ -214,26 +212,3 @@ extent =
             [ rule
             , spacesOrTabs
             ]
-
-
-setAtomicUpdateBoundsFromCellsIfEmpty : Pattern -> Pattern
-setAtomicUpdateBoundsFromCellsIfEmpty pattern =
-    let
-        atomicUpdateRegion =
-            pattern.atomicUpdateRegion
-    in
-    if pattern.atomicUpdateRegion.bounds == BoundingRectangle.empty then
-        case GridCells.bounds pattern.cells of
-            Nothing ->
-                pattern
-
-            Just cellBounds ->
-                { pattern
-                    | atomicUpdateRegion =
-                        { atomicUpdateRegion
-                            | bounds = cellBounds
-                        }
-                }
-
-    else
-        pattern
