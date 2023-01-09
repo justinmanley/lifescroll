@@ -2,11 +2,10 @@ module Life.TestData.Spaceship exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
-import Life.GridCells as GridCells
 import Life.Life exposing (LifeGrid)
 import Life.Pattern exposing (Pattern)
+import Life.Viewport exposing (numProtectedBottomCells)
 import Set
-import Size2
 import Vector2 exposing (Vector2, x, y)
 
 
@@ -98,7 +97,7 @@ inViewFor : Int -> Spaceship -> BoundingRectangle Int
 inViewFor numSteps { atomicUpdateBounds, movement } =
     { top = atomicUpdateBounds.top + (min 0 <| y movement.direction) * numSteps // movement.period
     , left = atomicUpdateBounds.left + (min 0 <| x movement.direction) * numSteps // movement.period
-    , bottom = atomicUpdateBounds.bottom + (max 0 <| y movement.direction) * numSteps // movement.period + 1
+    , bottom = atomicUpdateBounds.bottom + (max 0 <| y movement.direction) * numSteps // movement.period + 1 + numProtectedBottomCells
     , right = atomicUpdateBounds.right + (max 0 <| x movement.direction) * numSteps // movement.period + 1
     }
 

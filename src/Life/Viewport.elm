@@ -1,4 +1,4 @@
-module Life.Viewport exposing (next, scroll, scrolledCellsPerStep, toggleCell)
+module Life.Viewport exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle, vertical)
 import Interval exposing (Interval, containsValue)

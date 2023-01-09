@@ -6,7 +6,7 @@ import Fuzz exposing (intRange)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Life exposing (LifeGrid)
 import Life.TestData.Spaceship as Spaceship exposing (glider, inViewFor)
-import Life.Viewport as Viewport exposing (scrolledCellsPerStep)
+import Life.Viewport as Viewport exposing (numProtectedBottomCells, scrolledCellsPerStep)
 import Loop exposing (for)
 import Set
 import Test exposing (Test, describe, fuzz, test)
@@ -81,7 +81,7 @@ scrollSentinel numSteps currentPageScrollPositionToMostRecent =
             { top = cellSizeInPixels * toFloat sentinel.top
             , left = cellSizeInPixels * toFloat sentinel.left
             , right = cellSizeInPixels * toFloat sentinel.right
-            , bottom = cellSizeInPixels * toFloat sentinel.bottom
+            , bottom = cellSizeInPixels * toFloat (sentinel.bottom + numProtectedBottomCells)
             }
 
         life =
