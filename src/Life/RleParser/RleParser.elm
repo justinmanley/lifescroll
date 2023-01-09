@@ -1,9 +1,10 @@
-module Life.RleParser exposing (comment, parse)
+module Life.RleParser.RleParser exposing (comment, parse)
 
-import BoundingRectangle exposing (BoundingRectangle)
-import Life.AtomicUpdateRegion exposing (Movement)
+import BoundingRectangle as BoundingRectangle
+import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern, setCells)
+import Life.RleParser.AtomicUpdateRegionParser exposing (atomicUpdateRegion)
 import Parser
     exposing
         ( (|.)
@@ -23,14 +24,10 @@ import Parser
         , symbol
         , token
         )
-import Parser.Extra exposing (int)
+import Parser.Extra exposing (int, spacesOrTabs)
 import Result
 import Set
 import Size2 exposing (Size2)
-
-
-
--- The built-in Parser.int does not support leading minus signs.
 
 
 type alias GridState =
@@ -149,10 +146,7 @@ nextGridLine gridState count =
 
 
 type Comment
-    = MovementComment Movement
-      -- Maximum bounds coordinates are relative to the upper-leftmost live cell
-      -- in the pattern (i.e. the first generation of the pattern).
-    | MaximumBoundsComment (BoundingRectangle Int)
+    = AtomicUpdateRegionComment AtomicUpdateRegion
     | Ignored
 
 
@@ -164,8 +158,7 @@ comment =
         |= oneOf
             -- These comment types are not included in the standard RLE spec:
             -- https://conwaylife.com/wiki/Run_Length_Encoded.
-            [ succeed MovementComment |= movementComment
-            , succeed MaximumBoundsComment |= maximumComment
+            [ succeed AtomicUpdateRegionComment |= atomicUpdateRegion
             , succeed Ignored
             ]
         |. oneOf
@@ -175,85 +168,17 @@ comment =
             ]
 
 
-movementComment : Parser Movement
-movementComment =
-    let
-        toMovement : Int -> Int -> Int -> Movement
-        toMovement x y period =
-            { direction = ( x, y )
-            , period = period
-            }
-    in
-    succeed toMovement
-        |. token "MOVEMENT"
-        |. spacesOrTabs
-        |. token "DIRECTION"
-        |. spacesOrTabs
-        |. symbol "("
-        |. spacesOrTabs
-        |= int
-        |. spacesOrTabs
-        |. symbol ","
-        |. spacesOrTabs
-        |= int
-        |. spacesOrTabs
-        |. symbol ")"
-        |. spacesOrTabs
-        |. symbol "PERIOD"
-        |. spacesOrTabs
-        |= int
-
-
-maximumComment : Parser (BoundingRectangle Int)
-maximumComment =
-    succeed BoundingRectangle
-        |. token "MAXIMUM EXTENT"
-        |. spacesOrTabs
-        |. token "TOP"
-        |. spacesOrTabs
-        |= int
-        |. spacesOrTabs
-        |. token "LEFT"
-        |. spacesOrTabs
-        |= int
-        |. spacesOrTabs
-        |. token "BOTTOM"
-        |. spacesOrTabs
-        |= int
-        |. spacesOrTabs
-        |. token "RIGHT"
-        |. spacesOrTabs
-        |= int
-
-
 addComment : Pattern -> Comment -> Pattern
 addComment pattern c =
     { pattern
         | atomicUpdateRegion =
-            let
-                atomicUpdateRegion =
-                    pattern.atomicUpdateRegion
-            in
             case c of
-                MovementComment movement ->
-                    { atomicUpdateRegion | movement = Just movement }
-
-                MaximumBoundsComment bounds ->
-                    { atomicUpdateRegion | bounds = bounds }
+                AtomicUpdateRegionComment atomicUpdateRegion ->
+                    atomicUpdateRegion
 
                 Ignored ->
-                    atomicUpdateRegion
+                    pattern.atomicUpdateRegion
     }
-
-
-
--- Use this rather than Parser.spaces in order to
--- be sensitive to line-endings.
-
-
-spacesOrTabs : Parser ()
-spacesOrTabs =
-    chompWhile (\c -> c == ' ' || c == '\t')
 
 
 rule : Parser ()

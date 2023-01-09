@@ -5,7 +5,7 @@ import DebugSettings exposing (withLogging)
 import Json.Decode as Decode exposing (Decoder, field, string)
 import Life.GridCells as GridCells
 import Life.Pattern exposing (Pattern)
-import Life.RleParser as RleParser
+import Life.RleParser.RleParser as RleParser
 import Maybe exposing (withDefault)
 import PageCoordinate
 import Parser exposing (deadEndsToString)

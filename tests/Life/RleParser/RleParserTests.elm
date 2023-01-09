@@ -1,11 +1,11 @@
-module Life.RleParserTests exposing (..)
+module Life.RleParser.RleParserTests exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Expect
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
 import Life.GridCells exposing (GridCells)
 import Life.Pattern as Pattern exposing (Pattern)
-import Life.RleParser as RleParser
+import Life.RleParser.RleParser as RleParser
 import Set
 import Size2 exposing (Size2)
 import Test exposing (..)
@@ -119,26 +119,6 @@ suite =
                 Expect.equal
                     (Ok <| Set.fromList [ ( 0, 0 ), ( 1, 0 ) ])
                     (RleParser.parse "o\no!" |> Result.map getCells)
-        , test "parses a pattern with a movement comment" <|
-            \_ ->
-                Expect.equal
-                    (Ok <|
-                        Just
-                            { direction = ( 1, 2 )
-                            , period = 3
-                            }
-                    )
-                    (RleParser.parse "# MOVEMENT DIRECTION (1,2) PERIOD 3\no!" |> Result.map getMovement)
-        , test "parses a pattern with a movement comment with negative movement" <|
-            \_ ->
-                Expect.equal
-                    (Ok <|
-                        Just
-                            { direction = ( -1, 2 )
-                            , period = 3
-                            }
-                    )
-                    (RleParser.parse "# MOVEMENT DIRECTION (-1,2) PERIOD 3\no!" |> Result.map getMovement)
         , test "parses a pattern with an atomic update region bounds comment" <|
             \_ ->
                 Expect.equal
@@ -149,7 +129,7 @@ suite =
                         , right = 4
                         }
                     )
-                    (RleParser.parse "# MAXIMUM EXTENT TOP 1 LEFT 2 BOTTOM 3 RIGHT 4l\no!"
+                    (RleParser.parse "# maximum extent top 1 left 2 bottom 3 right 4\no!"
                         |> Result.map getAtomicUpdateRegionBounds
                     )
         , test "parses a pattern with atomic update region bounds comments" <|
@@ -170,7 +150,7 @@ suite =
                         , stepsElapsed = 0
                         }
                     )
-                    (RleParser.parse "# MOVEMENT DIRECTION (1,2) PERIOD 3\n# MAXIMUM EXTENT TOP 1 LEFT 2 BOTTOM 3 RIGHT 4l\no!"
+                    (RleParser.parse "# maximum extent top 1 left 2 bottom 3 right 4 moves in direction (1,2) with period 3\no!"
                         |> Result.map getAtomicUpdateRegion
                     )
         ]
