@@ -116,10 +116,10 @@ suite =
                           }
                         ]
                     )
-                    (RleParser.parse "# maximum extent top 1 left 2 bottom 3 right 4\no!"
+                    (RleParser.parse "# update atomically within extent top 1 left 2 bottom 3 right 4\no!"
                         |> Result.map getAtomicUpdateRegions
                     )
-        , test "parses a pattern with atomic update region bounds comments" <|
+        , test "parses a pattern with an atomic update region bounds comment with movement" <|
             \_ ->
                 Expect.equal
                     (Ok <|
@@ -138,7 +138,7 @@ suite =
                           }
                         ]
                     )
-                    (RleParser.parse "# maximum extent top 1 left 2 bottom 3 right 4 moves in direction (1,2) with period 3\no!"
+                    (RleParser.parse "# update atomically within extent top 1 left 2 bottom 3 right 4 moving in direction (1,2) with period 3\no!"
                         |> Result.map getAtomicUpdateRegions
                     )
         ]

@@ -34,7 +34,10 @@ atomicUpdateRegion : Parser AtomicUpdateRegion
 atomicUpdateRegion =
     succeed initialUpdateRegion
         |. spacesOrTabs
-        |= maximumExtent
+        |. token "update atomically"
+        |. spacesOrTabs
+        |= extent
+        |. spacesOrTabs
         |= oneOf
             [ map Just movement
             , succeed Nothing
@@ -42,10 +45,10 @@ atomicUpdateRegion =
         |. spacesOrTabs
 
 
-maximumExtent : Parser (BoundingRectangle Int)
-maximumExtent =
+extent : Parser (BoundingRectangle Int)
+extent =
     succeed BoundingRectangle
-        |. token "maximum extent"
+        |. token "within extent"
         |. spacesOrTabs
         |. token "top"
         |. spacesOrTabs
@@ -74,8 +77,7 @@ movement =
             }
     in
     succeed toMovement
-        |. spacesOrTabs
-        |. token "moves"
+        |. token "moving"
         |. spacesOrTabs
         |. token "in direction"
         |. spacesOrTabs

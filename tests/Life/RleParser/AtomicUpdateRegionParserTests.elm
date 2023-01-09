@@ -22,7 +22,7 @@ suite =
                         , right = 1
                         }
                     )
-                    (parse "maximum extent top 0 left 0 bottom 1 right 1" |> Result.map getBounds)
+                    (parse "update atomically within extent top 0 left 0 bottom 1 right 1" |> Result.map getBounds)
         , test "parses a pattern with a movement comment" <|
             \_ ->
                 Expect.equal
@@ -33,8 +33,8 @@ suite =
                             }
                     )
                     (""
-                        ++ "maximum extent top 0 left 0 bottom 0 right 0 "
-                        ++ "moves in direction (1,2) with period 3\no!"
+                        ++ "update atomically within extent top 0 left 0 bottom 0 right 0 "
+                        ++ "moving in direction (1,2) with period 3\no!"
                         |> (parse >> Result.map getMovement)
                     )
         , test "parses a pattern with a movement comment with negative movement" <|
@@ -47,8 +47,8 @@ suite =
                             }
                     )
                     (""
-                        ++ "maximum extent top 0 left 0 bottom 0 right 0 "
-                        ++ "moves in direction (-1,2) with period 3\no!"
+                        ++ "update atomically within extent top 0 left 0 bottom 0 right 0 "
+                        ++ "moving in direction (-1,2) with period 3\no!"
                         |> (parse >> Result.map getMovement)
                     )
         ]

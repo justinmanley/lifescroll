@@ -1,0 +1,3 @@
+x = 17, y = 14, rule = B3/S23
+# maximum extent top -6 left -7 bottom 10 right 12
+o3bo$2ob2o$obobo$o3bo!

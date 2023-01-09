@@ -2,6 +2,6 @@
 #O John Conway
 #C An extremely common 6-cell still life.
 #C www.conwaylife.com/wiki/index.php?title=Beehive
-# maximum extent top 0 left 0 bottom 3 right 4
+# update atomically within extent top 0 left 0 bottom 3 right 4
 x = 4, y = 3, rule = B3/S23
 b2ob$o2bo$b2o!
