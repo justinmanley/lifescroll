@@ -1,0 +1,5 @@
+# You can save the pattern into this box with Settings/Pattern/Save or Ctrl-S.
+# maximum extent top -4 left -18 bottom 23 right 30
+x = 12, y = 19, rule = B3/S23
+b10o$o10bo$b10o$o10bo$b10o$o10bo$b10o$o10bo$b10o$o10bo$b10o$o10bo$b10o
+$o10bo$b10o$o10bo$b10o$o10bo$b10o!
