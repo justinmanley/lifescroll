@@ -1,14 +1,15 @@
 module Life.Viewport exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle, vertical)
-import Interval exposing (Interval, containsValue)
-import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import BoundingRectangle exposing (BoundingRectangle, containsPoint, vertical)
+import Interval exposing (Interval, containedIn)
+import Life.AtomicUpdateRegion.AtomicUpdateRegion as AtomicUpdateRegion exposing (bounds)
+import Life.AtomicUpdateRegion.StepCriterion exposing (StepCriterion(..))
 import Life.Life as Life exposing (LifeGrid)
 import Loop exposing (for)
 import PageCoordinate
 import PageCoordinates
 import Set
-import Vector2 exposing (Vector2)
+import Vector2 exposing (Vector2, y)
 
 
 numProtectedBottomCells : number
@@ -33,21 +34,25 @@ next viewport { cells, atomicUpdateRegions } =
         viewportVerticalBounds =
             steppableVerticalBounds viewport
 
-        belongsToFrozenAtomicUpdateRegion : Vector2 Int -> AtomicUpdateRegion -> Bool
-        belongsToFrozenAtomicUpdateRegion cell { bounds } =
-            (vertical bounds |> Interval.hasPartialIntersection viewportVerticalBounds)
-                && (bounds |> BoundingRectangle.containsPoint cell)
+        isCellSteppable : Vector2 Int -> Bool
+        isCellSteppable cell =
+            if y cell |> containedIn viewportVerticalBounds then
+                not (List.any (bounds >> containsPoint cell) notSteppableRegions)
 
-        isSteppable : Vector2 Int -> Bool
-        isSteppable ( x, y ) =
-            (viewportVerticalBounds |> containsValue y)
-                && not (List.any (belongsToFrozenAtomicUpdateRegion ( x, y )) atomicUpdateRegions)
+            else
+                List.any (bounds >> containsPoint cell) steppableRegions
 
-        ( steppable, notSteppable ) =
-            Set.partition isSteppable cells
+        ( steppableRegions, notSteppableRegions ) =
+            List.partition (AtomicUpdateRegion.isSteppable viewportVerticalBounds) atomicUpdateRegions
+
+        ( steppableCells, notSteppableCells ) =
+            Set.partition isCellSteppable cells
     in
-    { cells = Set.union (Life.next steppable) notSteppable
-    , atomicUpdateRegions = List.map (AtomicUpdateRegion.next viewportVerticalBounds) atomicUpdateRegions
+    { cells = Set.union (Life.next steppableCells) notSteppableCells
+    , atomicUpdateRegions =
+        List.append
+            (List.map AtomicUpdateRegion.next steppableRegions)
+            notSteppableRegions
     }
 
 

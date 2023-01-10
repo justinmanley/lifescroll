@@ -1,7 +1,7 @@
 module Life.AtomicUpdateRegionTests exposing (..)
 
 import Expect
-import Life.AtomicUpdateRegion exposing (moveBy)
+import Life.AtomicUpdateRegion.AtomicUpdateRegion exposing (moveBy)
 import Test exposing (Test, describe, test)
 
 

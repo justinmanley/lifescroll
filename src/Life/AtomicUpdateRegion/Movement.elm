@@ -1,4 +1,4 @@
-module Life.Movement exposing (..)
+module Life.AtomicUpdateRegion.Movement exposing (..)
 
 import Json.Decode as Decode exposing (Decoder, field, int)
 import Vector2 exposing (Vector2)

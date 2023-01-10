@@ -1,8 +1,9 @@
 module Life.ViewportTests exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle, containsPoint)
+import BoundingRectangle exposing (BoundingRectangle, containsPoint, offsetBy)
 import Expect exposing (Expectation)
 import Fuzz exposing (intRange)
+import Life.AtomicUpdateRegion.StepCriterion exposing (StepCriterion(..))
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Life exposing (LifeGrid)
 import Life.TestData.Spaceship as Spaceship exposing (glider, inViewFor)
@@ -51,6 +52,50 @@ suite =
 
                         _ ->
                             Expect.fail "Expected one atomic update region, but found more than one."
+            , describe "when overlapping the viewport, an atomic update region which is allowed to update on any intersection with the steppable region should update its contained cells" <|
+                let
+                    viewport =
+                        { top = 0
+                        , left = 0
+                        , bottom = 10
+                        , right = 10
+                        }
+                in
+                [ test "within the viewport" <|
+                    \_ ->
+                        let
+                            grid =
+                                { cells = Set.fromList [ ( 5, 5 ) ]
+                                , atomicUpdateRegions =
+                                    [ { bounds = viewport |> offsetBy ( 0, 1 )
+                                      , movement = Nothing
+                                      , stepCriterion = AnyIntersectionWithSteppableRegion
+                                      , stepsElapsed = 0
+                                      }
+                                    ]
+                                }
+                        in
+                        Expect.equalSets
+                            (Set.fromList [])
+                            (Viewport.next viewport grid |> getCells)
+                , test "outside the viewport" <|
+                    \_ ->
+                        let
+                            grid =
+                                { cells = Set.fromList [ ( 0, 12 ) ]
+                                , atomicUpdateRegions =
+                                    [ { bounds = viewport |> offsetBy ( 0, 5 )
+                                      , movement = Nothing
+                                      , stepCriterion = AnyIntersectionWithSteppableRegion
+                                      , stepsElapsed = 0
+                                      }
+                                    ]
+                                }
+                        in
+                        Expect.equalSets
+                            (Set.fromList [])
+                            (Viewport.next viewport grid |> getCells)
+                ]
             ]
         ]
 
@@ -89,6 +134,7 @@ scrollSentinel numSteps currentPageScrollPositionToMostRecent =
             , atomicUpdateRegions =
                 [ { bounds = sentinel
                   , movement = Nothing
+                  , stepCriterion = FullyContainedWithinSteppableRegion
                   , stepsElapsed = 0
                   }
                 ]
@@ -124,3 +170,8 @@ expectCellsToBeWithinBounds bounds cells =
                 ++ Debug.toString bounds
                 ++ "."
             )
+
+
+getCells : LifeGrid -> GridCells
+getCells grid =
+    grid.cells

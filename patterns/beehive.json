@@ -5,6 +5,7 @@
             "left": 0,
             "bottom": 3,
             "right": 4
-        }
+        },
+        "stepCriterion": "FullyContainedWithinSteppableRegion"
     }
 ]

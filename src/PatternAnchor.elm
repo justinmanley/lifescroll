@@ -3,7 +3,7 @@ module PatternAnchor exposing (..)
 import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (log)
 import Json.Decode as Decode exposing (Decoder, decodeString, errorToString, field, float, list, string)
-import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import Life.AtomicUpdateRegion.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells
 import Life.Pattern exposing (Pattern)
 import Life.RleParser as RleParser

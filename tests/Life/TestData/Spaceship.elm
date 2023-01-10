@@ -1,9 +1,10 @@
 module Life.TestData.Spaceship exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
-import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import Life.AtomicUpdateRegion.AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import Life.AtomicUpdateRegion.Movement exposing (Movement)
+import Life.AtomicUpdateRegion.StepCriterion exposing (StepCriterion(..))
 import Life.Life exposing (LifeGrid)
-import Life.Movement exposing (Movement)
 import Life.Pattern exposing (Pattern)
 import Life.Viewport exposing (numProtectedBottomCells)
 import Set
@@ -90,6 +91,7 @@ toAtomicUpdateRegion : Spaceship -> AtomicUpdateRegion
 toAtomicUpdateRegion spaceship =
     { movement = Just spaceship.movement
     , bounds = spaceship.atomicUpdateBounds
+    , stepCriterion = FullyContainedWithinSteppableRegion
     , stepsElapsed = 0
     }
 

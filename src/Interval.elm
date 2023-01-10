@@ -2,6 +2,7 @@ module Interval exposing (..)
 
 
 type alias Interval number =
+    -- `start` is assumed to be less than or equal to `end`
     { start : number
     , end : number
     }
@@ -24,15 +25,18 @@ containsValue value { start, end } =
     start <= value && value <= end
 
 
+containedIn : Interval number -> number -> Bool
+containedIn interval value =
+    containsValue value interval
+
+
 contains : Interval number -> Interval number -> Bool
 contains query container =
     container.start <= query.start && query.end <= container.end
 
 
-hasPartialIntersection : Interval number -> Interval number -> Bool
-hasPartialIntersection a b =
-    let
-        intersectionLength =
-            length <| intersect a b
-    in
-    intersectionLength < length a && intersectionLength < length b
+hasIntersectionWith : Interval number -> Interval number -> Bool
+hasIntersectionWith a b =
+    -- Cannot use `intersects` because that will not help if one of the intervals
+    -- has length zero.
+    b.start < a.end || a.start < b.end

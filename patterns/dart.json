@@ -12,6 +12,7 @@
                 "y": -1
             },
             "period": 3
-        }
+        },
+        "stepCriterion": "FullyContainedWithinSteppableRegion"
     }
 ]

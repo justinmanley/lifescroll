@@ -5,7 +5,7 @@ import Canvas exposing (Renderable, Shape, shapes)
 import Canvas.Settings exposing (fill)
 import Canvas.Settings.Advanced exposing (transform, translate)
 import Color
-import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import Life.AtomicUpdateRegion.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
 import PageCoordinates

@@ -1,6 +1,6 @@
 module Life.Pattern exposing (..)
 
-import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import Life.AtomicUpdateRegion.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells exposing (GridCells)
 import Set
 
