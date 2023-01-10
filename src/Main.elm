@@ -9,7 +9,7 @@ import Color
 import DebugSettings exposing (withLogging)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
-import Json.Decode as Decode exposing (Decoder, at, decodeValue, oneOf)
+import Json.Decode as Decode exposing (Decoder, at, decodeValue, float, oneOf)
 import Json.Encode as Encode
 import Life.Debug as Life
 import Life.GridCells exposing (GridCells)
@@ -199,5 +199,5 @@ decoder : Decoder Msg
 decoder =
     oneOf
         [ Decode.map PageUpdate (at [ "PageUpdate" ] Page.decoder)
-        , Decode.map ScrollPage (at [ "ScrollPage", "viewport" ] BoundingRectangle.decoder)
+        , Decode.map ScrollPage (at [ "ScrollPage", "viewport" ] <| BoundingRectangle.decoder float)
         ]

@@ -2,7 +2,7 @@ module PatternAnchor exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (withLogging)
-import Json.Decode as Decode exposing (Decoder, field, string)
+import Json.Decode as Decode exposing (Decoder, field, float, string)
 import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells
 import Life.Pattern exposing (Pattern)
@@ -62,4 +62,4 @@ decoder =
     Decode.map3 PatternAnchor
         (field "id" string)
         (field "rle" string)
-        (field "bounds" BoundingRectangle.decoder)
+        (field "bounds" <| BoundingRectangle.decoder float)

@@ -33,8 +33,8 @@ decoder =
     Decode.map5
         Page
         (field "patterns" (list PatternAnchor.decoder))
-        (field "body" BoundingRectangle.decoder)
-        (field "article" BoundingRectangle.decoder)
+        (field "body" <| BoundingRectangle.decoder float)
+        (field "article" <| BoundingRectangle.decoder float)
         (field "debug" DebugSettings.decoder)
         (field "cellSizeInPixels" float)
 

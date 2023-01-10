@@ -1,5 +1,6 @@
 module Vector2 exposing (..)
 
+import Json.Decode as Decode exposing (Decoder, index)
 import Tuple exposing (first, second)
 
 
@@ -50,3 +51,10 @@ fold f ( x1, y1 ) ( x2, y2 ) =
 toString : Vector2 String -> String
 toString ( a, b ) =
     "(" ++ a ++ ", " ++ b ++ ")"
+
+
+decoder : Decoder number -> Decoder (Vector2 number)
+decoder valueDecoder =
+    Decode.map2 Tuple.pair
+        (index 0 valueDecoder)
+        (index 1 valueDecoder)

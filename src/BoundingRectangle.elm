@@ -92,13 +92,13 @@ vertical { top, bottom } =
     }
 
 
-decoder : Decoder (BoundingRectangle Float)
-decoder =
+decoder : Decoder number -> Decoder (BoundingRectangle number)
+decoder valueDecoder =
     Decode.map4 BoundingRectangle
-        (field "top" float)
-        (field "left" float)
-        (field "bottom" float)
-        (field "right" float)
+        (field "top" valueDecoder)
+        (field "left" valueDecoder)
+        (field "bottom" valueDecoder)
+        (field "right" valueDecoder)
 
 
 encode : (number -> Value) -> BoundingRectangle number -> Value

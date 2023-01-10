@@ -1,7 +1,8 @@
 module Life.RleParser.AtomicUpdateRegionParser exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
-import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
+import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import Life.Movement exposing (Movement)
 import Parser
     exposing
         ( (|.)

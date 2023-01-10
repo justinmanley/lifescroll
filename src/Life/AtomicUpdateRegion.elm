@@ -2,13 +2,8 @@ module Life.AtomicUpdateRegion exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle, offsetBy, vertical)
 import Interval exposing (Interval, contains)
-import Vector2 exposing (Vector2)
-
-
-type alias Movement =
-    { direction : Vector2 Int
-    , period : Int
-    }
+import Json.Decode as Decode exposing (Decoder, field, int, maybe, succeed)
+import Life.Movement as Movement exposing (Movement)
 
 
 type alias AtomicUpdateRegion =
@@ -63,3 +58,11 @@ next viewportVerticalBounds region =
 
     else
         region
+
+
+decoder : Decoder AtomicUpdateRegion
+decoder =
+    Decode.map3 AtomicUpdateRegion
+        (field "bounds" <| BoundingRectangle.decoder int)
+        (field "movement" <| maybe Movement.decoder)
+        (succeed 0)
