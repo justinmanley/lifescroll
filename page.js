@@ -89,18 +89,20 @@ class PatternAnchor extends HTMLElement {
      */
     async getPattern() {
         const rle = await this.rle;
+        const atomicUpdateRegions = await this.atomicUpdateRegions;
         // The bounds must be calculated after the rle file has been fetched
         // and parsed.
         const boundingRectangle = boundingRectangleWithRespectToDocument(this);
         return {
             id: this.id,
-            rle,
             bounds: boundingRectangle,
+            patternRle: rle,
+            atomicUpdateRegionsJson: atomicUpdateRegions,
         };
     }
 
     async loaded() {
-        await this.rle;
+        await Promise.all([this.rle, this.atomicUpdateRegions]);
         return this;
     }
 
@@ -118,9 +120,14 @@ class PatternAnchor extends HTMLElement {
                 })
             this.id = newValue;
         }
+
+        if (name === 'atomic-update-regions') {
+            this.atomicUpdateRegions = fetch(newValue)
+                .then(async response => response.text());
+        }
     }
 
-    static get observedAttributes() { return ['src']; }
+    static get observedAttributes() { return ['src', 'atomic-update-regions']; }
 }
 
 customElements.define('pattern-anchor', PatternAnchor);

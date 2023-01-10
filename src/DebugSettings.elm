@@ -37,10 +37,16 @@ allEnabled =
 withLogging : Bool -> String -> a -> a
 withLogging enabled message =
     if enabled then
-        Debug.log message
+        log message
 
     else
         identity
+
+
+log : String -> a -> a
+log =
+    -- Replace with `identity` to enable compiling with the --optimize flag.
+    Debug.log
 
 
 decoder : Decoder DebugSettings

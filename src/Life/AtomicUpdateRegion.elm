@@ -64,5 +64,5 @@ decoder : Decoder AtomicUpdateRegion
 decoder =
     Decode.map3 AtomicUpdateRegion
         (field "bounds" <| BoundingRectangle.decoder int)
-        (field "movement" <| maybe Movement.decoder)
+        (maybe <| field "movement" Movement.decoder)
         (succeed 0)

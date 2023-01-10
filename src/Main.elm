@@ -6,7 +6,7 @@ import Browser.Events exposing (onClick)
 import Canvas
 import Canvas.Renderable as Renderable
 import Color
-import DebugSettings exposing (withLogging)
+import DebugSettings exposing (log, withLogging)
 import Html exposing (Html)
 import Html.Attributes exposing (style)
 import Json.Decode as Decode exposing (Decoder, at, decodeValue, float, oneOf)
@@ -135,7 +135,7 @@ update msg model =
             )
 
         ParsingError error ->
-            ( withLogging True (Decode.errorToString error) model, Cmd.none )
+            ( log (Decode.errorToString error) model, Cmd.none )
 
 
 insertPatterns : Page -> LifeGrid -> LifeGrid

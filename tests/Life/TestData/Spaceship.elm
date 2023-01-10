@@ -1,8 +1,9 @@
 module Life.TestData.Spaceship exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
-import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion, Movement)
+import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.Life exposing (LifeGrid)
+import Life.Movement exposing (Movement)
 import Life.Pattern exposing (Pattern)
 import Life.Viewport exposing (numProtectedBottomCells)
 import Set

@@ -63,7 +63,11 @@
                 all, and will have become, so far as you can see, a straight line.
             </p>
 
-            <pattern-anchor src="patterns/dart.txt"></pattern-anchor>
+            <!-- 
+                Patterns must be saved as .txt rather than .rle in order for the
+                Elm reactor to serve them as plain text files.
+            -->
+            <pattern-anchor src="patterns/dart.txt" atomic-update-regions="patterns/dart.json"></pattern-anchor>
 
             <p>
                 The same thing would happen if you were to treat in the same way a Triangle, or Square, or any other
@@ -76,7 +80,7 @@
                 Flatland) you would see nothing but a straight line.
             </p>
 
-            <pattern-anchor src="patterns/beehive.txt"></pattern-anchor>
+            <pattern-anchor src="patterns/beehive.txt" atomic-update-regions="patterns/beehive.json"></pattern-anchor>
 
             <p>
                 When I was in Spaceland I heard that your sailors have very similar experiences while they traverse your
@@ -93,12 +97,9 @@
                 becomes larger; if he leaves us it becomes smaller: but still he looks like a straight line; be he a
                 Triangle, Square, Pentagon, Hexagon, Circle, what you will--a straight Line he looks and nothing else.
 
-                <!-- 
-                    Patterns must be saved as .txt rather than .rle in order for the
-                    Elm reactor to serve them as plain text files.
-                -->
-                <pattern-anchor src="patterns/glider.txt"></pattern-anchor>
             </p>
+
+            <pattern-anchor src="patterns/glider.txt" atomic-update-regions="patterns/glider.json"></pattern-anchor>
 
             <p>
                 You may perhaps ask how under these disadvantageous circumstances we are able to distinguish our friends

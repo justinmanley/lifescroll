@@ -1,0 +1,17 @@
+[
+    {
+        "bounds": {
+            "top": -1,
+            "left": 0,
+            "bottom": 4,
+            "right": 6
+        },
+        "movement": {
+            "direction": {
+                "x": 1,
+                "y": -1
+            },
+            "period": 4
+        }
+    }
+]

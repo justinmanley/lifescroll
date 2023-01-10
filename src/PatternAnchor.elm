@@ -1,12 +1,12 @@
 module PatternAnchor exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle, offsetBy)
-import DebugSettings exposing (withLogging)
-import Json.Decode as Decode exposing (Decoder, field, float, string)
-import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import DebugSettings exposing (log)
+import Json.Decode as Decode exposing (Decoder, decodeString, errorToString, field, float, list, string)
+import Life.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells
 import Life.Pattern exposing (Pattern)
-import Life.RleParser.RleParser as RleParser
+import Life.RleParser as RleParser
 import Maybe exposing (withDefault)
 import PageCoordinate
 import Parser exposing (deadEndsToString)
@@ -17,6 +17,7 @@ import Vector2 exposing (Vector2)
 type alias PatternAnchor =
     { id : String
     , patternRle : String
+    , atomicUpdateRegionsJson : String
     , bounds : BoundingRectangle Float
     }
 
@@ -35,12 +36,12 @@ toPattern cellSizeInPixels article anchor =
     in
     case RleParser.parse anchor.patternRle of
         Err err ->
-            withLogging True ("Could not parse pattern " ++ anchor.id ++ deadEndsToString err) Nothing
+            log ("Could not parse pattern " ++ anchor.id ++ deadEndsToString err) Nothing
 
-        Ok pattern ->
+        Ok cells ->
             let
                 initialBounds =
-                    GridCells.bounds pattern.cells |> withDefault BoundingRectangle.empty
+                    GridCells.bounds cells |> withDefault BoundingRectangle.empty
 
                 start =
                     offset initialBounds
@@ -51,15 +52,21 @@ toPattern cellSizeInPixels article anchor =
                         | bounds = atomicUpdateRegion.bounds |> offsetBy start
                     }
             in
-            Just <|
-                { cells = Set.map (Vector2.add start) pattern.cells
-                , atomicUpdateRegions = List.map offsetAtomicUpdateRegion pattern.atomicUpdateRegions
-                }
+            case decodeString (list AtomicUpdateRegion.decoder) anchor.atomicUpdateRegionsJson of
+                Err err ->
+                    log ("Could not parse atomic update regions " ++ anchor.id ++ ". " ++ errorToString err) Nothing
+
+                Ok atomicUpdateRegions ->
+                    Just <|
+                        { cells = Set.map (Vector2.add start) cells
+                        , atomicUpdateRegions = List.map offsetAtomicUpdateRegion atomicUpdateRegions
+                        }
 
 
 decoder : Decoder PatternAnchor
 decoder =
-    Decode.map3 PatternAnchor
+    Decode.map4 PatternAnchor
         (field "id" string)
-        (field "rle" string)
+        (field "patternRle" string)
+        (field "atomicUpdateRegionsJson" string)
         (field "bounds" <| BoundingRectangle.decoder float)

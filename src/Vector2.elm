@@ -1,6 +1,6 @@
 module Vector2 exposing (..)
 
-import Json.Decode as Decode exposing (Decoder, index)
+import Json.Decode as Decode exposing (Decoder, field)
 import Tuple exposing (first, second)
 
 
@@ -56,5 +56,5 @@ toString ( a, b ) =
 decoder : Decoder number -> Decoder (Vector2 number)
 decoder valueDecoder =
     Decode.map2 Tuple.pair
-        (index 0 valueDecoder)
-        (index 1 valueDecoder)
+        (field "x" valueDecoder)
+        (field "y" valueDecoder)

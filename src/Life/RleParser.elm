@@ -1,9 +1,6 @@
-module Life.RleParser.RleParser exposing (comment, parse)
+module Life.RleParser exposing (parse)
 
-import Life.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells exposing (GridCells)
-import Life.Pattern as Pattern exposing (Pattern, setCells)
-import Life.RleParser.AtomicUpdateRegionParser exposing (atomicUpdateRegion)
 import Parser
     exposing
         ( (|.)
@@ -49,40 +46,40 @@ initGrid =
     }
 
 
-parse : String -> Result (List DeadEnd) Pattern
+parse : String -> Result (List DeadEnd) GridCells
 parse =
     run lines
 
 
-lines : Parser Pattern
+lines : Parser GridCells
 lines =
-    loop Pattern.empty line
+    loop initGrid line
 
 
-line : Pattern -> Parser (Step Pattern Pattern)
-line pattern =
+line : GridState -> Parser (Step GridState GridCells)
+line gridState =
     oneOf
-        [ oneOf
-            [ succeed (Loop pattern)
+        [ succeed (Done <| getCells gridState)
+            |. end
+        , oneOf
+            [ succeed (Loop gridState)
                 |. extent
-            , succeed (Done << setCells pattern)
-                |= cells
-            , succeed (Loop << addComment pattern)
-                |= comment
+            , succeed (Loop gridState)
+                |. comment
+            , succeed Loop
+                |= cells gridState
             ]
             |. spacesOrTabs
             |. oneOf [ symbol "\n", end ]
-        , succeed (Done pattern)
-            |. end
         ]
 
 
-cells : Parser GridCells
-cells =
-    loop initGrid cell
+cells : GridState -> Parser GridState
+cells gridState =
+    loop gridState cell
 
 
-cell : GridState -> Parser (Step GridState GridCells)
+cell : GridState -> Parser (Step GridState GridState)
 cell gridState =
     oneOf
         [ succeed (addCells gridState)
@@ -92,11 +89,11 @@ cell gridState =
             |= cellToken
         , succeed (nextGridLine gridState 1)
             |. token "$"
-        , succeed (Done gridState.gridCells)
+        , succeed (Done gridState)
             |. token "!"
         , succeed (Loop gridState)
             |. symbol "\n"
-        , succeed (Done gridState.gridCells)
+        , succeed (Done gridState)
             |. end
         , problem "Invalid RLE string. I support only two states, so use `b` and `o` for cells"
         ]
@@ -111,7 +108,7 @@ cellToken =
         ]
 
 
-addCells : GridState -> Int -> CellState -> Step GridState GridCells
+addCells : GridState -> Int -> CellState -> Step GridState GridState
 addCells gridState count aliveOrDead =
     case aliveOrDead of
         Alive ->
@@ -138,45 +135,21 @@ addCells gridState count aliveOrDead =
             nextGridLine gridState count
 
 
-nextGridLine : GridState -> Int -> Step GridState GridCells
+nextGridLine : GridState -> Int -> Step GridState GridState
 nextGridLine gridState count =
     Loop { gridState | x = 0, y = gridState.y + count }
 
 
-type Comment
-    = AtomicUpdateRegionComment AtomicUpdateRegion
-    | Ignored
-
-
-comment : Parser Comment
+comment : Parser ()
 comment =
-    succeed identity
+    succeed ()
         |. symbol "#"
         |. spacesOrTabs
-        |= oneOf
-            -- These comment types are not included in the standard RLE spec:
-            -- https://conwaylife.com/wiki/Run_Length_Encoded.
-            [ succeed AtomicUpdateRegionComment |= atomicUpdateRegion
-            , succeed Ignored
-            ]
         |. oneOf
             [ chompUntil "\n"
             , chompWhile (always True)
                 |. end
             ]
-
-
-addComment : Pattern -> Comment -> Pattern
-addComment pattern c =
-    { pattern
-        | atomicUpdateRegions =
-            case c of
-                AtomicUpdateRegionComment atomicUpdateRegion ->
-                    atomicUpdateRegion :: pattern.atomicUpdateRegions
-
-                Ignored ->
-                    pattern.atomicUpdateRegions
-    }
 
 
 rule : Parser ()
@@ -212,3 +185,8 @@ extent =
             [ rule
             , spacesOrTabs
             ]
+
+
+getCells : GridState -> GridCells
+getCells gridState =
+    gridState.gridCells

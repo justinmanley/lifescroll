@@ -87,6 +87,7 @@ testAnchor =
         , right = 10
         }
     , patternRle = "oo!"
+    , atomicUpdateRegionsJson = "[]"
     }
 
 
