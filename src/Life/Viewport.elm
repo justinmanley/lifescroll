@@ -34,6 +34,16 @@ next viewport { cells, atomicUpdateRegions } =
         viewportVerticalBounds =
             steppableVerticalBounds viewport
 
+        -- Note that it is possible for a pattern to be corrupted if that pattern
+        -- is straddling the boundary of the steppable viewport and belongs to BOTH
+        -- an atomic update region with criterion AnyIntersectionWithSteppableRegion
+        -- and another atomic update region with FullyContainedWithinSteppableRegion.
+        -- In this case, the cells within the atomic update region inside the viewport
+        -- will not be updated, while the cells within the atomic update region outside
+        -- the viewport will be updated.
+        -- TODO: Handle this proactively by preventing incompatible overlapping
+        -- atomicUpdateRegions (but: what to do when they overlap? convert one into
+        -- the other type?
         isCellSteppable : Vector2 Int -> Bool
         isCellSteppable cell =
             if y cell |> containedIn viewportVerticalBounds then
