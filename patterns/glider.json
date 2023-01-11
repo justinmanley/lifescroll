@@ -1,18 +1,20 @@
-[
-    {
-        "bounds": {
-            "top": -1,
-            "left": 0,
-            "bottom": 4,
-            "right": 6
-        },
-        "movement": {
-            "direction": {
-                "x": 1,
-                "y": -1
+{
+    "atomicUpdateRegions": [
+        {
+            "bounds": {
+                "top": -1,
+                "left": 0,
+                "bottom": 4,
+                "right": 6
             },
-            "period": 4
-        },
-        "stepCriterion": "FullyContainedWithinSteppableRegion"
-    }
-]
+            "movement": {
+                "direction": {
+                    "x": 1,
+                    "y": -1
+                },
+                "period": 4
+            },
+            "stepCriterion": "FullyContainedWithinSteppableRegion"
+        }
+    ]
+}

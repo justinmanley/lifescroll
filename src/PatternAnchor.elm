@@ -2,10 +2,11 @@ module PatternAnchor exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (log)
-import Json.Decode as Decode exposing (Decoder, decodeString, errorToString, field, float, list, string)
-import Life.AtomicUpdateRegion.AtomicUpdateRegion as AtomicUpdateRegion exposing (AtomicUpdateRegion)
+import Json.Decode as Decode exposing (Decoder, decodeString, errorToString, field, float, string)
+import Life.AtomicUpdateRegion.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells
 import Life.Pattern exposing (Pattern)
+import Life.PatternRenderingOptions as PatternRenderingOptions
 import Life.RleParser as RleParser
 import Maybe exposing (withDefault)
 import PageCoordinate
@@ -17,7 +18,7 @@ import Vector2 exposing (Vector2)
 type alias PatternAnchor =
     { id : String
     , patternRle : String
-    , atomicUpdateRegionsJson : String
+    , renderingOptions : String
     , bounds : BoundingRectangle Float
     }
 
@@ -52,11 +53,11 @@ toPattern cellSizeInPixels article anchor =
                         | bounds = atomicUpdateRegion.bounds |> offsetBy start
                     }
             in
-            case decodeString (list AtomicUpdateRegion.decoder) anchor.atomicUpdateRegionsJson of
+            case decodeString PatternRenderingOptions.decoder anchor.renderingOptions of
                 Err err ->
-                    log ("Could not parse atomic update regions " ++ anchor.id ++ ". " ++ errorToString err) Nothing
+                    log ("Could not parse rendering options " ++ anchor.id ++ ". " ++ errorToString err) Nothing
 
-                Ok atomicUpdateRegions ->
+                Ok { atomicUpdateRegions } ->
                     Just <|
                         { cells = Set.map (Vector2.add start) cells
                         , atomicUpdateRegions = List.map offsetAtomicUpdateRegion atomicUpdateRegions
@@ -68,5 +69,5 @@ decoder =
     Decode.map4 PatternAnchor
         (field "id" string)
         (field "patternRle" string)
-        (field "atomicUpdateRegionsJson" string)
+        (field "patternRenderingOptionsJson" string)
         (field "bounds" <| BoundingRectangle.decoder float)

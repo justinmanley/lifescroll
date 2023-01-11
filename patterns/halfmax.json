@@ -1,0 +1,27 @@
+{
+    "atomicUpdateRegions": [
+        {
+            "bounds": {
+                "top": 0,
+                "left": -1,
+                "bottom": 80,
+                "right": 66
+            },
+            "boundsEdgeMovements": {
+                "top": {
+                    "direction": -1,
+                    "period": 2
+                },
+                "left": {
+                    "direction": -1,
+                    "period": 2
+                },
+                "right": {
+                    "direction": 1,
+                    "period": 2
+                }
+            },
+            "stepCriterion": "AnyIntersectionWithSteppableRegion"
+        }
+    ]
+}
