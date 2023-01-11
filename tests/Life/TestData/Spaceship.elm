@@ -2,7 +2,8 @@ module Life.TestData.Spaceship exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle)
 import Life.AtomicUpdateRegion.AtomicUpdateRegion exposing (AtomicUpdateRegion)
-import Life.AtomicUpdateRegion.Movement exposing (Movement)
+import Life.AtomicUpdateRegion.BoundingRectangleEdgeMovements exposing (BoundingRectangleEdgeMovements)
+import Life.AtomicUpdateRegion.Movement2 exposing (Movement2)
 import Life.AtomicUpdateRegion.StepCriterion exposing (StepCriterion(..))
 import Life.Life exposing (LifeGrid)
 import Life.Pattern exposing (Pattern)
@@ -64,7 +65,7 @@ lightweightSpaceship =
 type alias Spaceship =
     { name : String
     , cells : List (Vector2 Int)
-    , movement : Movement
+    , movement : Movement2
     , atomicUpdateBounds : BoundingRectangle Int
     }
 
@@ -91,6 +92,7 @@ toAtomicUpdateRegion : Spaceship -> AtomicUpdateRegion
 toAtomicUpdateRegion spaceship =
     { movement = Just spaceship.movement
     , bounds = spaceship.atomicUpdateBounds
+    , boundsEdgeMovements = BoundingRectangle.empty Nothing
     , stepCriterion = FullyContainedWithinSteppableRegion
     , stepsElapsed = 0
     }

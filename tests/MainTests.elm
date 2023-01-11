@@ -70,8 +70,8 @@ testPattern =
 testPage : Page
 testPage =
     { anchors = []
-    , body = BoundingRectangle.empty
-    , article = BoundingRectangle.empty
+    , body = BoundingRectangle.empty 0
+    , article = BoundingRectangle.empty 0
     , debug = DebugSettings.allEnabled
     , cellSizeInPixels = 10
     }

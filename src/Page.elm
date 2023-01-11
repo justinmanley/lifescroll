@@ -21,8 +21,8 @@ type alias Page =
 empty : Page
 empty =
     { anchors = []
-    , body = BoundingRectangle.empty
-    , article = BoundingRectangle.empty
+    , body = BoundingRectangle.empty 0
+    , article = BoundingRectangle.empty 0
     , debug = DebugSettings.empty
     , cellSizeInPixels = 16 -- web default
     }

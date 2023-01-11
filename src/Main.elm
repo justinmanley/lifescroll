@@ -52,7 +52,7 @@ emptyModel =
     { page = Page.empty
     , life = Life.empty
     , scroll = ScrollState.empty
-    , viewport = BoundingRectangle.empty
+    , viewport = BoundingRectangle.empty 0
     }
 
 

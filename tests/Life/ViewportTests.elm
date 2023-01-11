@@ -69,6 +69,7 @@ suite =
                                 , atomicUpdateRegions =
                                     [ { bounds = viewport |> offsetBy ( 0, 1 )
                                       , movement = Nothing
+                                      , boundsEdgeMovements = BoundingRectangle.empty Nothing
                                       , stepCriterion = AnyIntersectionWithSteppableRegion
                                       , stepsElapsed = 0
                                       }
@@ -86,6 +87,7 @@ suite =
                                 , atomicUpdateRegions =
                                     [ { bounds = viewport |> offsetBy ( 0, 5 )
                                       , movement = Nothing
+                                      , boundsEdgeMovements = BoundingRectangle.empty Nothing
                                       , stepCriterion = AnyIntersectionWithSteppableRegion
                                       , stepsElapsed = 0
                                       }
@@ -134,6 +136,7 @@ scrollSentinel numSteps currentPageScrollPositionToMostRecent =
             , atomicUpdateRegions =
                 [ { bounds = sentinel
                   , movement = Nothing
+                  , boundsEdgeMovements = BoundingRectangle.empty Nothing
                   , stepCriterion = FullyContainedWithinSteppableRegion
                   , stepsElapsed = 0
                   }

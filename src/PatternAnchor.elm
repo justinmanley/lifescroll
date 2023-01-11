@@ -41,7 +41,7 @@ toPattern cellSizeInPixels article anchor =
         Ok cells ->
             let
                 initialBounds =
-                    GridCells.bounds cells |> withDefault BoundingRectangle.empty
+                    GridCells.bounds cells |> withDefault (BoundingRectangle.empty 0)
 
                 start =
                     offset initialBounds

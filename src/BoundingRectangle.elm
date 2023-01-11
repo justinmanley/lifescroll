@@ -2,16 +2,16 @@ module BoundingRectangle exposing (..)
 
 import Canvas.Settings.Text exposing (TextBaseLine(..))
 import Interval exposing (Interval)
-import Json.Decode as Decode exposing (Decoder, field, float)
+import Json.Decode as Decode exposing (Decoder, field)
 import Json.Encode as Encode exposing (Value)
 import Vector2 exposing (Vector2)
 
 
-type alias BoundingRectangle number =
-    { top : number
-    , left : number
-    , bottom : number
-    , right : number
+type alias BoundingRectangle a =
+    { top : a
+    , left : a
+    , bottom : a
+    , right : a
     }
 
 
@@ -25,12 +25,12 @@ height bounds =
     bounds.bottom - bounds.top
 
 
-empty : BoundingRectangle number
-empty =
-    { top = 0
-    , left = 0
-    , bottom = 0
-    , right = 0
+empty : a -> BoundingRectangle a
+empty value =
+    { top = value
+    , left = value
+    , bottom = value
+    , right = value
     }
 
 
@@ -89,6 +89,24 @@ vertical : BoundingRectangle number -> Interval number
 vertical { top, bottom } =
     { start = top
     , end = bottom
+    }
+
+
+map : (a -> b) -> BoundingRectangle a -> BoundingRectangle b
+map f { top, left, bottom, right } =
+    { top = f top
+    , left = f left
+    , bottom = f bottom
+    , right = f right
+    }
+
+
+map2 : (a -> b -> c) -> BoundingRectangle a -> BoundingRectangle b -> BoundingRectangle c
+map2 f a b =
+    { top = f a.top b.top
+    , left = f a.left b.left
+    , bottom = f a.bottom b.bottom
+    , right = f a.right b.right
     }
 
 
