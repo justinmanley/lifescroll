@@ -29,6 +29,7 @@ type alias GridState =
     { x : Int
     , y : Int
     , gridCells : GridCells
+    , completed : Bool
     }
 
 
@@ -43,6 +44,7 @@ initGrid =
     { x = 0
     , y = 0
     , gridCells = Set.empty
+    , completed = False
     }
 
 
@@ -89,7 +91,7 @@ cell gridState =
             |= cellToken
         , succeed (nextGridLine gridState 1)
             |. token "$"
-        , succeed (Done gridState)
+        , Parser.map Done (complete gridState)
             |. token "!"
         , succeed (Loop gridState)
             |. symbol "\n"
@@ -185,6 +187,18 @@ extent =
             [ rule
             , spacesOrTabs
             ]
+
+
+complete : GridState -> Parser GridState
+complete gridState =
+    if gridState.completed then
+        problem "Pattern contains multiple exclamation points (!)."
+
+    else
+        succeed
+            { gridState
+                | completed = True
+            }
 
 
 getCells : GridState -> GridCells

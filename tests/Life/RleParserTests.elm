@@ -91,4 +91,19 @@ suite =
                 Expect.equal
                     (Ok <| Set.fromList [ ( 0, 0 ), ( 1, 0 ) ])
                     (RleParser.parse "o\no!")
+        , test "fails on an invalid pattern with two exlamation points" <|
+            \_ ->
+                let
+                    isOk : Result err val -> Bool
+                    isOk result =
+                        case result of
+                            Ok _ ->
+                                True
+
+                            Err _ ->
+                                False
+                in
+                Expect.equal
+                    False
+                    (RleParser.parse "o!\no!" |> isOk)
         ]
