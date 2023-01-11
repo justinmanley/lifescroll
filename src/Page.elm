@@ -1,6 +1,6 @@
 module Page exposing (..)
 
-import BoundingRectangle exposing (BoundingRectangle)
+import BoundingRectangle exposing (BoundingRectangle, horizontal)
 import DebugSettings exposing (DebugSettings)
 import Json.Decode as Decode exposing (Decoder, field, float, list)
 import Life.Pattern exposing (Pattern)
@@ -41,4 +41,4 @@ decoder =
 
 patterns : Page -> List Pattern
 patterns { cellSizeInPixels, article, anchors } =
-    List.filterMap (PatternAnchor.toPattern cellSizeInPixels article) anchors
+    List.filterMap (PatternAnchor.toPattern cellSizeInPixels <| horizontal article) anchors

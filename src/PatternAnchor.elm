@@ -2,9 +2,10 @@ module PatternAnchor exposing (..)
 
 import BoundingRectangle exposing (BoundingRectangle, offsetBy)
 import DebugSettings exposing (log)
+import Interval exposing (Interval)
 import Json.Decode as Decode exposing (Decoder, decodeString, errorToString, field, float, string)
 import Life.AtomicUpdateRegion.AtomicUpdateRegion exposing (AtomicUpdateRegion)
-import Life.GridCells as GridCells
+import Life.GridCells as GridCells exposing (GridCells)
 import Life.Pattern exposing (Pattern)
 import Life.PatternRenderingOptions as PatternRenderingOptions
 import Life.RleParser as RleParser
@@ -23,45 +24,63 @@ type alias PatternAnchor =
     }
 
 
-toPattern : Float -> BoundingRectangle Float -> PatternAnchor -> Maybe Pattern
-toPattern cellSizeInPixels article anchor =
-    let
-        articleCenter =
-            article.left + (BoundingRectangle.width article / 2)
-
-        offset : BoundingRectangle Int -> Vector2 Int
-        offset bounds =
-            ( PageCoordinate.toGrid cellSizeInPixels articleCenter - BoundingRectangle.width bounds // 2
-            , PageCoordinate.toGrid cellSizeInPixels (anchor.bounds.top + BoundingRectangle.height anchor.bounds / 2) - BoundingRectangle.height bounds // 2
-            )
-    in
+toPattern : Float -> Interval Float -> PatternAnchor -> Maybe Pattern
+toPattern cellSizeInPixels preferredHorizontalRange anchor =
     case RleParser.parse anchor.patternRle of
         Err err ->
             log ("Could not parse pattern " ++ anchor.id ++ deadEndsToString err) Nothing
 
         Ok cells ->
-            let
-                initialBounds =
-                    GridCells.bounds cells |> withDefault (BoundingRectangle.empty 0)
-
-                start =
-                    offset initialBounds
-
-                offsetAtomicUpdateRegion : AtomicUpdateRegion -> AtomicUpdateRegion
-                offsetAtomicUpdateRegion atomicUpdateRegion =
-                    { atomicUpdateRegion
-                        | bounds = atomicUpdateRegion.bounds |> offsetBy start
-                    }
-            in
             case decodeString PatternRenderingOptions.decoder anchor.renderingOptions of
                 Err err ->
                     log ("Could not parse rendering options " ++ anchor.id ++ ". " ++ errorToString err) Nothing
 
-                Ok { atomicUpdateRegions } ->
-                    Just <|
-                        { cells = Set.map (Vector2.add start) cells
-                        , atomicUpdateRegions = List.map offsetAtomicUpdateRegion atomicUpdateRegions
-                        }
+                Ok { atomicUpdateRegions, focusRegion } ->
+                    let
+                        params =
+                            { cellSizeInPixels = cellSizeInPixels
+                            , preferredHorizontalRange = preferredHorizontalRange
+                            , reserved = anchor.bounds
+                            }
+                    in
+                    Just <| layout params cells atomicUpdateRegions focusRegion
+
+
+type alias PatternLayoutParams =
+    { cellSizeInPixels : Float
+    , preferredHorizontalRange : Interval Float
+    , reserved : BoundingRectangle Float
+    }
+
+
+layout : PatternLayoutParams -> GridCells -> List AtomicUpdateRegion -> Maybe (BoundingRectangle Int) -> Pattern
+layout { preferredHorizontalRange, cellSizeInPixels, reserved } cells atomicUpdateRegions focusRegion =
+    let
+        preferredHorizontalCenter =
+            preferredHorizontalRange.start + (Interval.length preferredHorizontalRange / 2)
+
+        topLeftPositionToAlignWithPatternAnchorTopAndCenterHorizontally : BoundingRectangle Int -> Vector2 Int
+        topLeftPositionToAlignWithPatternAnchorTopAndCenterHorizontally gridBounds =
+            ( PageCoordinate.toGrid cellSizeInPixels preferredHorizontalCenter - BoundingRectangle.width gridBounds // 2 - gridBounds.left
+            , PageCoordinate.toGrid cellSizeInPixels (reserved.top + BoundingRectangle.height reserved / 2) - BoundingRectangle.height gridBounds // 2 - gridBounds.top
+            )
+
+        initialBounds =
+            GridCells.bounds cells |> withDefault (BoundingRectangle.empty 0)
+
+        topLeft =
+            topLeftPositionToAlignWithPatternAnchorTopAndCenterHorizontally <|
+                (focusRegion |> withDefault initialBounds)
+
+        offsetAtomicUpdateRegion : AtomicUpdateRegion -> AtomicUpdateRegion
+        offsetAtomicUpdateRegion atomicUpdateRegion =
+            { atomicUpdateRegion
+                | bounds = atomicUpdateRegion.bounds |> offsetBy topLeft
+            }
+    in
+    { cells = Set.map (Vector2.add topLeft) cells
+    , atomicUpdateRegions = List.map offsetAtomicUpdateRegion atomicUpdateRegions
+    }
 
 
 decoder : Decoder PatternAnchor

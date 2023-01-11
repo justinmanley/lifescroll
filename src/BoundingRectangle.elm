@@ -92,6 +92,13 @@ vertical { top, bottom } =
     }
 
 
+horizontal : BoundingRectangle number -> Interval number
+horizontal { left, right } =
+    { start = left
+    , end = right
+    }
+
+
 map : (a -> b) -> BoundingRectangle a -> BoundingRectangle b
 map f { top, left, bottom, right } =
     { top = f top
