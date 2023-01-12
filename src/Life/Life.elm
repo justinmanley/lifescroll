@@ -8,10 +8,12 @@ import Color
 import Life.AtomicUpdateRegion.AtomicUpdateRegion exposing (AtomicUpdateRegion)
 import Life.GridCells as GridCells exposing (GridCells)
 import Life.Neighborhoods exposing (neighbors)
+import Matrix
+import Maybe exposing (withDefault)
 import PageCoordinates
 import Set
 import Set.Extra as Set
-import Vector2 exposing (Vector2, x, y)
+import Vector2 exposing (Vector2, minus, x, y)
 
 
 type alias LifeGrid =
@@ -74,42 +76,73 @@ render viewport cellSize cells =
 
 
 next : GridCells -> GridCells
-next grid =
+next cells =
     let
-        adjacentDeadCells =
-            Set.diff (Set.flatMap neighbors grid) grid
+        bounds =
+            GridCells.bounds cells
+                |> withDefault (BoundingRectangle.empty 0)
 
-        newborns =
-            Set.filter (shouldBeBorn grid) adjacentDeadCells
+        offset =
+            ( bounds.left, bounds.top )
 
-        survivors =
-            Set.filter (shouldSurvive grid) grid
+        normalize : Vector2 Int -> Vector2 Int
+        normalize cell =
+            cell |> minus offset
+
+        denormalize : Vector2 Int -> Vector2 Int
+        denormalize cell =
+            Vector2.add cell offset
     in
-    Set.union survivors newborns
+    Set.map normalize cells
+        |> nextNormalized
+            (BoundingRectangle.width bounds)
+            (BoundingRectangle.height bounds)
+        |> Set.map denormalize
 
 
-
--- Only used to advance to the next generation.
-
-
-countLiveNeighbors : GridCells -> Vector2 Int -> Int
-countLiveNeighbors aliveCells cell =
-    Set.filter (\c -> Set.member c aliveCells) (neighbors cell) |> Set.size
-
-
-shouldSurvive : GridCells -> Vector2 Int -> Bool
-shouldSurvive aliveCells aliveCell =
+{-| Assumes all of its input cells are greater than (0, 0)
+-}
+nextNormalized : Int -> Int -> GridCells -> GridCells
+nextNormalized width height cells =
     let
-        aliveNeighbors =
-            countLiveNeighbors aliveCells aliveCell
-    in
-    aliveNeighbors == 2 || aliveNeighbors == 3
+        matrix =
+            Matrix.initialize
+                width
+                height
+                (\cell -> Set.member cell cells)
 
+        get : Int -> Int -> Maybe Bool
+        get x y =
+            if x < 0 || y < 0 then
+                Nothing
 
-shouldBeBorn : GridCells -> Vector2 Int -> Bool
-shouldBeBorn aliveCells deadCell =
-    let
-        aliveNeighbors =
-            countLiveNeighbors aliveCells deadCell
+            else
+                Matrix.get x y matrix
+
+        countLiveNeighbors : Vector2 Int -> Int
+        countLiveNeighbors ( x, y ) =
+            let
+                neighborValues : List (Maybe Bool)
+                neighborValues =
+                    [ get (x - 1) (y - 1)
+                    , get x (y - 1)
+                    , get (x + 1) (y - 1)
+                    , get (x + 1) y
+                    , get (x + 1) (y + 1)
+                    , get x (y + 1)
+                    , get (x - 1) (y + 1)
+                    , get (x - 1) y
+                    ]
+            in
+            List.filterMap identity neighborValues
+                |> List.filter identity
+                |> List.length
+
+        shouldBeBorn =
+            Set.diff (Set.flatMap neighbors cells) cells
+                |> Set.filter (countLiveNeighbors >> (\count -> count == 3))
+
+        shouldSurvive =
+            Set.filter (countLiveNeighbors >> (\count -> count == 3 || count == 2)) cells
     in
-    aliveNeighbors == 3
+    Set.union shouldBeBorn shouldSurvive

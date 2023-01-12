@@ -28,9 +28,11 @@ add v1 v2 =
     ( x v1 + x v2, y v1 + y v2 )
 
 
-subtract : Vector2 number -> Vector2 number -> Vector2 number
-subtract v1 v2 =
-    ( x v1 - x v2, y v1 - y v2 )
+{-| Intended to be used as an infix operator: 10 |> minus 5 == 5
+-}
+minus : Vector2 number -> Vector2 number -> Vector2 number
+minus subtrahend minuend =
+    ( x minuend - x subtrahend, y minuend - y subtrahend )
 
 
 min : Vector2 number -> Vector2 number -> Vector2 number
@@ -48,9 +50,9 @@ fold f ( x1, y1 ) ( x2, y2 ) =
     ( f x1 x2, f y1 y2 )
 
 
-toString : Vector2 String -> String
-toString ( a, b ) =
-    "(" ++ a ++ ", " ++ b ++ ")"
+toString : (a -> String) -> Vector2 a -> String
+toString f ( a, b ) =
+    "(" ++ f a ++ ", " ++ f b ++ ")"
 
 
 decoder : Decoder number -> Decoder (Vector2 number)
