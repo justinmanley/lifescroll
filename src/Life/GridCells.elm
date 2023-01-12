@@ -17,13 +17,13 @@ empty =
 bounds : GridCells -> Maybe (BoundingRectangle Int)
 bounds cells =
     case Set.toList cells of
-        [] ->
-            Nothing
+        cell :: rest ->
+            Just
+                { top = List.foldl (y >> min) (y cell) rest
+                , left = List.foldl (x >> min) (x cell) rest
+                , bottom = List.foldl (y >> max) (y cell) rest + 1
+                , right = List.foldl (x >> max) (x cell) rest + 1
+                }
 
         _ ->
-            Just
-                { top = Set.foldl (y >> min) 0 cells
-                , left = Set.foldl (x >> min) 0 cells
-                , bottom = Set.foldl (y >> max) 0 cells + 1
-                , right = Set.foldl (x >> max) 0 cells + 1
-                }
+            Nothing
