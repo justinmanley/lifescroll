@@ -147,7 +147,7 @@ size m =
 -}
 get : Int -> Int -> Matrix a -> Maybe a
 get i j (Matrix { nrows, ncols, mvect }) =
-    if i > nrows || j > ncols then
+    if i >= nrows || j >= ncols then
         Nothing
 
     else
@@ -261,10 +261,10 @@ toLists (identity 3) = [ [1,0,0], [0,1,0], [0,0,1] ]
 -}
 toLists : Matrix a -> List (List a)
 toLists m =
-    List.range 1 (height m)
+    List.range 0 (height m - 1)
         |> List.concatMap
             (\i ->
-                [ List.range 1 (width m)
+                [ List.range 0 (width m - 1)
                     |> List.concatMap (\j -> [ unsafeGet i j m ])
                 ]
             )
@@ -292,7 +292,7 @@ pretty toString m =
 
 encode : Int -> ( Int, Int ) -> Int
 encode ncols ( i, j ) =
-    (i - 1) * ncols + j - 1
+    i * ncols + j
 
 
 decode : Int -> Int -> ( Int, Int )
@@ -304,7 +304,7 @@ decode ncols index =
         r =
             remainderBy ncols index
     in
-    ( q + 1, r + 1 )
+    ( q, r )
 
 
 itemAt : Int -> List a -> Maybe a
