@@ -4,9 +4,14 @@
   "description": "Animate patterns from Conway's Game of Life in the margins of a webpage.",
   "main": "src/Main.elm",
   "dependencies": {
-    "elm-canvas": "^2.2.4"
+    "elm-canvas": "^2.2.4",
+    "typescript": "^4.9.4"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@tsconfig/recommended": "^1.0.1",
+    "ts-loader": "^9.4.2",
+    "webpack": "^5.75.0"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
