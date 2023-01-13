@@ -4,5 +4,6 @@ A library for interleaving patterns Game of Life with and on top of text on the 
 
 ### Development
 
-To view changes, run `elm make src/Main.elm --output=main.js` and `elm reactor`
-and then, in the elm reactor, navigate to example.html.
+Run `webpack --mode development --watch` to compile TypeScript source.
+
+To view the examples, run `npx http-server` and navigate to localhost:8080/example.html.
