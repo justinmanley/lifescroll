@@ -1,4 +1,4 @@
-import { BoundingRectangle } from "../bounding-rectangle";
+import { BoundingRectangle } from "../math/geometry/bounding-rectangle";
 import { LayoutParams, ScrollingGameOfLife } from "../life/scrolling-game-of-life";
 import { isPatternAnchor, PatternAnchorElement } from "./pattern-anchor";
 

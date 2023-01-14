@@ -1,3 +1,1 @@
-export class Pattern {
-
-}
+export class Pattern {}
