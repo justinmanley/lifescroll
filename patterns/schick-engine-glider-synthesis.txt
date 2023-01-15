@@ -1,0 +1,9 @@
+# Schick Engine Glider Synthesis
+#C [[ GRID MAXGRIDSIZE 14 THEME Catagolue ]]
+#CSYNTH xq12_fh1i0i1hfzw8sms8zxfjf costs 9 gliders (true).
+#CLL state-numbering golly
+# https://catagolue.hatsya.com/object/xq12_fh1i0i1hfzw8sms8zxfjf/b3s23
+x = 90, y = 20, rule = B3/S23
+89bo$87b2o$88b2o20$76bobo$76b2o$77bo11$58bo$52bo6b2o$53b2o3b2o$52b2o2$
+65bo$66bo$64b3o2$68b3o$70bo$69bo5$54b2o$55b2o$54bo29$3o$2bo5b3o$bo8bo
+$9bo!

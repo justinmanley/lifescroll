@@ -1,0 +1,29 @@
+{
+    "reserve": {
+        "width": 90,
+        "height": 20
+    },
+    "atomicUpdateRegions": [
+        {
+            "bounds": {
+                "top": 0,
+                "left": 0,
+                "bottom": 86,
+                "right": 90
+            },
+            "boundsEdgeMovements": {
+                "right": {
+                    "direction": 1,
+                    "period": 2
+                }
+            },
+            "stepCriterion": "FullyContainedWithinSteppableRegion"
+        }
+    ],
+    "focusRegion": {
+        "top": 35,
+        "left": 60,
+        "bottom": 60,
+        "right": 90
+    }
+}
