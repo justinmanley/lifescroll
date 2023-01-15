@@ -1,14 +1,25 @@
 import KDBush from "kdbush";
-import { Vector2 } from "../math/linear-algebra/vector2";
+import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
+import { LifeGridPosition } from "./coordinates/position";
 
 export class Cells {
-  private cells: KDBush<Vector2>;
+  private cells: KDBush<LifeGridPosition>;
 
   constructor(cells: [number, number][]) {
-    this.cells = new KDBush(cells);
+    this.cells = new KDBush(
+      cells.map(([x, y]) => new LifeGridPosition(x, y)),
+      (cell: LifeGridPosition) => cell.x,
+      (cell: LifeGridPosition) => cell.y
+    );
   }
 
   isEmpty(): boolean {
     return this.cells.points.length === 0;
+  }
+
+  within(bounds: LifeGridBoundingRectangle): LifeGridPosition[] {
+    return this.cells
+      .range(bounds.left, bounds.top, bounds.right, bounds.bottom)
+      .map((id) => this.cells.points[id]);
   }
 }
