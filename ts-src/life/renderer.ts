@@ -2,6 +2,7 @@ import { BoundingRectangle } from "../math/geometry/bounding-rectangle";
 import { Vector2 } from "../math/linear-algebra/vector2";
 import { Cells } from "./cells";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
+import { LifeGridPosition } from "./coordinates/position";
 import { LayoutParams } from "./scrolling-game-of-life";
 
 export class LifeRenderer {
@@ -69,7 +70,7 @@ export class Render {
       .forEach((cell) => this.renderCell(cell));
   }
 
-  private renderCell(cell: Vector2) {
+  private renderCell(cell: LifeGridPosition) {
     const cellSize = this.layoutParams.cellSizeInPixels;
     this.context.fillStyle = "black";
     this.fillSquare(

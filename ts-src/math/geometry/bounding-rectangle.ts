@@ -1,6 +1,7 @@
 import { Vector2 } from "../linear-algebra/vector2";
+import { Interval } from "./interval";
 
-interface BoundingRectangleParams {
+export interface BoundingRectangleParams {
   top: number;
   left: number;
   bottom: number;
@@ -52,5 +53,13 @@ export class BoundingRectangle {
 
   start(): Vector2 {
     return new Vector2(this.left, this.top);
+  }
+
+  vertical(): Interval {
+    return new Interval(this.top, this.bottom);
+  }
+
+  horizontal(): Interval {
+    return new Interval(this.left, this.right);
   }
 }

@@ -59,7 +59,7 @@ export class PatternAnchorElement extends HTMLElement {
     const cells = await this.cells;
     const renderingOptions = await this.renderingOptions;
     const id = await this.patternId;
-    return { id, cells, renderingOptions };
+    return new Pattern(id, cells, renderingOptions);
   }
 
   attributeChangedCallback(name: string, _: unknown, newValue: unknown) {

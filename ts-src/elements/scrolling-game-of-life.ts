@@ -69,8 +69,8 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
   async initialize(): Promise<void> {
     const cellSizeInPixels = this.getCellSizeInPixels();
-    const patterns = await this.patterns(cellSizeInPixels);
     const layoutParams = this.layoutParams(cellSizeInPixels);
+    const patterns = await this.patterns(layoutParams);
     this.life = new ScrollingGameOfLife(patterns, layoutParams);
 
     const context = this.canvas.getContext("2d");
@@ -107,22 +107,25 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     return [...this.querySelectorAll("pattern-anchor")].filter(isPatternAnchor);
   }
 
-  private async patterns(cellSizeInPixels: number) {
+  private async patterns({ cellSizeInPixels, center }: LayoutParams) {
     const patternAnchors = this.patternAnchors();
     await Promise.all(
       patternAnchors.map((patternAnchor) =>
         patternAnchor.updateSize({ cellSizeInPixels })
       )
     );
+
     // The document-relative bounds must be calculated only after all
     // PatternAnchor elements have updated their size.
     return await Promise.all(
       patternAnchors.map(async (patternAnchor) => {
         const pattern = await patternAnchor.getPattern();
-        return {
-          ...pattern,
-          bounds: boundingRectangleWithRespectToDocument(patternAnchor),
-        };
+        return pattern.layout({
+          cellSizeInPixels,
+          preferredHorizontalRange: center.horizontal(),
+          anchorStart:
+            boundingRectangleWithRespectToDocument(patternAnchor).start(),
+        });
       })
     );
   }

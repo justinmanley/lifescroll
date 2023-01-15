@@ -2,7 +2,7 @@ import { BoundingRectangle } from "../math/geometry/bounding-rectangle";
 import { Cells } from "./cells";
 import { LifeGridPosition } from "./coordinates/position";
 import { DebugSettings } from "./debug-settings";
-import { Pattern } from "./pattern";
+import { LaidOutPattern, Pattern } from "./pattern";
 
 export interface LayoutParams {
   full: BoundingRectangle;
@@ -15,7 +15,10 @@ export class ScrollingGameOfLife {
 
   private cells: Cells;
 
-  constructor(patterns: Pattern[], private readonly layout: LayoutParams) {
+  constructor(
+    patterns: LaidOutPattern[],
+    private readonly layout: LayoutParams
+  ) {
     this.cells = new Cells(
       ([] as LifeGridPosition[]).concat(
         ...patterns.map((pattern) => pattern.cells)
