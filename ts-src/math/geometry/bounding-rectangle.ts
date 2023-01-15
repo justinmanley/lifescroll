@@ -1,3 +1,5 @@
+import { Vector2 } from "../linear-algebra/vector2";
+
 interface BoundingRectangleParams {
   top: number;
   left: number;
@@ -46,5 +48,9 @@ export class BoundingRectangle {
 
   get right() {
     return this.params.right;
+  }
+
+  start(): Vector2 {
+    return new Vector2(this.left, this.top);
   }
 }

@@ -1,13 +1,17 @@
 import { Cells } from "../life/cells";
+import { LifeGridPosition } from "../life/coordinates/position";
+import { Pattern } from "../life/pattern";
 import { PatternRenderingOptions } from "../life/pattern-rendering-options/pattern-rendering-options";
 import { parse } from "../life/rle-parser";
 
 export class PatternAnchorElement extends HTMLElement {
-  private cells: Promise<Cells>;
+  private cells: Promise<LifeGridPosition[]>;
   private renderingOptions: Promise<PatternRenderingOptions>;
   private patternId: Promise<string>;
 
-  private resolveCells: (value: Cells | PromiseLike<Cells>) => void = () => {};
+  private resolveCells: (
+    value: LifeGridPosition[] | PromiseLike<LifeGridPosition[]>
+  ) => void = () => {};
   private resolveRenderingOptions: (
     value: PatternRenderingOptions | PromiseLike<PatternRenderingOptions>
   ) => void = () => {};
@@ -51,22 +55,20 @@ export class PatternAnchorElement extends HTMLElement {
    * options in the future (for example, laying out patterns in the margin on desktop
    * which would mean the pattern anchors wouldn't take up any vertical space).
    */
-  async getPattern() {
-    const rle = await this.cells;
+  async getPattern(): Promise<Pattern> {
+    const cells = await this.cells;
     const renderingOptions = await this.renderingOptions;
-    const patternId = await this.patternId;
-    return {
-      id: patternId,
-      patternRle: rle,
-      patternRenderingOptionsJson: renderingOptions,
-    };
+    const id = await this.patternId;
+    return { id, cells, renderingOptions };
   }
 
   attributeChangedCallback(name: string, _: unknown, newValue: unknown) {
     if (name === "src" && typeof newValue === "string") {
       fetch(newValue).then(async (response) => {
         const rleString = await response.text();
-        this.resolveCells(new Cells(parse(rleString)));
+        this.resolveCells(
+          parse(rleString).map(([x, y]) => new LifeGridPosition(x, y))
+        );
       });
       this.resolvePatternId(newValue);
     }

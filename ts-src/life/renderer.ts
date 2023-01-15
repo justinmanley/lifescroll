@@ -18,37 +18,55 @@ export class LifeRenderer {
   }
 
   public render(viewport: BoundingRectangle, cells: Cells) {
-    const gridViewport = LifeGridBoundingRectangle.fromPage(
-      viewport,
-      this.layoutParams.cellSizeInPixels
-    );
-
     new Render(
       this.canvas,
       this.context,
       this.layoutParams,
-      gridViewport,
+      viewport,
       cells
     ).run();
   }
 }
 
 export class Render {
+  private gridViewport: LifeGridBoundingRectangle;
+
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
-    private readonly viewport: LifeGridBoundingRectangle,
+    private readonly viewport: BoundingRectangle,
     private readonly cells: Cells
-  ) {}
+  ) {
+    const gridViewport = LifeGridBoundingRectangle.fromPage(
+      viewport,
+      this.layoutParams.cellSizeInPixels
+    );
+
+    // Expand the viewport slightly to prevent cells from disappearing just before
+    // going offscreen.
+    this.gridViewport = new LifeGridBoundingRectangle({
+      top: gridViewport.top - 1,
+      left: gridViewport.left - 1,
+      bottom: gridViewport.bottom,
+      right: gridViewport.right,
+    });
+  }
 
   run() {
     this.context.clearRect(0, 0, this.viewport.width, this.viewport.height);
+    this.canvas.width = this.viewport.width;
+    this.canvas.height = this.viewport.height;
+    this.context.setTransform(
+      translate(this.viewport.start().map((coord) => coord * -1))
+    );
     this.renderCells();
   }
 
   private renderCells() {
-    this.cells.within(this.viewport).forEach((cell) => this.renderCell(cell));
+    this.cells
+      .within(this.gridViewport)
+      .forEach((cell) => this.renderCell(cell));
   }
 
   private renderCell(cell: Vector2) {
@@ -66,3 +84,14 @@ export class Render {
 }
 
 const gridLineHalfWidth = 2;
+
+const translate = (translation: Vector2): DOMMatrix2DInit => {
+  return {
+    a: 1,
+    b: 0,
+    c: 0,
+    d: 1,
+    e: translation.x,
+    f: translation.y,
+  };
+};

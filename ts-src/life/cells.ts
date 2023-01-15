@@ -5,9 +5,9 @@ import { LifeGridPosition } from "./coordinates/position";
 export class Cells {
   private cells: KDBush<LifeGridPosition>;
 
-  constructor(cells: [number, number][]) {
+  constructor(cells: LifeGridPosition[]) {
     this.cells = new KDBush(
-      cells.map(([x, y]) => new LifeGridPosition(x, y)),
+      cells,
       (cell: LifeGridPosition) => cell.x,
       (cell: LifeGridPosition) => cell.y
     );
