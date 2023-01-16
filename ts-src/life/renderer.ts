@@ -3,13 +3,15 @@ import { Vector2 } from "../math/linear-algebra/vector2";
 import { Cells } from "./cells";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
 import { LifeGridPosition } from "./coordinates/position";
+import { DebugSettings } from "./debug-settings";
 import { LayoutParams } from "./scrolling-game-of-life";
 
 export class LifeRenderer {
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
-    private readonly layoutParams: LayoutParams
+    private readonly layoutParams: LayoutParams,
+    private readonly debug: DebugSettings
   ) {
     this.canvas.style.position = "fixed";
     this.canvas.style.height = "100%";
@@ -23,6 +25,7 @@ export class LifeRenderer {
       this.canvas,
       this.context,
       this.layoutParams,
+      this.debug,
       viewport,
       cells
     ).run();
@@ -31,22 +34,24 @@ export class LifeRenderer {
 
 export class Render {
   private cellsRenderer: CellsRenderer;
+  private gridRenderer: GridRenderer;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
+    private readonly debug: DebugSettings,
     private readonly viewport: BoundingRectangle,
     cells: Cells
   ) {
     const gridViewport = this.getGridViewport(viewport);
     this.cellsRenderer = new CellsRenderer(
-      canvas,
       context,
       layoutParams,
       gridViewport,
       cells
     );
+    this.gridRenderer = new GridRenderer(context, layoutParams, gridViewport);
   }
 
   run() {
@@ -57,6 +62,9 @@ export class Render {
       translate(this.viewport.start().map((coord) => coord * -1))
     );
     this.cellsRenderer.render();
+    if (this.debug.grid) {
+      this.gridRenderer.render();
+    }
   }
 
   private getGridViewport(
@@ -80,7 +88,6 @@ export class Render {
 
 class CellsRenderer {
   constructor(
-    private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
     private readonly viewport: LifeGridBoundingRectangle,
@@ -88,12 +95,12 @@ class CellsRenderer {
   ) {}
 
   public render() {
+    this.context.fillStyle = "black";
     this.cells.within(this.viewport).forEach((cell) => this.renderCell(cell));
   }
 
   private renderCell(cell: LifeGridPosition) {
     const cellSize = this.layoutParams.cellSizeInPixels;
-    this.context.fillStyle = "black";
     this.fillSquare(
       cell.map((coord) => coord * cellSize + gridLineHalfWidth),
       cellSize - 2 * gridLineHalfWidth
@@ -105,9 +112,70 @@ class CellsRenderer {
   }
 }
 
+class GridRenderer {
+  constructor(
+    private readonly context: CanvasRenderingContext2D,
+    private readonly layoutParams: LayoutParams,
+    private readonly viewport: LifeGridBoundingRectangle
+  ) {}
+
+  render() {
+    this.context.strokeStyle = "grey";
+    this.context.lineWidth = gridLineHalfWidth * 2;
+    this.renderVerticalLines();
+    this.renderHorizontalLines();
+  }
+
+  private renderVerticalLines() {
+    for (let i = this.viewport.left; i < this.viewport.right; i++) {
+      this.renderVerticalLine(i);
+    }
+  }
+
+  private renderVerticalLine(x: number) {
+    this.context.beginPath();
+
+    const start = new LifeGridPosition(x, this.viewport.top)
+      .toPage(this.layoutParams.cellSizeInPixels)
+      .minus(new Vector2(gridLineHalfWidth, 0));
+    this.context.moveTo(start.x, start.y);
+
+    const end = new LifeGridPosition(x, this.viewport.bottom + 1)
+      .toPage(this.layoutParams.cellSizeInPixels)
+      .minus(new Vector2(gridLineHalfWidth, 0));
+    this.context.lineTo(end.x, end.y);
+
+    this.context.stroke();
+    this.context.closePath();
+  }
+
+  private renderHorizontalLines() {
+    for (let i = this.viewport.top; i < this.viewport.bottom; i++) {
+      this.renderHorizontalLine(i);
+    }
+  }
+
+  private renderHorizontalLine(y: number) {
+    this.context.beginPath();
+
+    const start = new LifeGridPosition(this.viewport.left, y)
+      .toPage(this.layoutParams.cellSizeInPixels)
+      .minus(new Vector2(0, gridLineHalfWidth));
+    this.context.moveTo(start.x, start.y);
+
+    const end = new LifeGridPosition(this.viewport.right + 1, y)
+      .toPage(this.layoutParams.cellSizeInPixels)
+      .minus(new Vector2(0, gridLineHalfWidth));
+    this.context.lineTo(end.x, end.y);
+
+    this.context.stroke();
+    this.context.closePath();
+  }
+}
+
 //  Constants and helper functions
 
-const gridLineHalfWidth = 2;
+const gridLineHalfWidth = 1;
 
 const translate = (translation: Vector2): DOMMatrix2DInit => {
   return {

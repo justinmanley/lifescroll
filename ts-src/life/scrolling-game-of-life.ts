@@ -11,8 +11,6 @@ export interface LayoutParams {
 }
 
 export class ScrollingGameOfLife {
-  private debug = new DebugSettings();
-
   private cells: Cells;
 
   constructor(

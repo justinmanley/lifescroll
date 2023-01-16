@@ -5,6 +5,7 @@ import {
 } from "../life/scrolling-game-of-life";
 import { isPatternAnchor, PatternAnchorElement } from "./pattern-anchor";
 import { LifeRenderer } from "../life/renderer";
+import { DebugSettings } from "../life/debug-settings";
 
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale = 1;
@@ -13,6 +14,8 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
   private life?: ScrollingGameOfLife;
   private renderer?: LifeRenderer;
+
+  private readonly debug = new DebugSettings();
 
   constructor() {
     super();
@@ -79,7 +82,12 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       return;
     }
 
-    this.renderer = new LifeRenderer(this.canvas, context, layoutParams);
+    this.renderer = new LifeRenderer(
+      this.canvas,
+      context,
+      layoutParams,
+      this.debug
+    );
 
     const viewport = this.viewport();
     const cells = this.life?.scroll(viewport);

@@ -4,4 +4,12 @@ export class Vector2 {
   map(fn: (x: number) => number): Vector2 {
     return new Vector2(fn(this.x), fn(this.y));
   }
+
+  plus(other: Vector2): Vector2 {
+    return new Vector2(this.x + other.x, this.y + other.y);
+  }
+
+  minus(other: Vector2): Vector2 {
+    return new Vector2(this.x - other.x, this.y - other.y);
+  }
 }
