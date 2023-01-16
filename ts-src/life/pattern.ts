@@ -23,52 +23,23 @@ export class Pattern {
   ) {}
 
   layout(layoutParams: PatternLayoutParams): LaidOutPattern {
-    const layoutEngine = new PatternLayoutEngine(
-      this.cells,
-      this.renderingOptions,
-      layoutParams
-    );
-
-    return {
-      id: this.id,
-      cells: layoutEngine.layoutCells(),
-    };
-  }
-}
-
-export class PatternLayoutEngine {
-  private gridStart: LifeGridPosition;
-
-  constructor(
-    private readonly positions: LifeGridPosition[],
-    private readonly renderingOptions: PatternRenderingOptions,
-    private readonly layoutParams: PatternLayoutParams
-  ) {
-    this.gridStart =
-      this.topLeftPositionToAlignWithPatternAnchorTopAndCenterHorizontally();
-  }
-
-  layoutCells(): LifeGridPosition[] {
-    return this.positions.map((position) => this.layoutCell(position));
-  }
-
-  private layoutCell(position: LifeGridPosition): LifeGridPosition {
-    return position.plus(this.gridStart);
-  }
-
-  private topLeftPositionToAlignWithPatternAnchorTopAndCenterHorizontally(): LifeGridPosition {
     const preferredHorizontalCenter =
-      this.layoutParams.preferredHorizontalRange.center();
-    const gridBounds = LifeGridBoundingRectangle.enclosing(this.positions);
+      layoutParams.preferredHorizontalRange.center();
+    const gridBounds = LifeGridBoundingRectangle.enclosing(this.cells);
 
     const reserved = this.renderingOptions.reserve;
-    const anchorStart = this.layoutParams.anchorStart;
+    const anchorStart = layoutParams.anchorStart;
 
-    return LifeGridPosition.fromPage(
+    const gridStart = LifeGridPosition.fromPage(
       new Vector2(preferredHorizontalCenter, anchorStart.y),
-      this.layoutParams.cellSizeInPixels
+      layoutParams.cellSizeInPixels
     )
       .minus(gridBounds.center())
       .plus(new LifeGridPosition(0, Math.floor(reserved.height / 2)));
+
+    return {
+      id: this.id,
+      cells: this.cells.map((position) => position.plus(gridStart)),
+    };
   }
 }
