@@ -1,8 +1,8 @@
 export class DebugSettings {
   public readonly atomicUpdates: boolean = false;
-  private readonly layout: boolean = false;
-  private readonly grid: boolean = false;
-  private readonly log: boolean = false;
+  public readonly layout: boolean = false;
+  public readonly grid: boolean = false;
+  public readonly log: boolean = false;
 
   constructor() {
     const params = new Proxy(new URLSearchParams(window.location.search), {

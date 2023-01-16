@@ -30,28 +30,23 @@ export class LifeRenderer {
 }
 
 export class Render {
-  private gridViewport: LifeGridBoundingRectangle;
+  private cellsRenderer: CellsRenderer;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
     private readonly viewport: BoundingRectangle,
-    private readonly cells: Cells
+    cells: Cells
   ) {
-    const gridViewport = LifeGridBoundingRectangle.fromPage(
-      viewport,
-      this.layoutParams.cellSizeInPixels
+    const gridViewport = this.getGridViewport(viewport);
+    this.cellsRenderer = new CellsRenderer(
+      canvas,
+      context,
+      layoutParams,
+      gridViewport,
+      cells
     );
-
-    // Expand the viewport slightly to prevent cells from disappearing just before
-    // going offscreen.
-    this.gridViewport = new LifeGridBoundingRectangle({
-      top: gridViewport.top - 1,
-      left: gridViewport.left - 1,
-      bottom: gridViewport.bottom,
-      right: gridViewport.right,
-    });
   }
 
   run() {
@@ -61,13 +56,39 @@ export class Render {
     this.context.setTransform(
       translate(this.viewport.start().map((coord) => coord * -1))
     );
-    this.renderCells();
+    this.cellsRenderer.render();
   }
 
-  private renderCells() {
-    this.cells
-      .within(this.gridViewport)
-      .forEach((cell) => this.renderCell(cell));
+  private getGridViewport(
+    viewport: BoundingRectangle
+  ): LifeGridBoundingRectangle {
+    const gridViewport = LifeGridBoundingRectangle.fromPage(
+      viewport,
+      this.layoutParams.cellSizeInPixels
+    );
+
+    // Expand the viewport slightly to prevent cells from disappearing just before
+    // going offscreen.
+    return new LifeGridBoundingRectangle({
+      top: gridViewport.top - 1,
+      left: gridViewport.left - 1,
+      bottom: gridViewport.bottom,
+      right: gridViewport.right,
+    });
+  }
+}
+
+class CellsRenderer {
+  constructor(
+    private readonly canvas: HTMLCanvasElement,
+    private readonly context: CanvasRenderingContext2D,
+    private readonly layoutParams: LayoutParams,
+    private readonly viewport: LifeGridBoundingRectangle,
+    private readonly cells: Cells
+  ) {}
+
+  public render() {
+    this.cells.within(this.viewport).forEach((cell) => this.renderCell(cell));
   }
 
   private renderCell(cell: LifeGridPosition) {
@@ -83,6 +104,8 @@ export class Render {
     this.context.fillRect(coordinates.x, coordinates.y, size, size);
   }
 }
+
+//  Constants and helper functions
 
 const gridLineHalfWidth = 2;
 
