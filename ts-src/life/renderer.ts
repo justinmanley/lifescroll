@@ -127,7 +127,7 @@ class GridRenderer {
   }
 
   private renderVerticalLines() {
-    for (let i = this.viewport.left; i < this.viewport.right; i++) {
+    for (let i = this.viewport.left; i <= this.viewport.right; i++) {
       this.renderVerticalLine(i);
     }
   }
@@ -150,7 +150,7 @@ class GridRenderer {
   }
 
   private renderHorizontalLines() {
-    for (let i = this.viewport.top; i < this.viewport.bottom; i++) {
+    for (let i = this.viewport.top; i <= this.viewport.bottom; i++) {
       this.renderHorizontalLine(i);
     }
   }

@@ -25,6 +25,9 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     });
 
     this.canvas = document.createElement("canvas");
+    // Must be set up-front to take the canvas out of the flow and prevent
+    // the page layout params from containing an additional unnecessary offset.
+    this.canvas.style.position = "fixed";
   }
 
   private onScroll() {
@@ -128,6 +131,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     return await Promise.all(
       patternAnchors.map(async (patternAnchor) => {
         const pattern = await patternAnchor.getPattern();
+
         return pattern.layout({
           cellSizeInPixels,
           preferredHorizontalRange: center.horizontal(),

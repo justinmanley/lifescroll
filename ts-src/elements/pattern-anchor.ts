@@ -1,4 +1,3 @@
-import { Cells } from "../life/cells";
 import { LifeGridPosition } from "../life/coordinates/position";
 import { Pattern } from "../life/pattern";
 import { PatternRenderingOptions } from "../life/pattern-rendering-options/pattern-rendering-options";
@@ -93,15 +92,11 @@ export class PatternAnchorElement extends HTMLElement {
     cellSizeInPixels: number;
   }): Promise<void> {
     const renderingOptions = await this.renderingOptions;
-    this.style.height = `${
-      cellSizeInPixels * (renderingOptions.reserve.height + 2 * verticalPadding)
-    }`;
+    this.style.height = `${cellSizeInPixels * renderingOptions.reserve.height}`;
   }
 }
 
 export const isPatternAnchor = (object: any): object is PatternAnchorElement =>
   object instanceof PatternAnchorElement;
-
-const verticalPadding = 1;
 
 customElements.define("pattern-anchor", PatternAnchorElement);
