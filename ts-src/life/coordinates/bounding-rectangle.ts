@@ -2,13 +2,19 @@ import {
   BoundingRectangle,
   BoundingRectangleParams,
 } from "../../math/geometry/bounding-rectangle";
+import { Vector2 } from "../../math/linear-algebra/vector2";
 import { LifeGridInterval } from "./interval";
 import { fromPage, toPage } from "./mappings";
 import { LifeGridPosition } from "./position";
+import { LifeGridSize2 } from "./size2";
 
-export class LifeGridBoundingRectangle extends BoundingRectangle {
-  constructor(params: BoundingRectangleParams) {
-    super(params);
+export class LifeGridBoundingRectangle {
+  public readonly width: number;
+  public readonly height: number;
+
+  constructor(private params: BoundingRectangleParams) {
+    this.width = params.right - params.left;
+    this.height = params.bottom - params.top;
   }
 
   static fromPage(
@@ -28,6 +34,15 @@ export class LifeGridBoundingRectangle extends BoundingRectangle {
     return this.map(toPage(cellSizeInPixels));
   }
 
+  map(fn: (value: number) => number): BoundingRectangle {
+    return new BoundingRectangle({
+      top: fn(this.top),
+      left: fn(this.left),
+      bottom: fn(this.bottom),
+      right: fn(this.right),
+    });
+  }
+
   horizontal(): LifeGridInterval {
     return new LifeGridInterval(this.left, this.right);
   }
@@ -43,12 +58,36 @@ export class LifeGridBoundingRectangle extends BoundingRectangle {
     );
   }
 
+  size(): LifeGridSize2 {
+    return new LifeGridSize2(this.width, this.height);
+  }
+
+  get top() {
+    return this.params.top;
+  }
+
+  get left() {
+    return this.params.left;
+  }
+
+  get bottom() {
+    return this.params.bottom;
+  }
+
+  get right() {
+    return this.params.right;
+  }
+
+  start(): LifeGridPosition {
+    return new LifeGridPosition(this.left, this.top);
+  }
+
   static enclosing(positions: LifeGridPosition[]): LifeGridBoundingRectangle {
     return new LifeGridBoundingRectangle({
       top: Math.min(...positions.map((p) => p.y)),
       left: Math.min(...positions.map((p) => p.x)),
-      bottom: Math.max(...positions.map((p) => p.y)),
-      right: Math.max(...positions.map((p) => p.x)),
+      bottom: Math.max(...positions.map((p) => p.y)) + 1,
+      right: Math.max(...positions.map((p) => p.x)) + 1,
     });
   }
 }

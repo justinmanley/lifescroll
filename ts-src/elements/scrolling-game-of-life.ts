@@ -6,9 +6,21 @@ import {
 import { isPatternAnchor, PatternAnchorElement } from "./pattern-anchor";
 import { LifeRenderer } from "../life/renderer";
 import { DebugSettings } from "../life/debug-settings";
+import { LifeGridBoundingRectangle } from "../life/coordinates/bounding-rectangle";
 
 class ScrollingGameOfLifeElement extends HTMLElement {
-  private gridScale = 1;
+  private gridScale: Promise<number>;
+  private cellSizeInPixels: Promise<number>;
+  private fragmentShaderSource: Promise<string>;
+
+  private resolveGridScale: (value: number | PromiseLike<number>) => void =
+    () => {};
+  private resolveCellSizeInPixels: (
+    value: number | PromiseLike<number>
+  ) => void = () => {};
+  private resolveFragmentShaderSource: (
+    value: string | PromiseLike<string>
+  ) => void = () => {};
 
   private canvas: HTMLCanvasElement;
 
@@ -19,6 +31,16 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
   constructor() {
     super();
+
+    this.gridScale = new Promise((resolve) => {
+      this.resolveGridScale = resolve;
+    });
+    this.cellSizeInPixels = new Promise((resolve) => {
+      this.resolveCellSizeInPixels = resolve;
+    });
+    this.fragmentShaderSource = new Promise((resolve) => {
+      this.resolveFragmentShaderSource = resolve;
+    });
 
     window.addEventListener("scroll", (event) => {
       this.onScroll();
@@ -31,11 +53,15 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   }
 
   private onScroll() {
-    const viewport = this.viewport();
-    const cells = this.life?.scroll(viewport);
-    if (cells) {
-      this.renderer?.render(viewport, cells);
-    }
+    this.cellSizeInPixels.then((cellSizeInPixels) => {
+      const viewport = this.viewport();
+      const cells = this.life?.scroll(
+        LifeGridBoundingRectangle.fromPage(this.viewport(), cellSizeInPixels)
+      );
+      if (cells) {
+        this.renderer?.render(viewport, cells);
+      }
+    });
   }
 
   private viewport(): BoundingRectangle {
@@ -52,13 +78,19 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   // --------------
 
   attributeChangedCallback(name: string, _: unknown, newValue: unknown) {
-    if (name === "grid-scale" && typeof newValue === "number") {
-      this.gridScale = newValue;
+    if (name === "grid-scale" && typeof newValue === "string") {
+      this.resolveGridScale(parseInt(newValue, 10));
+    }
+
+    if (name === "fragment-shader-src" && typeof newValue === "string") {
+      fetch(newValue)
+        .then((response) => response.text())
+        .then((text) => this.resolveFragmentShaderSource(text));
     }
   }
 
   static get observedAttributes() {
-    return ["grid-scale"];
+    return ["grid-scale", "fragment-shader-src"];
   }
 
   connectedCallback() {
@@ -74,10 +106,15 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   // --------------
 
   async initialize(): Promise<void> {
-    const cellSizeInPixels = this.getCellSizeInPixels();
+    const cellSizeInPixels = await this.getCellSizeInPixels();
+    this.resolveCellSizeInPixels(cellSizeInPixels);
+
     const layoutParams = this.layoutParams(cellSizeInPixels);
     const patterns = await this.patterns(layoutParams);
-    this.life = new ScrollingGameOfLife(patterns, layoutParams);
+
+    const fragmentShaderSource = await this.fragmentShaderSource;
+
+    this.life = new ScrollingGameOfLife(patterns, fragmentShaderSource);
 
     const context = this.canvas.getContext("2d");
     if (!context) {
@@ -93,13 +130,15 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     );
 
     const viewport = this.viewport();
-    const cells = this.life?.scroll(viewport);
+    const cells = this.life?.scroll(
+      LifeGridBoundingRectangle.fromPage(viewport, cellSizeInPixels)
+    );
     if (cells) {
       this.renderer?.render(viewport, cells);
     }
   }
 
-  private getCellSizeInPixels() {
+  private async getCellSizeInPixels(): Promise<number> {
     const testElement = document.createElement("p");
     testElement.innerText = "Test test";
 
@@ -111,7 +150,9 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
     this.removeChild(testElement);
 
-    return articleFontSizeInPixels / this.gridScale;
+    const gridScale = await this.gridScale;
+
+    return articleFontSizeInPixels / gridScale;
   }
 
   private patternAnchors(): PatternAnchorElement[] {

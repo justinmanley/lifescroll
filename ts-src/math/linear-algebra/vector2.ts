@@ -13,3 +13,5 @@ export class Vector2 {
     return new Vector2(this.x - other.x, this.y - other.y);
   }
 }
+
+export const vec2 = (x: number, y: number) => new Vector2(x, y);

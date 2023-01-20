@@ -8,6 +8,8 @@
         .body {
             margin: 0;
             position: relative;
+            background-color: #36454F;
+            overscroll-behavior: none;
         }
 
         p {
@@ -31,7 +33,13 @@
 </head>
 
 <body class="body">
-    <scrolling-game-of-life id="life" class="content" style="width: 600px; margin: 0 auto;">
+    <scrolling-game-of-life
+        grid-scale=1
+        fragment-shader-src="./ts-src/life/rule/fragment.glsl"
+        id="life"
+        class="content"
+        style="width: 600px; margin: 0 auto;">
+
         <div id="article" scrolling-game-of-life-center>
 
             <p>

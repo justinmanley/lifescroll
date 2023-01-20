@@ -18,6 +18,10 @@ export class LifeGridSize2 {
     return new Size2(convert(this.width), convert(this.height));
   }
 
+  map(fn: (value: number) => number): LifeGridSize2 {
+    return new LifeGridSize2(fn(this.width), fn(this.height));
+  }
+
   static decode(object: object): LifeGridSize2 {
     if (!("width" in object)) {
       throw new JsonMissingFieldError(object, "width");
