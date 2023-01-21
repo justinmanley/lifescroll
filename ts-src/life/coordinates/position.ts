@@ -15,6 +15,10 @@ export class LifeGridPosition {
     );
   }
 
+  static fromTuple([x, y]: [number, number]): LifeGridPosition {
+    return new LifeGridPosition(x, y);
+  }
+
   toPage(cellSizeInPixels: number): Vector2 {
     const convert = toPage(cellSizeInPixels);
     return new Vector2(convert(this.x), convert(this.y));

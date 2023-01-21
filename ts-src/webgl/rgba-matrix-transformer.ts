@@ -9,6 +9,8 @@ const vertexShaderSource = `\
     }
     `;
 
+// WebGL setup largely derived from
+// https://observablehq.com/@mbostock/conways-game-of-life.
 export class RgbaMatrixTransformer {
   public readonly canvas: HTMLCanvasElement;
   private readonly program: WebGLProgram;

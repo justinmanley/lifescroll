@@ -12,6 +12,10 @@ export class Vector2 {
   minus(other: Vector2): Vector2 {
     return new Vector2(this.x - other.x, this.y - other.y);
   }
+
+  toString(): string {
+    return `(${this.x}, ${this.y})`;
+  }
 }
 
 export const vec2 = (x: number, y: number) => new Vector2(x, y);

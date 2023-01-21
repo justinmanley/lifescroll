@@ -11,15 +11,11 @@ import { LifeGridBoundingRectangle } from "../life/coordinates/bounding-rectangl
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale: Promise<number>;
   private cellSizeInPixels: Promise<number>;
-  private fragmentShaderSource: Promise<string>;
 
   private resolveGridScale: (value: number | PromiseLike<number>) => void =
     () => {};
   private resolveCellSizeInPixels: (
     value: number | PromiseLike<number>
-  ) => void = () => {};
-  private resolveFragmentShaderSource: (
-    value: string | PromiseLike<string>
   ) => void = () => {};
 
   private canvas: HTMLCanvasElement;
@@ -37,9 +33,6 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     });
     this.cellSizeInPixels = new Promise((resolve) => {
       this.resolveCellSizeInPixels = resolve;
-    });
-    this.fragmentShaderSource = new Promise((resolve) => {
-      this.resolveFragmentShaderSource = resolve;
     });
 
     window.addEventListener("scroll", (event) => {
@@ -81,16 +74,10 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     if (name === "grid-scale" && typeof newValue === "string") {
       this.resolveGridScale(parseInt(newValue, 10));
     }
-
-    if (name === "fragment-shader-src" && typeof newValue === "string") {
-      fetch(newValue)
-        .then((response) => response.text())
-        .then((text) => this.resolveFragmentShaderSource(text));
-    }
   }
 
   static get observedAttributes() {
-    return ["grid-scale", "fragment-shader-src"];
+    return ["grid-scale"];
   }
 
   connectedCallback() {
@@ -112,9 +99,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     const layoutParams = this.layoutParams(cellSizeInPixels);
     const patterns = await this.patterns(layoutParams);
 
-    const fragmentShaderSource = await this.fragmentShaderSource;
-
-    this.life = new ScrollingGameOfLife(patterns, fragmentShaderSource);
+    this.life = new ScrollingGameOfLife(patterns);
 
     const context = this.canvas.getContext("2d");
     if (!context) {

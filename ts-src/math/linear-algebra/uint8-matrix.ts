@@ -40,31 +40,13 @@ export class Uint8Matrix {
 
   private toMatrixIndex(index: number): Vector3 {
     return {
-      x: Math.floor(index / (this.height * this.elementSize)),
-      y: Math.floor(index / this.elementSize) % this.height,
+      x: Math.floor(index / this.elementSize) % this.width,
+      y: Math.floor(index / (this.width * this.elementSize)),
       z: index % this.elementSize,
     };
-
-    /*
-    return {
-      x: Math.floor(index / this.elementSize) % this.height,
-      y: Math.floor(index / (this.height * this.elementSize)),
-      z: index % this.elementSize,
-    };
-
-    return {
-      x: index % this.width,
-      y: Math.floor(index / this.width) % this.height,
-      z: Math.floor(index / (this.width * this.height)),
-    };
-    */
   }
 
   private fromMatrixIndex({ x, y, z }: Vector3) {
-    return (this.height * x + y) * this.elementSize + z;
-
-    /*
-    return x + this.width * y + this.width * this.height * channel;
-    */
+    return (this.width * y + x) * this.elementSize + z;
   }
 }
