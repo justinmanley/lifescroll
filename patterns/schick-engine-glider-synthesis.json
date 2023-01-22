@@ -17,7 +17,7 @@
                     "period": 2
                 }
             },
-            "stepCriterion": "FullyContainedWithinSteppableRegion"
+            "stepCriterion": "AnyIntersectionWithSteppableRegion"
         }
     ],
     "focusRegion": {

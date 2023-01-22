@@ -5,11 +5,13 @@ import { StepCriterion, stepCriterionDecoder } from "./step-criterion";
 import { Decoder, Functor, struct, intersect, partial } from "io-ts/Decoder";
 import { Movement } from "./movement";
 import { pipe } from "fp-ts/function";
+import { BoundingRectangleEdgeMovements } from "./bounding-rectangle-edge-movements";
 
 interface AtomicUpdateRegionParams {
   bounds: LifeGridBoundingRectangle;
   stepCriterion: StepCriterion;
   movement?: Movement;
+  boundsEdgeMovements?: BoundingRectangleEdgeMovements;
 }
 
 export class AtomicUpdateRegion {
@@ -42,7 +44,10 @@ export class AtomicUpdateRegion {
     return new AtomicUpdateRegion(
       {
         ...this.params,
-        bounds: this.movedBounds(stepsElapsed),
+        bounds: this.applyEdgeMovements(
+          this.applyMovement(this.bounds, stepsElapsed),
+          stepsElapsed
+        ),
       },
       stepsElapsed
     );
@@ -56,12 +61,27 @@ export class AtomicUpdateRegion {
     return this.params.stepCriterion;
   }
 
-  private movedBounds(stepsElapsed: number): LifeGridBoundingRectangle {
+  private applyMovement(
+    bounds: LifeGridBoundingRectangle,
+    stepsElapsed: number
+  ): LifeGridBoundingRectangle {
     const movement = this.params.movement;
-    console.log("calculating bounds movement", stepsElapsed, movement?.period);
     return movement && stepsElapsed % movement.period === 0
-      ? this.bounds.offset(movement.direction)
-      : this.bounds;
+      ? bounds.offset(movement.direction)
+      : bounds;
+  }
+
+  private applyEdgeMovements(
+    bounds: LifeGridBoundingRectangle,
+    steps: number
+  ): LifeGridBoundingRectangle {
+    const movements = this.params.boundsEdgeMovements;
+    return new LifeGridBoundingRectangle({
+      top: movements?.top?.move(bounds.top, steps) ?? bounds.top,
+      left: movements?.left?.move(bounds.left, steps) ?? bounds.left,
+      bottom: movements?.bottom?.move(bounds.bottom, steps) ?? bounds.bottom,
+      right: movements?.right?.move(bounds.right, steps) ?? bounds.right,
+    });
   }
 
   static decoder: Decoder<unknown, AtomicUpdateRegion> = Functor.map(
@@ -73,6 +93,7 @@ export class AtomicUpdateRegion {
       intersect(
         partial({
           movement: Movement.decoder,
+          boundsEdgeMovements: BoundingRectangleEdgeMovements.decoder,
         })
       )
     ),
