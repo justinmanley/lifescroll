@@ -4,7 +4,7 @@ import { Cells } from "./cells";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
 import { LifeGridPosition } from "./coordinates/position";
 import { DebugSettings } from "./debug-settings";
-import { LayoutParams } from "./scrolling-game-of-life";
+import { LayoutParams, LifeState } from "./scrolling-game-of-life";
 
 export class LifeRenderer {
   constructor(
@@ -20,14 +20,14 @@ export class LifeRenderer {
     this.canvas.style.left = "0";
   }
 
-  public render(viewport: BoundingRectangle, cells: Cells) {
+  public render(viewport: BoundingRectangle, state: LifeState) {
     new Render(
       this.canvas,
       this.context,
       this.layoutParams,
       this.debug,
       viewport,
-      cells
+      state
     ).run();
   }
 }
@@ -35,6 +35,7 @@ export class LifeRenderer {
 export class Render {
   private cellsRenderer: CellsRenderer;
   private gridRenderer: GridRenderer;
+  private atomicUpdateRegionBoundsRenderer: BoundsRenderer;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -42,16 +43,24 @@ export class Render {
     private readonly layoutParams: LayoutParams,
     private readonly debug: DebugSettings,
     private readonly viewport: BoundingRectangle,
-    cells: Cells
+    state: LifeState
   ) {
     const gridViewport = this.getGridViewport(viewport);
     this.cellsRenderer = new CellsRenderer(
       context,
       layoutParams,
       gridViewport,
-      cells
+      state.cells
     );
     this.gridRenderer = new GridRenderer(context, layoutParams, gridViewport);
+    this.atomicUpdateRegionBoundsRenderer = new BoundsRenderer(
+      context,
+      layoutParams,
+      gridViewport,
+      state.atomicUpdateRegions.map(
+        (atomicUpdateRegion) => atomicUpdateRegion.bounds
+      )
+    );
   }
 
   run() {
@@ -64,6 +73,9 @@ export class Render {
     this.cellsRenderer.render();
     if (this.debug.grid) {
       this.gridRenderer.render();
+    }
+    if (this.debug.atomicUpdates) {
+      this.atomicUpdateRegionBoundsRenderer.render();
     }
   }
 
@@ -170,6 +182,35 @@ class GridRenderer {
 
     this.context.stroke();
     this.context.closePath();
+  }
+}
+
+class BoundsRenderer {
+  constructor(
+    private readonly context: CanvasRenderingContext2D,
+    private readonly layoutParams: LayoutParams,
+    private readonly viewport: LifeGridBoundingRectangle,
+    private readonly boundsList: LifeGridBoundingRectangle[]
+  ) {}
+
+  render() {
+    this.context.strokeStyle = "red";
+    this.context.lineWidth = gridLineHalfWidth * 2;
+
+    for (const bounds of this.boundsList) {
+      this.renderBounds(bounds);
+    }
+  }
+
+  private renderBounds(bounds: LifeGridBoundingRectangle) {
+    const pageBounds = bounds.toPage(this.layoutParams.cellSizeInPixels);
+
+    this.context.strokeRect(
+      pageBounds.left - gridLineHalfWidth,
+      pageBounds.top - gridLineHalfWidth,
+      pageBounds.width + gridLineHalfWidth,
+      pageBounds.height + gridLineHalfWidth
+    );
   }
 }
 

@@ -1,4 +1,3 @@
-import { JsonMissingFieldError, JsonWrongTypeError } from "../../json/decoding";
 import { Vector2 } from "../linear-algebra/vector2";
 
 export class Size2 extends Vector2 {

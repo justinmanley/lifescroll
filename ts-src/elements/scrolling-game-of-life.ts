@@ -7,6 +7,7 @@ import { isPatternAnchor, PatternAnchorElement } from "./pattern-anchor";
 import { LifeRenderer } from "../life/renderer";
 import { DebugSettings } from "../life/debug-settings";
 import { LifeGridBoundingRectangle } from "../life/coordinates/bounding-rectangle";
+import { LaidOutPattern } from "../life/pattern";
 
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale: Promise<number>;
@@ -48,11 +49,11 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   private onScroll() {
     this.cellSizeInPixels.then((cellSizeInPixels) => {
       const viewport = this.viewport();
-      const cells = this.life?.scroll(
+      const state = this.life?.scroll(
         LifeGridBoundingRectangle.fromPage(this.viewport(), cellSizeInPixels)
       );
-      if (cells) {
-        this.renderer?.render(viewport, cells);
+      if (state) {
+        this.renderer?.render(viewport, state);
       }
     });
   }
@@ -115,11 +116,11 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     );
 
     const viewport = this.viewport();
-    const cells = this.life?.scroll(
+    const state = this.life?.scroll(
       LifeGridBoundingRectangle.fromPage(viewport, cellSizeInPixels)
     );
-    if (cells) {
-      this.renderer?.render(viewport, cells);
+    if (state) {
+      this.renderer?.render(viewport, state);
     }
   }
 
@@ -144,7 +145,10 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     return [...this.querySelectorAll("pattern-anchor")].filter(isPatternAnchor);
   }
 
-  private async patterns({ cellSizeInPixels, center }: LayoutParams) {
+  private async patterns({
+    cellSizeInPixels,
+    center,
+  }: LayoutParams): Promise<LaidOutPattern[]> {
     const patternAnchors = this.patternAnchors();
     await Promise.all(
       patternAnchors.map((patternAnchor) =>
@@ -153,7 +157,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     );
 
     // The document-relative bounds must be calculated only after all
-    // PatternAnchor elements have updated their size.
+    // PatternAnchor elements have updated their size (above).
     return await Promise.all(
       patternAnchors.map(async (patternAnchor) => {
         const pattern = await patternAnchor.getPattern();

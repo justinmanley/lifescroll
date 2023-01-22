@@ -6,9 +6,9 @@
     "atomicUpdateRegions": [
         {
             "bounds": {
-                "top": 0,
+                "top": -1,
                 "left": 0,
-                "bottom": 3,
+                "bottom": 2,
                 "right": 3
             }
         }

@@ -15,12 +15,6 @@ export const fragmentShader = `\
         return int(texture2D(input_state, index).x);
     }
 
-    /*
-    int get(int x, int y) {
-        return int(texture2D(input_state, (gl_FragCoord.xy + vec2(x, y)) / resolution).r);
-    }
-    */
-
     void main() {
         int sum = get(-1, -1) +
                 get(-1,  0) +
@@ -38,15 +32,5 @@ export const fragmentShader = `\
         } else {
             gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
         }
-
-        // gl_FragColor = texture2D(input_state, (gl_FragCoord.xy + vec2(1, 1)) / resolution);
-
-        // gl_FragColor = texture2D(input_state, gl_FragCoord.xy / resolution);
-
-        // gl_FragColor = vec4(0.0, 0.0, 0.0, 0.0);
-        // gl_FragColor = texture2D(input_state, (gl_FragCoord.xy + vec2(1, 1)) / resolution);
-        // gl_FragColor = vec4(float(get(0, 0)), 0.0, 0.0, 1.0);
-        // gl_FragColor = vec4(gl_FragCoord.xy / resolution, 0.0, 0.0);
-        // gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
     }
     `;

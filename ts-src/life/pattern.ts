@@ -2,6 +2,7 @@ import { Interval } from "../math/geometry/interval";
 import { Vector2 } from "../math/linear-algebra/vector2";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
 import { LifeGridPosition } from "./coordinates/position";
+import { AtomicUpdateRegion } from "./pattern-rendering-options/atomic-update-region";
 import { PatternRenderingOptions } from "./pattern-rendering-options/pattern-rendering-options";
 
 interface PatternLayoutParams {
@@ -13,6 +14,7 @@ interface PatternLayoutParams {
 export interface LaidOutPattern {
   id: string;
   cells: LifeGridPosition[];
+  atomicUpdateRegions: AtomicUpdateRegion[];
 }
 
 export class Pattern {
@@ -40,6 +42,9 @@ export class Pattern {
     return {
       id: this.id,
       cells: this.cells.map((position) => position.plus(gridStart)),
+      atomicUpdateRegions: this.renderingOptions.atomicUpdateRegions.map(
+        (atomicUpdateRegion) => atomicUpdateRegion.offset(gridStart)
+      ),
     };
   }
 }

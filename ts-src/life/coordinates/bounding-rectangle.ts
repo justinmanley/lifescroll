@@ -1,8 +1,8 @@
 import {
   BoundingRectangle,
   BoundingRectangleParams,
+  decodeBoundingRectangleParams,
 } from "../../math/geometry/bounding-rectangle";
-import { Vector2 } from "../../math/linear-algebra/vector2";
 import { LifeGridInterval } from "./interval";
 import { fromPage, toPage } from "./mappings";
 import { LifeGridPosition } from "./position";
@@ -82,6 +82,15 @@ export class LifeGridBoundingRectangle {
     return new LifeGridPosition(this.left, this.top);
   }
 
+  offset(amount: LifeGridPosition): LifeGridBoundingRectangle {
+    return new LifeGridBoundingRectangle({
+      top: this.top + amount.y,
+      left: this.left + amount.x,
+      bottom: this.bottom + amount.y,
+      right: this.right + amount.x,
+    });
+  }
+
   static enclosing(positions: LifeGridPosition[]): LifeGridBoundingRectangle {
     return new LifeGridBoundingRectangle({
       top: Math.min(...positions.map((p) => p.y)),
@@ -89,5 +98,9 @@ export class LifeGridBoundingRectangle {
       bottom: Math.max(...positions.map((p) => p.y)) + 1,
       right: Math.max(...positions.map((p) => p.x)) + 1,
     });
+  }
+
+  static decode(object: object): LifeGridBoundingRectangle {
+    return new LifeGridBoundingRectangle(decodeBoundingRectangleParams(object));
   }
 }

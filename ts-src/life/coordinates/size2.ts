@@ -26,15 +26,17 @@ export class LifeGridSize2 {
     if (!("width" in object)) {
       throw new JsonMissingFieldError(object, "width");
     }
-    if (!(typeof object["width"] === "number")) {
-      throw new JsonWrongTypeError(object["width"], "number");
+    const width = object["width"];
+    if (!(typeof width === "number")) {
+      throw new JsonWrongTypeError(width, "number");
     }
     if (!("height" in object)) {
       throw new JsonMissingFieldError(object, "height");
     }
-    if (!(typeof object["height"] === "number")) {
-      throw new JsonWrongTypeError(object["height"], "number");
+    const height = object["height"];
+    if (!(typeof height === "number")) {
+      throw new JsonWrongTypeError(height, "number");
     }
-    return new LifeGridSize2(object["width"], object["height"]);
+    return new LifeGridSize2(width, height);
   }
 }
