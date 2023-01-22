@@ -68,6 +68,10 @@ export class ScrollingGameOfLife {
 
     if (steppableCells.length > 0) {
       this.cells = [...this.rule.next(steppableCells), ...notSteppableCells];
+      this.atomicUpdateRegions = [
+        ...steppableRegions.map((region) => region.next()),
+        ...notSteppableRegions,
+      ];
     }
 
     return {

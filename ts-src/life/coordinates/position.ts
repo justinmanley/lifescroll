@@ -1,5 +1,6 @@
 import { Vector2 } from "../../math/linear-algebra/vector2";
 import { fromPage, toPage } from "./mappings";
+import { Decoder, Functor, struct, number } from "io-ts/Decoder";
 
 export class LifeGridPosition {
   constructor(public readonly x: number, public readonly y: number) {}
@@ -35,4 +36,9 @@ export class LifeGridPosition {
   map(fn: (coord: number) => number): LifeGridPosition {
     return new LifeGridPosition(fn(this.x), fn(this.y));
   }
+
+  static decoder: Decoder<unknown, LifeGridPosition> = Functor.map(
+    struct({ x: number, y: number }),
+    ({ x, y }) => new LifeGridPosition(x, y)
+  );
 }

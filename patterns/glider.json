@@ -8,8 +8,8 @@
             "bounds": {
                 "top": -1,
                 "left": 0,
-                "bottom": 4,
-                "right": 6
+                "bottom": 3,
+                "right": 4
             },
             "movement": {
                 "direction": {
