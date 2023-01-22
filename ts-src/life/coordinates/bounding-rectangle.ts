@@ -58,6 +58,19 @@ export class LifeGridBoundingRectangle {
     );
   }
 
+  contains(other: LifeGridBoundingRectangle | LifeGridPosition): boolean {
+    if (other instanceof LifeGridPosition) {
+      return (
+        this.vertical().contains(other.y) && this.horizontal().contains(other.x)
+      );
+    }
+
+    return (
+      this.vertical().contains(other.vertical()) &&
+      this.horizontal().contains(other.horizontal())
+    );
+  }
+
   size(): LifeGridSize2 {
     return new LifeGridSize2(this.width, this.height);
   }

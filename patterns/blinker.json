@@ -10,7 +10,8 @@
                 "left": 0,
                 "bottom": 2,
                 "right": 3
-            }
+            },
+            "stepCriterion": "FullyContainedWithinSteppableRegion"
         }
     ]
 }

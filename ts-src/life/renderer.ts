@@ -103,12 +103,14 @@ class CellsRenderer {
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
     private readonly viewport: LifeGridBoundingRectangle,
-    private readonly cells: Cells
+    private readonly cells: LifeGridPosition[]
   ) {}
 
   public render() {
     this.context.fillStyle = "black";
-    this.cells.within(this.viewport).forEach((cell) => this.renderCell(cell));
+    this.cells
+      .filter((cell) => this.viewport.contains(cell))
+      .forEach((cell) => this.renderCell(cell));
   }
 
   private renderCell(cell: LifeGridPosition) {
