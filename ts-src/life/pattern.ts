@@ -31,12 +31,13 @@ export class Pattern {
 
     const reserved = this.renderingOptions.reserve;
     const anchorStart = layoutParams.anchorStart;
+    const focusRegion = this.renderingOptions.focusRegion;
 
     const gridStart = LifeGridPosition.fromPage(
       new Vector2(preferredHorizontalCenter, anchorStart.y),
       layoutParams.cellSizeInPixels
     )
-      .minus(gridBounds.center())
+      .minus(focusRegion ? focusRegion.center() : gridBounds.center())
       .plus(new LifeGridPosition(0, Math.floor(reserved.height / 2)));
 
     return {
