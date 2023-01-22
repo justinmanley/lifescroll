@@ -1,6 +1,7 @@
 import { JsonMissingFieldError, JsonWrongTypeError } from "../../json/decoding";
 import { Vector2 } from "../linear-algebra/vector2";
 import { Interval } from "./interval";
+import { Decoder, number, struct } from "io-ts/Decoder";
 
 export interface BoundingRectangleParams {
   top: number;
@@ -65,36 +66,12 @@ export class BoundingRectangle {
   }
 }
 
-export const decodeBoundingRectangleParams = (
-  object: object
-): BoundingRectangleParams => {
-  if (!("top" in object)) {
-    throw new JsonMissingFieldError(object, "top");
-  }
-  const top = object["top"];
-  if (typeof top !== "number") {
-    throw new JsonWrongTypeError(top, "number");
-  }
-  if (!("left" in object)) {
-    throw new JsonMissingFieldError(object, "left");
-  }
-  const left = object["left"];
-  if (typeof left !== "number") {
-    throw new JsonWrongTypeError(left, "number");
-  }
-  if (!("bottom" in object)) {
-    throw new JsonMissingFieldError(object, "bottom");
-  }
-  const bottom = object["bottom"];
-  if (typeof bottom !== "number") {
-    throw new JsonWrongTypeError(bottom, "number");
-  }
-  if (!("right" in object)) {
-    throw new JsonMissingFieldError(object, "right");
-  }
-  const right = object["right"];
-  if (typeof right !== "number") {
-    throw new JsonWrongTypeError(right, "number");
-  }
-  return { top, left, bottom, right };
-};
+export const BoundingRectangleParamsDecoder: Decoder<
+  unknown,
+  BoundingRectangleParams
+> = struct({
+  top: number,
+  left: number,
+  bottom: number,
+  right: number,
+});

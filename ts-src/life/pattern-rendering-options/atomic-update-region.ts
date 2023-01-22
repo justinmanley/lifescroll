@@ -1,8 +1,8 @@
-import { JsonMissingFieldError, JsonWrongTypeError } from "../../json/decoding";
 import { LifeGridBoundingRectangle } from "../coordinates/bounding-rectangle";
 import { LifeGridInterval } from "../coordinates/interval";
 import { LifeGridPosition } from "../coordinates/position";
-import { decodeStepCriterion, StepCriterion } from "./step-criterion";
+import { StepCriterion, stepCriterionDecoder } from "./step-criterion";
+import { Decoder, Functor, struct } from "io-ts/Decoder";
 
 export class AtomicUpdateRegion {
   constructor(
@@ -28,25 +28,11 @@ export class AtomicUpdateRegion {
 
   next() {}
 
-  static decode(object: object): AtomicUpdateRegion {
-    if (!("bounds" in object)) {
-      throw new JsonMissingFieldError(object, "bounds");
-    }
-    const boundsObject = object["bounds"];
-    if (typeof boundsObject !== "object" || boundsObject === null) {
-      throw new JsonWrongTypeError(boundsObject, "object");
-    }
-    const bounds = LifeGridBoundingRectangle.decode(boundsObject);
-
-    if (!("stepCriterion" in object)) {
-      throw new JsonMissingFieldError(object, "stepCriterion");
-    }
-    const stepCriterionString = object["stepCriterion"];
-    if (typeof stepCriterionString !== "string") {
-      throw new Error(`Expected step criterion to be a string`);
-    }
-    const stepCriterion = decodeStepCriterion(stepCriterionString);
-
-    return new AtomicUpdateRegion(bounds, stepCriterion);
-  }
+  static decoder: Decoder<unknown, AtomicUpdateRegion> = Functor.map(
+    struct({
+      bounds: LifeGridBoundingRectangle.decoder,
+      stepCriterion: stepCriterionDecoder,
+    }),
+    ({ bounds, stepCriterion }) => new AtomicUpdateRegion(bounds, stepCriterion)
+  );
 }

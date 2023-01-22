@@ -2,6 +2,8 @@ import { LifeGridPosition } from "../life/coordinates/position";
 import { Pattern } from "../life/pattern";
 import { PatternRenderingOptions } from "../life/pattern-rendering-options/pattern-rendering-options";
 import { parse } from "../life/rle-parser";
+import { isRight } from "fp-ts/Either";
+import { draw } from "io-ts/Decoder";
 
 export class PatternAnchorElement extends HTMLElement {
   private cells: Promise<LifeGridPosition[]>;
@@ -75,9 +77,19 @@ export class PatternAnchorElement extends HTMLElement {
     if (name === "rendering-options" && typeof newValue === "string") {
       fetch(newValue).then(async (response) => {
         const renderingOptionsJson = await response.json();
-        this.resolveRenderingOptions(
-          PatternRenderingOptions.decode(renderingOptionsJson)
-        );
+        const id = await this.patternId;
+
+        const result =
+          PatternRenderingOptions.decoder.decode(renderingOptionsJson);
+        if (isRight(result)) {
+          this.resolveRenderingOptions(result.right);
+        } else {
+          throw new Error(
+            `Failed to parse rendering options for pattern ${id}: ${draw(
+              result.left
+            )}`
+          );
+        }
       });
     }
   }

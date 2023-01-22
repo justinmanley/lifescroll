@@ -1,6 +1,6 @@
-import { JsonMissingFieldError, JsonWrongTypeError } from "../../json/decoding";
 import { Size2 } from "../../math/geometry/size2";
 import { fromPage, toPage } from "./mappings";
+import { Decoder, number, struct, Functor } from "io-ts/Decoder";
 
 export class LifeGridSize2 {
   constructor(public readonly width: number, public readonly height: number) {}
@@ -22,21 +22,10 @@ export class LifeGridSize2 {
     return new LifeGridSize2(fn(this.width), fn(this.height));
   }
 
-  static decode(object: object): LifeGridSize2 {
-    if (!("width" in object)) {
-      throw new JsonMissingFieldError(object, "width");
+  static decoder: Decoder<unknown, LifeGridSize2> = Functor.map(
+    struct({ width: number, height: number }),
+    ({ width, height }) => {
+      return new LifeGridSize2(width, height);
     }
-    const width = object["width"];
-    if (!(typeof width === "number")) {
-      throw new JsonWrongTypeError(width, "number");
-    }
-    if (!("height" in object)) {
-      throw new JsonMissingFieldError(object, "height");
-    }
-    const height = object["height"];
-    if (!(typeof height === "number")) {
-      throw new JsonWrongTypeError(height, "number");
-    }
-    return new LifeGridSize2(width, height);
-  }
+  );
 }

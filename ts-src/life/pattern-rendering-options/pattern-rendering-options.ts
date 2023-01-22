@@ -1,6 +1,6 @@
-import { JsonMissingFieldError, JsonWrongTypeError } from "../../json/decoding";
 import { LifeGridSize2 } from "../coordinates/size2";
 import { AtomicUpdateRegion } from "./atomic-update-region";
+import { Decoder, Functor, struct, array } from "io-ts/Decoder";
 
 export class PatternRenderingOptions {
   constructor(
@@ -9,28 +9,14 @@ export class PatternRenderingOptions {
     public readonly atomicUpdateRegions: AtomicUpdateRegion[]
   ) {}
 
-  static decode(object: object): PatternRenderingOptions {
-    if (!("reserve" in object)) {
-      throw new JsonMissingFieldError(object, "reserve");
-    }
-    const reserveObject = object["reserve"];
-    if (typeof reserveObject !== "object" || reserveObject === null) {
-      throw new JsonWrongTypeError(reserveObject, "object");
-    }
-
-    if (!("atomicUpdateRegions" in object)) {
-      throw new JsonMissingFieldError(object, "atomicUpdateRegions");
-    }
-    const atomicUpdateRegionsObject = object["atomicUpdateRegions"];
-    if (!Array.isArray(atomicUpdateRegionsObject)) {
-      throw new JsonWrongTypeError(atomicUpdateRegionsObject, "object");
-    }
-
-    return new PatternRenderingOptions(
-      LifeGridSize2.decode(reserveObject),
-      atomicUpdateRegionsObject.map(AtomicUpdateRegion.decode)
-    );
-  }
+  static decoder: Decoder<unknown, PatternRenderingOptions> = Functor.map(
+    struct({
+      reserve: LifeGridSize2.decoder,
+      atomicUpdateRegions: array(AtomicUpdateRegion.decoder),
+    }),
+    ({ reserve, atomicUpdateRegions }) =>
+      new PatternRenderingOptions(reserve, atomicUpdateRegions)
+  );
 
   get reserve(): LifeGridSize2 {
     return new LifeGridSize2(

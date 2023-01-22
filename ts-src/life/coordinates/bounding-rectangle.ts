@@ -1,12 +1,13 @@
 import {
   BoundingRectangle,
   BoundingRectangleParams,
-  decodeBoundingRectangleParams,
+  BoundingRectangleParamsDecoder,
 } from "../../math/geometry/bounding-rectangle";
 import { LifeGridInterval } from "./interval";
 import { fromPage, toPage } from "./mappings";
 import { LifeGridPosition } from "./position";
 import { LifeGridSize2 } from "./size2";
+import { Decoder, Functor } from "io-ts/Decoder";
 
 export class LifeGridBoundingRectangle {
   public readonly width: number;
@@ -113,7 +114,8 @@ export class LifeGridBoundingRectangle {
     });
   }
 
-  static decode(object: object): LifeGridBoundingRectangle {
-    return new LifeGridBoundingRectangle(decodeBoundingRectangleParams(object));
-  }
+  static decoder: Decoder<unknown, LifeGridBoundingRectangle> = Functor.map(
+    BoundingRectangleParamsDecoder,
+    (params) => new LifeGridBoundingRectangle(params)
+  );
 }

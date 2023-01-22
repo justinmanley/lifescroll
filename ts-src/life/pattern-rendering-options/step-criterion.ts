@@ -1,17 +1,22 @@
-import { JsonWrongTypeError } from "../../json/decoding";
+import { Decoder, literal, Functor } from "io-ts/Decoder";
 
 export enum StepCriterion {
   AnyIntersectionWithSteppableRegion,
   FullyContainedWithinSteppableRegion,
 }
 
-export const decodeStepCriterion = (value: string): StepCriterion => {
-  switch (value) {
-    case "AnyIntersectionWithSteppableRegion":
-      return StepCriterion.AnyIntersectionWithSteppableRegion;
-    case "FullyContainedWithinSteppableRegion":
-      return StepCriterion.FullyContainedWithinSteppableRegion;
-  }
-
-  throw new Error(`Unexpected value ${value} for step criterion.`);
-};
+export const stepCriterionDecoder: Decoder<unknown, StepCriterion> =
+  Functor.map(
+    literal(
+      "AnyIntersectionWithSteppableRegion",
+      "FullyContainedWithinSteppableRegion"
+    ),
+    (value): StepCriterion => {
+      switch (value) {
+        case "AnyIntersectionWithSteppableRegion":
+          return StepCriterion.AnyIntersectionWithSteppableRegion;
+        case "FullyContainedWithinSteppableRegion":
+          return StepCriterion.FullyContainedWithinSteppableRegion;
+      }
+    }
+  );
