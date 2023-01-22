@@ -1,5 +1,5 @@
 import { vec2, Vector2 } from "../../../ts-src/math/linear-algebra/vector2";
-import { toLifeGridPositions } from "./pattern";
+import { toLifeGridVector2s } from "./pattern";
 
 interface Spaceship<T> {
   name: string;
@@ -45,4 +45,4 @@ const spaceshipCells: Spaceship<[number, number]>[] = [
   },
 ];
 
-export const spaceships = spaceshipCells.map(toLifeGridPositions);
+export const spaceships = spaceshipCells.map(toLifeGridVector2s);

@@ -1,4 +1,4 @@
-import { LifeGridPosition } from "../life/coordinates/position";
+import { LifeGridVector2 } from "../life/coordinates/vector2";
 import { Pattern } from "../life/pattern";
 import { PatternRenderingOptions } from "../life/pattern-rendering-options/pattern-rendering-options";
 import { parse } from "../life/rle-parser";
@@ -6,12 +6,12 @@ import { isRight } from "fp-ts/Either";
 import { draw } from "io-ts/Decoder";
 
 export class PatternAnchorElement extends HTMLElement {
-  private cells: Promise<LifeGridPosition[]>;
+  private cells: Promise<LifeGridVector2[]>;
   private renderingOptions: Promise<PatternRenderingOptions>;
   private patternId: Promise<string>;
 
   private resolveCells: (
-    value: LifeGridPosition[] | PromiseLike<LifeGridPosition[]>
+    value: LifeGridVector2[] | PromiseLike<LifeGridVector2[]>
   ) => void = () => {};
   private resolveRenderingOptions: (
     value: PatternRenderingOptions | PromiseLike<PatternRenderingOptions>
@@ -68,7 +68,7 @@ export class PatternAnchorElement extends HTMLElement {
       fetch(newValue).then(async (response) => {
         const rleString = await response.text();
         this.resolveCells(
-          parse(rleString).map(([x, y]) => new LifeGridPosition(x, y))
+          parse(rleString).map(([x, y]) => new LifeGridVector2(x, y))
         );
       });
       this.resolvePatternId(newValue);

@@ -1,4 +1,4 @@
-import { LifeGridPosition } from "../../ts-src/life/coordinates/position";
+import { LifeGridVector2 } from "../../ts-src/life/coordinates/vector2";
 import { GameOfLife } from "../../ts-src/life/game-of-life";
 import { oscillators } from "./testdata/oscillator";
 import { stillLives } from "./testdata/still-life";
@@ -22,7 +22,7 @@ describe("GameOfLife", () => {
         const life = new GameOfLife();
 
         const result = loop(
-          (cells: LifeGridPosition[]) => life.next(cells),
+          (cells: LifeGridVector2[]) => life.next(cells),
           oscillator.cells,
           oscillator.period
         );
@@ -36,7 +36,7 @@ describe("GameOfLife", () => {
             const life = new GameOfLife();
 
             const result = loop(
-              (cells: LifeGridPosition[]) => life.next(cells),
+              (cells: LifeGridVector2[]) => life.next(cells),
               oscillator.cells,
               steps
             );
@@ -58,7 +58,7 @@ describe("GameOfLife", () => {
         const life = new GameOfLife();
 
         const result = loop(
-          (cells: LifeGridPosition[]) => life.next(cells),
+          (cells: LifeGridVector2[]) => life.next(cells),
           spaceship.cells,
           period
         );
@@ -66,7 +66,7 @@ describe("GameOfLife", () => {
         expect(result).toEqual(
           spaceship.cells.map(
             (cell) =>
-              new LifeGridPosition(
+              new LifeGridVector2(
                 cell.x + spaceship.movement.direction.x,
                 cell.y + spaceship.movement.direction.y
               )

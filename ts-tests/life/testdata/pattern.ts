@@ -1,12 +1,12 @@
-import { LifeGridPosition } from "../../../ts-src/life/coordinates/position";
+import { LifeGridVector2 } from "../../../ts-src/life/coordinates/vector2";
 
 type Pattern<T, S> = {
   cells: T[];
 } & S;
 
-export const toLifeGridPositions = <S>(
+export const toLifeGridVector2s = <S>(
   pattern: Pattern<[number, number], S>
-): Pattern<LifeGridPosition, S> => ({
+): Pattern<LifeGridVector2, S> => ({
   ...pattern,
-  cells: pattern.cells.map(LifeGridPosition.fromTuple),
+  cells: pattern.cells.map(LifeGridVector2.fromTuple),
 });

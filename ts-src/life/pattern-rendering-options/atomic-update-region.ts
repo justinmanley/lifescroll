@@ -1,6 +1,6 @@
 import { LifeGridBoundingRectangle } from "../coordinates/bounding-rectangle";
 import { LifeGridInterval } from "../coordinates/interval";
-import { LifeGridPosition } from "../coordinates/position";
+import { LifeGridVector2 } from "../coordinates/vector2";
 import { StepCriterion, stepCriterionDecoder } from "./step-criterion";
 import { Decoder, Functor, struct, intersect, partial } from "io-ts/Decoder";
 import { Movement } from "./movement";
@@ -20,7 +20,7 @@ export class AtomicUpdateRegion {
     private readonly stepsElapsed: number
   ) {}
 
-  offset(position: LifeGridPosition): AtomicUpdateRegion {
+  offset(position: LifeGridVector2): AtomicUpdateRegion {
     return new AtomicUpdateRegion(
       {
         ...this.params,

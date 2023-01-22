@@ -1,5 +1,5 @@
-import { LifeGridPosition } from "../../../ts-src/life/coordinates/position";
-import { toLifeGridPositions } from "./pattern";
+import { LifeGridVector2 } from "../../../ts-src/life/coordinates/vector2";
+import { toLifeGridVector2s } from "./pattern";
 
 interface StillLife<T> {
   name: string;
@@ -29,5 +29,5 @@ const stillLivesCells: StillLife<[number, number]>[] = [
   },
 ];
 
-export const stillLives: StillLife<LifeGridPosition>[] =
-  stillLivesCells.map(toLifeGridPositions);
+export const stillLives: StillLife<LifeGridVector2>[] =
+  stillLivesCells.map(toLifeGridVector2s);

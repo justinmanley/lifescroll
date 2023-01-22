@@ -2,7 +2,7 @@ import { BoundingRectangle } from "../math/geometry/bounding-rectangle";
 import { Vector2 } from "../math/linear-algebra/vector2";
 import { Cells } from "./cells";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
-import { LifeGridPosition } from "./coordinates/position";
+import { LifeGridVector2 } from "./coordinates/vector2";
 import { DebugSettings } from "./debug-settings";
 import { LayoutParams, LifeState } from "./scrolling-game-of-life";
 
@@ -103,7 +103,7 @@ class CellsRenderer {
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
     private readonly viewport: LifeGridBoundingRectangle,
-    private readonly cells: LifeGridPosition[]
+    private readonly cells: LifeGridVector2[]
   ) {}
 
   public render() {
@@ -113,7 +113,7 @@ class CellsRenderer {
       .forEach((cell) => this.renderCell(cell));
   }
 
-  private renderCell(cell: LifeGridPosition) {
+  private renderCell(cell: LifeGridVector2) {
     const cellSize = this.layoutParams.cellSizeInPixels;
     this.fillSquare(
       cell.map((coord) => coord * cellSize + gridLineHalfWidth),
@@ -149,12 +149,12 @@ class GridRenderer {
   private renderVerticalLine(x: number) {
     this.context.beginPath();
 
-    const start = new LifeGridPosition(x, this.viewport.top)
+    const start = new LifeGridVector2(x, this.viewport.top)
       .toPage(this.layoutParams.cellSizeInPixels)
       .minus(new Vector2(gridLineHalfWidth, 0));
     this.context.moveTo(start.x, start.y);
 
-    const end = new LifeGridPosition(x, this.viewport.bottom + 1)
+    const end = new LifeGridVector2(x, this.viewport.bottom + 1)
       .toPage(this.layoutParams.cellSizeInPixels)
       .minus(new Vector2(gridLineHalfWidth, 0));
     this.context.lineTo(end.x, end.y);
@@ -172,12 +172,12 @@ class GridRenderer {
   private renderHorizontalLine(y: number) {
     this.context.beginPath();
 
-    const start = new LifeGridPosition(this.viewport.left, y)
+    const start = new LifeGridVector2(this.viewport.left, y)
       .toPage(this.layoutParams.cellSizeInPixels)
       .minus(new Vector2(0, gridLineHalfWidth));
     this.context.moveTo(start.x, start.y);
 
-    const end = new LifeGridPosition(this.viewport.right + 1, y)
+    const end = new LifeGridVector2(this.viewport.right + 1, y)
       .toPage(this.layoutParams.cellSizeInPixels)
       .minus(new Vector2(0, gridLineHalfWidth));
     this.context.lineTo(end.x, end.y);

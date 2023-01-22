@@ -1,21 +1,21 @@
 import KDBush from "kdbush";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
-import { LifeGridPosition } from "./coordinates/position";
+import { LifeGridVector2 } from "./coordinates/vector2";
 
 interface Partition {
-  inside: LifeGridPosition[];
-  outside: LifeGridPosition[];
+  inside: LifeGridVector2[];
+  outside: LifeGridVector2[];
 }
 
 export class Cells {
-  private cells: KDBush<LifeGridPosition>;
+  private cells: KDBush<LifeGridVector2>;
   private ids: Set<number>;
 
-  constructor(cells: LifeGridPosition[]) {
+  constructor(cells: LifeGridVector2[]) {
     this.cells = new KDBush(
       cells,
-      (cell: LifeGridPosition) => cell.x,
-      (cell: LifeGridPosition) => cell.y
+      (cell: LifeGridVector2) => cell.x,
+      (cell: LifeGridVector2) => cell.y
     );
     this.ids = new Set(this.cells.ids);
   }
@@ -24,7 +24,7 @@ export class Cells {
     return this.cells.points.length === 0;
   }
 
-  within(bounds: LifeGridBoundingRectangle): LifeGridPosition[] {
+  within(bounds: LifeGridBoundingRectangle): LifeGridVector2[] {
     return this.cells
       .range(bounds.left, bounds.top, bounds.right, bounds.bottom)
       .map((id) => this.cells.points[id]);

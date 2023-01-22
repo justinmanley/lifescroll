@@ -1,5 +1,5 @@
-import { LifeGridPosition } from "../../../ts-src/life/coordinates/position";
-import { toLifeGridPositions } from "./pattern";
+import { LifeGridVector2 } from "../../../ts-src/life/coordinates/vector2";
+import { toLifeGridVector2s } from "./pattern";
 
 interface Oscillator<T> {
   name: string;
@@ -41,5 +41,5 @@ const oscillatorsCells: Oscillator<[number, number]>[] = [
   },
 ];
 
-export const oscillators: Oscillator<LifeGridPosition>[] =
-  oscillatorsCells.map(toLifeGridPositions);
+export const oscillators: Oscillator<LifeGridVector2>[] =
+  oscillatorsCells.map(toLifeGridVector2s);

@@ -1,7 +1,7 @@
 import { Interval } from "../math/geometry/interval";
 import { Vector2 } from "../math/linear-algebra/vector2";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
-import { LifeGridPosition } from "./coordinates/position";
+import { LifeGridVector2 } from "./coordinates/vector2";
 import { AtomicUpdateRegion } from "./pattern-rendering-options/atomic-update-region";
 import { PatternRenderingOptions } from "./pattern-rendering-options/pattern-rendering-options";
 
@@ -13,14 +13,14 @@ interface PatternLayoutParams {
 
 export interface LaidOutPattern {
   id: string;
-  cells: LifeGridPosition[];
+  cells: LifeGridVector2[];
   atomicUpdateRegions: AtomicUpdateRegion[];
 }
 
 export class Pattern {
   constructor(
     public readonly id: string,
-    private readonly cells: LifeGridPosition[],
+    private readonly cells: LifeGridVector2[],
     private readonly renderingOptions: PatternRenderingOptions
   ) {}
 
@@ -33,12 +33,12 @@ export class Pattern {
     const anchorStart = layoutParams.anchorStart;
     const focusRegion = this.renderingOptions.focusRegion;
 
-    const gridStart = LifeGridPosition.fromPage(
+    const gridStart = LifeGridVector2.fromPage(
       new Vector2(preferredHorizontalCenter, anchorStart.y),
       layoutParams.cellSizeInPixels
     )
       .minus(focusRegion ? focusRegion.center() : gridBounds.center())
-      .plus(new LifeGridPosition(0, Math.floor(reserved.height / 2)));
+      .plus(new LifeGridVector2(0, Math.floor(reserved.height / 2)));
 
     return {
       id: this.id,

@@ -1,6 +1,6 @@
 import { BoundingRectangle } from "../math/geometry/bounding-rectangle";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
-import { LifeGridPosition } from "./coordinates/position";
+import { LifeGridVector2 } from "./coordinates/vector2";
 import { LaidOutPattern } from "./pattern";
 import { GameOfLife } from "./game-of-life";
 import { AtomicUpdateRegion } from "./pattern-rendering-options/atomic-update-region";
@@ -14,19 +14,19 @@ export interface LayoutParams {
 }
 
 export interface LifeState {
-  cells: LifeGridPosition[];
+  cells: LifeGridVector2[];
   atomicUpdateRegions: AtomicUpdateRegion[];
 }
 
 const NUM_PROTECTED_BOTTOM_GRID_CELLS = 6;
 
 export class ScrollingGameOfLife {
-  private cells: LifeGridPosition[];
+  private cells: LifeGridVector2[];
   private atomicUpdateRegions: AtomicUpdateRegion[];
   private rule: GameOfLife;
 
   constructor(patterns: LaidOutPattern[]) {
-    this.cells = ([] as LifeGridPosition[]).concat(
+    this.cells = ([] as LifeGridVector2[]).concat(
       ...patterns.map((pattern) => pattern.cells)
     );
     this.atomicUpdateRegions = ([] as AtomicUpdateRegion[]).concat(
@@ -53,7 +53,7 @@ export class ScrollingGameOfLife {
     // TODO: Handle this proactively by preventing incompatible overlapping
     // atomicUpdateRegions (but: what to do when they overlap? convert one into
     // the other type?
-    const isCellSteppable = (cell: LifeGridPosition): boolean => {
+    const isCellSteppable = (cell: LifeGridVector2): boolean => {
       const containsCell = (atomicUpdateRegion: AtomicUpdateRegion): boolean =>
         atomicUpdateRegion.bounds.contains(cell);
       return steppable.contains(cell.y)

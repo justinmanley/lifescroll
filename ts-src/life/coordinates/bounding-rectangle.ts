@@ -5,7 +5,7 @@ import {
 } from "../../math/geometry/bounding-rectangle";
 import { LifeGridInterval } from "./interval";
 import { fromPage, toPage } from "./mappings";
-import { LifeGridPosition } from "./position";
+import { LifeGridVector2 } from "./vector2";
 import { LifeGridSize2 } from "./size2";
 import { Decoder, Functor } from "io-ts/Decoder";
 
@@ -52,15 +52,15 @@ export class LifeGridBoundingRectangle {
     return new LifeGridInterval(this.top, this.bottom);
   }
 
-  center(): LifeGridPosition {
-    return new LifeGridPosition(
+  center(): LifeGridVector2 {
+    return new LifeGridVector2(
       this.horizontal().center(),
       this.vertical().center()
     );
   }
 
-  contains(other: LifeGridBoundingRectangle | LifeGridPosition): boolean {
-    if (other instanceof LifeGridPosition) {
+  contains(other: LifeGridBoundingRectangle | LifeGridVector2): boolean {
+    if (other instanceof LifeGridVector2) {
       return (
         this.vertical().contains(other.y) && this.horizontal().contains(other.x)
       );
@@ -92,11 +92,11 @@ export class LifeGridBoundingRectangle {
     return this.params.right;
   }
 
-  start(): LifeGridPosition {
-    return new LifeGridPosition(this.left, this.top);
+  start(): LifeGridVector2 {
+    return new LifeGridVector2(this.left, this.top);
   }
 
-  offset(amount: LifeGridPosition): LifeGridBoundingRectangle {
+  offset(amount: LifeGridVector2): LifeGridBoundingRectangle {
     return new LifeGridBoundingRectangle({
       top: this.top + amount.y,
       left: this.left + amount.x,
@@ -105,7 +105,7 @@ export class LifeGridBoundingRectangle {
     });
   }
 
-  static enclosing(positions: LifeGridPosition[]): LifeGridBoundingRectangle {
+  static enclosing(positions: LifeGridVector2[]): LifeGridBoundingRectangle {
     return new LifeGridBoundingRectangle({
       top: Math.min(...positions.map((p) => p.y)),
       left: Math.min(...positions.map((p) => p.x)),
