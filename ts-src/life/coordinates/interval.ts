@@ -16,7 +16,7 @@ export class LifeGridInterval {
   }
 
   intersects(other: LifeGridInterval): boolean {
-    return other.start < this.end || this.start < other.end;
+    return other.start < this.end && this.start < other.end;
   }
 
   contains(other: LifeGridInterval | number): boolean {
