@@ -1,6 +1,6 @@
 import { property, assert, integer, uint8Array } from "fast-check";
 import { vec2 } from "../../ts-src/math/linear-algebra/vector2";
-import { vec4, Vector4 } from "../../ts-src/math/linear-algebra/vector4";
+import { vec4 } from "../../ts-src/math/linear-algebra/vector4";
 import { RgbaMatrix, NUM_CHANNELS } from "../../ts-src/webgl/rgba-matrix";
 import { RgbaMatrixTransformer } from "../../ts-src/webgl/rgba-matrix-transformer";
 
@@ -112,6 +112,27 @@ describe("RgbaMatrixWebGLTransformer", () => {
           expect(transformer.transform(matrix)).toEqual(expected);
         })
       );
+    });
+
+    it("should act as the identity on a matrix which is larger than the default viewport size when supplied with a copy-xy fragment shader", () => {
+      const transformer = new RgbaMatrixTransformer(`\
+        ${fragmentShaderSetup}
+
+        void main() {
+            gl_FragColor = texture2D(input_state, gl_FragCoord.xy / resolution);
+        }
+        `);
+
+      // The canvas is 300x150 by default, so 152 is just slightly taller than the viewport.
+      // Unless the WebGL viewport is properly resized to accommodate this matrix, the
+      // bottom two rows of the matrix will be ignored because they do not fit into the WebGL
+      // viewport.
+      const matrix = new RgbaMatrix(1, 152);
+      matrix.forEach((_, index) => {
+        matrix.set(index, vec4(index.x, index.y, 3, 7));
+      });
+
+      expect(transformer.transform(matrix)).toEqual(matrix);
     });
   });
 });

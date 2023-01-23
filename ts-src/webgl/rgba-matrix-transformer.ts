@@ -18,6 +18,7 @@ export class RgbaMatrixTransformer {
 
   constructor(fragmentShaderSource: string) {
     this.canvas = document.createElement("canvas");
+
     const context = this.canvas.getContext("webgl");
     if (context === null) {
       throw new Error("Failed to get webgl context");
@@ -29,6 +30,11 @@ export class RgbaMatrixTransformer {
   }
 
   public transform(matrix: RgbaMatrix): RgbaMatrix {
+    // This is important! The canvas is 300x150 by default, and unless the viewport
+    // is resized to fit the incoming matrix, the part of the matrix which lies
+    // outside the viewport will be ignored.
+    this.gl.viewport(0, 0, matrix.width, matrix.height);
+
     const inputTexture = this.createTexture(matrix);
     const outputTexture = this.createTexture(matrix.size);
     this.attachTextureToFramebuffer(outputTexture);
