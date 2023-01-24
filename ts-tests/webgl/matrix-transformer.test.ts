@@ -1,15 +1,15 @@
 import { property, assert, integer, uint8Array } from "fast-check";
 import { vec2 } from "../../ts-src/math/linear-algebra/vector2";
 import { vec4 } from "../../ts-src/math/linear-algebra/vector4";
-import { RgbaMatrix, NUM_CHANNELS } from "../../ts-src/webgl/rgba-matrix";
-import { RgbaMatrixTransformer } from "../../ts-src/webgl/rgba-matrix-transformer";
+import { WebGlMatrix, NUM_CHANNELS } from "../../ts-src/webgl/matrix";
+import { WebGlMatrixTransformer } from "../../ts-src/webgl/matrix-transformer";
 
 const uint8Matrix = () =>
   integer({ min: 1, max: 10 }).chain((width) =>
     integer({ min: 1, max: 10 }).chain((height) => {
       const size = width * height * NUM_CHANNELS;
       return uint8Array({ minLength: size, maxLength: size }).map((array) => {
-        const matrix = new RgbaMatrix(width, height);
+        const matrix = new WebGlMatrix(width, height);
         matrix.asArray().set(array);
         return matrix;
       });
@@ -23,10 +23,10 @@ const fragmentShaderSetup = `\
     uniform vec2 resolution;
     `;
 
-describe("RgbaMatrixWebGLTransformer", () => {
+describe("WebGLMatrixTransformer", () => {
   describe("transform", () => {
     it("should act as the identity when supplied with a copy-xy fragment shader", () => {
-      const transformer = new RgbaMatrixTransformer(`\
+      const transformer = new WebGlMatrixTransformer(`\
             ${fragmentShaderSetup}
 
             void main() {
@@ -42,7 +42,7 @@ describe("RgbaMatrixWebGLTransformer", () => {
     });
 
     it("should flip cells over the line y=x when supplied with a flip-xy fragment shader", () => {
-      const transformer = new RgbaMatrixTransformer(`\
+      const transformer = new WebGlMatrixTransformer(`\
             ${fragmentShaderSetup}
 
             void main() {
@@ -50,13 +50,13 @@ describe("RgbaMatrixWebGLTransformer", () => {
             }
             `);
 
-      const input = new RgbaMatrix(2, 2);
+      const input = new WebGlMatrix(2, 2);
       input.set(vec2(0, 0), vec4(1, 1, 1, 1));
       input.set(vec2(1, 0), vec4(2, 2, 2, 2));
       input.set(vec2(0, 1), vec4(3, 3, 3, 3));
       input.set(vec2(1, 1), vec4(4, 4, 4, 4));
 
-      const expected = new RgbaMatrix(2, 2);
+      const expected = new WebGlMatrix(2, 2);
       expected.set(vec2(0, 0), vec4(1, 1, 1, 1));
       expected.set(vec2(1, 0), vec4(3, 3, 3, 3));
       expected.set(vec2(0, 1), vec4(2, 2, 2, 2));
@@ -68,7 +68,7 @@ describe("RgbaMatrixWebGLTransformer", () => {
     });
 
     it("should slide cells one to the right, filling the leftmost cells with zero when supplied with an (x,y) -> (x-1,y) fragment shader", () => {
-      const transformer = new RgbaMatrixTransformer(`\
+      const transformer = new WebGlMatrixTransformer(`\
             ${fragmentShaderSetup}
 
             vec4 getOrDefault(vec2 diff) {
@@ -84,11 +84,11 @@ describe("RgbaMatrixWebGLTransformer", () => {
             }
             `);
 
-      const input = new RgbaMatrix(2, 1);
+      const input = new WebGlMatrix(2, 1);
       input.set(vec2(0, 0), vec4(1, 1, 1, 1));
       input.set(vec2(1, 0), vec4(2, 2, 2, 2));
 
-      const expected = new RgbaMatrix(2, 1);
+      const expected = new WebGlMatrix(2, 1);
       expected.set(vec2(0, 0), vec4(0, 0, 0, 0));
       expected.set(vec2(1, 0), vec4(1, 1, 1, 1));
 
@@ -98,7 +98,7 @@ describe("RgbaMatrixWebGLTransformer", () => {
     });
 
     it("should return a matrix containing (x, 0, 0, 0) in each cell when supplied with a fragment shader which extracts the x-component of the input", () => {
-      const transformer = new RgbaMatrixTransformer(`\
+      const transformer = new WebGlMatrixTransformer(`\
             ${fragmentShaderSetup}
 
             void main() {
@@ -115,7 +115,7 @@ describe("RgbaMatrixWebGLTransformer", () => {
     });
 
     it("should act as the identity on a matrix which is larger than the default viewport size when supplied with a copy-xy fragment shader", () => {
-      const transformer = new RgbaMatrixTransformer(`\
+      const transformer = new WebGlMatrixTransformer(`\
         ${fragmentShaderSetup}
 
         void main() {
@@ -127,7 +127,7 @@ describe("RgbaMatrixWebGLTransformer", () => {
       // Unless the WebGL viewport is properly resized to accommodate this matrix, the
       // bottom two rows of the matrix will be ignored because they do not fit into the WebGL
       // viewport.
-      const matrix = new RgbaMatrix(1, 152);
+      const matrix = new WebGlMatrix(1, 152);
       matrix.forEach((_, index) => {
         matrix.set(index, vec4(index.x, index.y, 3, 7));
       });

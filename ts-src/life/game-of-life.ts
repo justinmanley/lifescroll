@@ -1,6 +1,6 @@
 import { vec4 } from "../math/linear-algebra/vector4";
-import { RgbaMatrix } from "../webgl/rgba-matrix";
-import { RgbaMatrixTransformer } from "../webgl/rgba-matrix-transformer";
+import { WebGlInputMatrix } from "../webgl/matrix";
+import { WebGlMatrixTransformer } from "../webgl/matrix-transformer";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
 import { LifeGridVector2 } from "./coordinates/vector2";
 import { LifeGridSize2 } from "./coordinates/size2";
@@ -10,10 +10,10 @@ const MARGIN = 1;
 const offset = new LifeGridVector2(MARGIN, MARGIN);
 
 export class GameOfLife {
-  private transformer: RgbaMatrixTransformer;
+  private transformer: WebGlMatrixTransformer;
 
   constructor() {
-    this.transformer = new RgbaMatrixTransformer(fragmentShader);
+    this.transformer = new WebGlMatrixTransformer(fragmentShader);
   }
 
   next(cells: LifeGridVector2[]): LifeGridVector2[] {
@@ -30,7 +30,7 @@ export class GameOfLife {
     cells: LifeGridVector2[],
     size: LifeGridSize2
   ): LifeGridVector2[] {
-    const matrix = RgbaMatrix.ofSize(size.map((s) => s + 2 * MARGIN));
+    const matrix = WebGlInputMatrix.ofSize(size.map((s) => s + 2 * MARGIN));
     cells.forEach((position) => {
       matrix.set(position.plus(offset), vec4(255, 0, 0, 0));
     });

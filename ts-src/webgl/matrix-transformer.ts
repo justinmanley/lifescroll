@@ -1,5 +1,5 @@
 import { Size2 } from "../math/geometry/size2";
-import { NUM_CHANNELS, RgbaMatrix } from "./rgba-matrix";
+import { NUM_CHANNELS, WebGlInputMatrix, WebGlOutputMatrix } from "./matrix";
 
 const vertexShaderSource = `\
     attribute vec2 position; 
@@ -11,7 +11,7 @@ const vertexShaderSource = `\
 
 // WebGL setup largely derived from
 // https://observablehq.com/@mbostock/conways-game-of-life.
-export class RgbaMatrixTransformer {
+export class WebGlMatrixTransformer {
   public readonly canvas: HTMLCanvasElement;
   private readonly program: WebGLProgram;
   private readonly gl: WebGLRenderingContext;
@@ -29,30 +29,30 @@ export class RgbaMatrixTransformer {
     this.createFramebuffer();
   }
 
-  public transform(matrix: RgbaMatrix): RgbaMatrix {
+  public transform(matrix: WebGlInputMatrix): WebGlOutputMatrix {
     // This is important! The canvas is 300x150 by default, and unless the viewport
     // is resized to fit the incoming matrix, the part of the matrix which lies
     // outside the viewport will be ignored.
-    this.gl.viewport(0, 0, matrix.width, matrix.height);
+    this.gl.viewport(0, 0, matrix.size.width, matrix.size.height);
 
     const inputTexture = this.createTexture(matrix);
-    const outputTexture = this.createTexture(matrix.size);
+    const outputTexture = this.createTexture(matrix.minSize);
     this.attachTextureToFramebuffer(outputTexture);
 
     this.gl.bindTexture(this.gl.TEXTURE_2D, inputTexture);
     this.gl.uniform2f(
       this.gl.getUniformLocation(this.program, "resolution"),
-      matrix.width,
-      matrix.height
+      matrix.size.width,
+      matrix.size.height
     );
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, NUM_CHANNELS);
 
-    const transformed = RgbaMatrix.ofSize(matrix.size);
+    const transformed = WebGlOutputMatrix.ofMinSize(matrix);
     this.gl.readPixels(
       0,
       0,
-      matrix.width,
-      matrix.height,
+      transformed.size.width,
+      transformed.size.height,
       this.gl.RGBA,
       this.gl.UNSIGNED_BYTE,
       transformed.asArray()
@@ -133,13 +133,16 @@ export class RgbaMatrixTransformer {
     return program;
   }
 
-  private createTexture(matrix: RgbaMatrix | Size2): WebGLTexture {
+  private createTexture(input: WebGlInputMatrix | Size2): WebGLTexture {
     const texture = this.gl.createTexture();
     if (texture === null) {
       throw new Error("Failed to create texture");
     }
 
-    const size = matrix instanceof RgbaMatrix ? matrix.size : matrix;
+    const { array, size } =
+      input instanceof WebGlInputMatrix
+        ? { array: input.asArray(), size: input.size }
+        : { array: null, size: input };
 
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
     this.gl.texImage2D(
@@ -151,7 +154,7 @@ export class RgbaMatrixTransformer {
       0,
       this.gl.RGBA,
       this.gl.UNSIGNED_BYTE,
-      matrix instanceof RgbaMatrix ? matrix.asArray() : null
+      array
     );
 
     // Make the texture work even if its size is not a power of two.
