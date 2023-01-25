@@ -1,7 +1,11 @@
 import { property, assert, integer, uint8Array } from "fast-check";
 import { vec2 } from "../../ts-src/math/linear-algebra/vector2";
 import { vec4 } from "../../ts-src/math/linear-algebra/vector4";
-import { WebGlMatrix, NUM_CHANNELS } from "../../ts-src/webgl/matrix";
+import {
+  NUM_CHANNELS,
+  WebGlInputMatrix,
+  WebGlOutputMatrix,
+} from "../../ts-src/webgl/matrix";
 import { WebGlMatrixTransformer } from "../../ts-src/webgl/matrix-transformer";
 
 const uint8Matrix = () =>
@@ -9,7 +13,7 @@ const uint8Matrix = () =>
     integer({ min: 1, max: 10 }).chain((height) => {
       const size = width * height * NUM_CHANNELS;
       return uint8Array({ minLength: size, maxLength: size }).map((array) => {
-        const matrix = new WebGlMatrix(width, height);
+        const matrix = new WebGlInputMatrix(width, height);
         matrix.asArray().set(array);
         return matrix;
       });
@@ -36,7 +40,13 @@ describe("WebGLMatrixTransformer", () => {
 
       assert(
         property(uint8Matrix(), (matrix) => {
-          expect(transformer.transform(matrix)).toEqual(matrix);
+          const transformed = transformer.transform(matrix).asArray();
+
+          const expected = WebGlOutputMatrix.ofMinSize(matrix);
+          expected.forEach((_, index) => {
+            expected.set(index, matrix.get(index));
+          });
+          expect(transformed).toEqual(expected.asArray());
         })
       );
     });
@@ -50,13 +60,13 @@ describe("WebGLMatrixTransformer", () => {
             }
             `);
 
-      const input = new WebGlMatrix(2, 2);
+      const input = new WebGlInputMatrix(2, 2);
       input.set(vec2(0, 0), vec4(1, 1, 1, 1));
       input.set(vec2(1, 0), vec4(2, 2, 2, 2));
       input.set(vec2(0, 1), vec4(3, 3, 3, 3));
       input.set(vec2(1, 1), vec4(4, 4, 4, 4));
 
-      const expected = new WebGlMatrix(2, 2);
+      const expected = new WebGlOutputMatrix(2, 2);
       expected.set(vec2(0, 0), vec4(1, 1, 1, 1));
       expected.set(vec2(1, 0), vec4(3, 3, 3, 3));
       expected.set(vec2(0, 1), vec4(2, 2, 2, 2));
@@ -84,11 +94,11 @@ describe("WebGLMatrixTransformer", () => {
             }
             `);
 
-      const input = new WebGlMatrix(2, 1);
+      const input = new WebGlInputMatrix(2, 1);
       input.set(vec2(0, 0), vec4(1, 1, 1, 1));
       input.set(vec2(1, 0), vec4(2, 2, 2, 2));
 
-      const expected = new WebGlMatrix(2, 1);
+      const expected = new WebGlOutputMatrix(2, 1);
       expected.set(vec2(0, 0), vec4(0, 0, 0, 0));
       expected.set(vec2(1, 0), vec4(1, 1, 1, 1));
 
@@ -108,8 +118,13 @@ describe("WebGLMatrixTransformer", () => {
 
       assert(
         property(uint8Matrix(), (matrix) => {
-          const expected = matrix.map((value) => vec4(value.x, 0, 0, 0));
-          expect(transformer.transform(matrix)).toEqual(expected);
+          const expected = WebGlOutputMatrix.ofMinSize(matrix);
+          expected.forEach((_, index) => {
+            const value = matrix.get(index);
+            expected.set(index, vec4(value.x, 0, 0, 0));
+          });
+          const transformed = transformer.transform(matrix).asArray();
+          expect(transformed).toEqual(expected.asArray());
         })
       );
     });
@@ -127,12 +142,19 @@ describe("WebGLMatrixTransformer", () => {
       // Unless the WebGL viewport is properly resized to accommodate this matrix, the
       // bottom two rows of the matrix will be ignored because they do not fit into the WebGL
       // viewport.
-      const matrix = new WebGlMatrix(1, 152);
-      matrix.forEach((_, index) => {
-        matrix.set(index, vec4(index.x, index.y, 3, 7));
+      const input = new WebGlInputMatrix(1, 152);
+      input.forEach((_, index) => {
+        input.set(index, vec4(index.x, index.y, 3, 7));
       });
 
-      expect(transformer.transform(matrix)).toEqual(matrix);
+      const expected = new WebGlOutputMatrix(1, 152);
+      expected.forEach((_, index) => {
+        expected.set(index, vec4(index.x, index.y, 3, 7));
+      });
+
+      const transformed = transformer.transform(input).asArray();
+
+      expect(transformed).toEqual(expected.asArray());
     });
   });
 });
