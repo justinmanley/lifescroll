@@ -116,12 +116,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     );
 
     const viewport = this.viewport();
-    const state = this.life?.scroll(
-      LifeGridBoundingRectangle.fromPage(viewport, cellSizeInPixels)
-    );
-    if (state) {
-      this.renderer?.render(viewport, state);
-    }
+    this.renderer.render(viewport, this.life.state);
   }
 
   private async getCellSizeInPixels(): Promise<number> {

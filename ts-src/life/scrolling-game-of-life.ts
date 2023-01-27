@@ -72,6 +72,10 @@ export class ScrollingGameOfLife {
       ];
     }
 
+    return this.state;
+  }
+
+  get state() {
     return {
       cells: this.cells,
       atomicUpdates: this.atomicUpdates,
