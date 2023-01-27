@@ -3,29 +3,31 @@
         "width": 65,
         "height": 80
     },
-    "atomicUpdateRegions": [
-        {
-            "bounds": {
-                "top": 0,
-                "left": -1,
-                "bottom": 80,
-                "right": 66
-            },
-            "boundsEdgeMovements": {
-                "top": {
-                    "direction": -1,
-                    "period": 2
+    "atomicUpdate": {
+        "regions": [
+            {
+                "bounds": {
+                    "top": 0,
+                    "left": -1,
+                    "bottom": 80,
+                    "right": 66
                 },
-                "left": {
-                    "direction": -1,
-                    "period": 2
-                },
-                "right": {
-                    "direction": 1,
-                    "period": 2
+                "boundsEdgeMovements": {
+                    "top": {
+                        "direction": -1,
+                        "period": 2
+                    },
+                    "left": {
+                        "direction": -1,
+                        "period": 2
+                    },
+                    "right": {
+                        "direction": 1,
+                        "period": 2
+                    }
                 }
-            },
-            "stepCriterion": "AnyIntersectionWithSteppableRegion"
-        }
-    ]
+            }
+        ],
+        "stepCriterion": "AnyIntersectionWithSteppableRegion"
+    } 
 }

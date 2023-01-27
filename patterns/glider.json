@@ -3,22 +3,24 @@
         "width": 3,
         "height": 3
     },
-    "atomicUpdateRegions": [
-        {
-            "bounds": {
-                "top": -1,
-                "left": 0,
-                "bottom": 3,
-                "right": 4
-            },
-            "movement": {
-                "direction": {
-                    "x": 1,
-                    "y": -1
+    "atomicUpdate": {
+        "regions": [
+            {
+                "bounds": {
+                    "top": -1,
+                    "left": 0,
+                    "bottom": 3,
+                    "right": 4
                 },
-                "period": 4
-            },
-            "stepCriterion": "FullyContainedWithinSteppableRegion"
-        }
-    ]
+                "movement": {
+                    "direction": {
+                        "x": 1,
+                        "y": -1
+                    },
+                    "period": 4
+                }
+            }
+        ],
+        "stepCriterion": "FullyContainedWithinSteppableRegion"
+    }
 }

@@ -1,5 +1,5 @@
 import { LifeGridSize2 } from "../coordinates/size2";
-import { AtomicUpdateRegion } from "./atomic-update-region";
+import { AtomicUpdate } from "./atomic-update";
 import {
   Decoder,
   Functor,
@@ -14,7 +14,7 @@ import { pipe } from "fp-ts/function";
 interface PatternRenderingOptionsParams {
   // How much space to reserve on the page.
   reserve: LifeGridSize2;
-  atomicUpdateRegions: AtomicUpdateRegion[];
+  atomicUpdate: AtomicUpdate;
   focusRegion?: LifeGridBoundingRectangle;
 }
 
@@ -25,7 +25,7 @@ export class PatternRenderingOptions {
     pipe(
       struct({
         reserve: LifeGridSize2.decoder,
-        atomicUpdateRegions: array(AtomicUpdateRegion.decoder),
+        atomicUpdate: AtomicUpdate.decoder,
       }),
       intersect(
         partial({
@@ -43,8 +43,8 @@ export class PatternRenderingOptions {
     );
   }
 
-  get atomicUpdateRegions(): AtomicUpdateRegion[] {
-    return this.params.atomicUpdateRegions;
+  get atomicUpdate(): AtomicUpdate {
+    return this.params.atomicUpdate;
   }
 
   get focusRegion(): LifeGridBoundingRectangle | undefined {

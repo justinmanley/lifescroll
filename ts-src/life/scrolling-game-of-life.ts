@@ -3,7 +3,7 @@ import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
 import { LifeGridVector2 } from "./coordinates/vector2";
 import { LaidOutPattern } from "./pattern";
 import { GameOfLife } from "./game-of-life";
-import { AtomicUpdateRegion } from "./pattern-rendering-options/atomic-update-region";
+import { AtomicUpdate } from "./pattern-rendering-options/atomic-update";
 import { LifeGridInterval } from "./coordinates/interval";
 import { partition } from "lodash";
 
@@ -15,23 +15,21 @@ export interface LayoutParams {
 
 export interface LifeState {
   cells: LifeGridVector2[];
-  atomicUpdateRegions: AtomicUpdateRegion[];
+  atomicUpdates: AtomicUpdate[];
 }
 
 const NUM_PROTECTED_BOTTOM_GRID_CELLS = 6;
 
 export class ScrollingGameOfLife {
   private cells: LifeGridVector2[];
-  private atomicUpdateRegions: AtomicUpdateRegion[];
+  private atomicUpdates: AtomicUpdate[];
   private rule: GameOfLife;
 
   constructor(patterns: LaidOutPattern[]) {
     this.cells = ([] as LifeGridVector2[]).concat(
       ...patterns.map((pattern) => pattern.cells)
     );
-    this.atomicUpdateRegions = ([] as AtomicUpdateRegion[]).concat(
-      ...patterns.map((pattern) => pattern.atomicUpdateRegions)
-    );
+    this.atomicUpdates = patterns.map((pattern) => pattern.atomicUpdate);
     this.rule = new GameOfLife();
   }
 
@@ -39,7 +37,7 @@ export class ScrollingGameOfLife {
     const steppable = this.steppableVerticalBounds(viewport);
 
     const [steppableRegions, notSteppableRegions] = partition(
-      this.atomicUpdateRegions,
+      this.atomicUpdates,
       (atomicUpdateRegion) => atomicUpdateRegion.isSteppable(steppable)
     );
 
@@ -54,7 +52,7 @@ export class ScrollingGameOfLife {
     // atomicUpdateRegions (but: what to do when they overlap? convert one into
     // the other type?
     const isCellSteppable = (cell: LifeGridVector2): boolean => {
-      const containsCell = (atomicUpdateRegion: AtomicUpdateRegion): boolean =>
+      const containsCell = (atomicUpdateRegion: AtomicUpdate): boolean =>
         atomicUpdateRegion.bounds.some((bounds) => bounds.contains(cell));
       return steppable.contains(cell.y)
         ? !notSteppableRegions.some(containsCell)
@@ -68,7 +66,7 @@ export class ScrollingGameOfLife {
 
     if (steppableCells.length > 0) {
       this.cells = [...this.rule.next(steppableCells), ...notSteppableCells];
-      this.atomicUpdateRegions = [
+      this.atomicUpdates = [
         ...steppableRegions.map((region) => region.next()),
         ...notSteppableRegions,
       ];
@@ -76,7 +74,7 @@ export class ScrollingGameOfLife {
 
     return {
       cells: this.cells,
-      atomicUpdateRegions: this.atomicUpdateRegions,
+      atomicUpdates: this.atomicUpdates,
     };
   }
 

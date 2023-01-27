@@ -1,7 +1,9 @@
 import { LifeGridBoundingRectangle } from "../coordinates/bounding-rectangle";
-import { LifeGridInterval } from "../coordinates/interval";
 import { LifeGridVector2 } from "../coordinates/vector2";
-import { StepCriterion, stepCriterionDecoder } from "./step-criterion";
+import { AtomicUpdateBounds } from "./atomic-update-bounds";
+import { BoundingRectangleEdgeMovements } from "./bounding-rectangle-edge-movements";
+import { Movement } from "./movement";
+import { pipe } from "fp-ts/function";
 import {
   Decoder,
   Functor,
@@ -10,113 +12,55 @@ import {
   partial,
   number,
 } from "io-ts/Decoder";
-import { Movement } from "./movement";
-import { pipe } from "fp-ts/function";
-import { BoundingRectangleEdgeMovements } from "./bounding-rectangle-edge-movements";
 
 interface AtomicUpdateRegionParams {
-  seed: LifeGridBoundingRectangle;
-  bounds: LifeGridBoundingRectangle[];
-  stepCriterion: StepCriterion;
+  source: LifeGridBoundingRectangle;
   movement?: Movement;
   boundsEdgeMovements?: BoundingRectangleEdgeMovements;
   generate?: { period: number };
+  bounds?: AtomicUpdateBounds[];
 }
 
 export class AtomicUpdateRegion {
-  constructor(
-    private readonly params: AtomicUpdateRegionParams,
-    private readonly stepsElapsed: number
-  ) {}
+  private bounds: AtomicUpdateBounds[];
+
+  constructor(private readonly params: AtomicUpdateRegionParams) {
+    this.bounds = params.bounds ?? [new AtomicUpdateBounds(params.source)];
+  }
 
   offset(position: LifeGridVector2): AtomicUpdateRegion {
-    return new AtomicUpdateRegion(
-      {
-        ...this.params,
-        seed: this.params.seed.offset(position),
-        bounds: this.bounds.map((bounds) => bounds.offset(position)),
-      },
-      this.stepsElapsed
-    );
-  }
-
-  isSteppable(viewportVerticalBounds: LifeGridInterval): boolean {
-    switch (this.stepCriterion) {
-      case StepCriterion.AnyIntersectionWithSteppableRegion:
-        return this.bounds.some((bounds) =>
-          bounds.vertical().intersects(viewportVerticalBounds)
-        );
-      case StepCriterion.FullyContainedWithinSteppableRegion:
-        return this.bounds.every((bounds) =>
-          viewportVerticalBounds.contains(bounds.vertical())
-        );
-    }
-  }
-
-  next(): AtomicUpdateRegion {
-    const stepsElapsed = this.stepsElapsed + 1;
-    return new AtomicUpdateRegion(
-      {
-        ...this.params,
-        seed: this.params.seed,
-        bounds: this.bounds
-          .map((bounds) =>
-            this.applyEdgeMovements(
-              this.applyMovement(bounds, stepsElapsed),
-              stepsElapsed
-            )
-          )
-          .concat(
-            this.shouldGenerateNewBounds(stepsElapsed) ? [this.params.seed] : []
-          ),
-      },
-      stepsElapsed
-    );
-  }
-
-  get bounds(): LifeGridBoundingRectangle[] {
-    return this.params.bounds;
-  }
-
-  get stepCriterion(): StepCriterion {
-    return this.params.stepCriterion;
-  }
-
-  private applyMovement(
-    bounds: LifeGridBoundingRectangle,
-    stepsElapsed: number
-  ): LifeGridBoundingRectangle {
-    const movement = this.params.movement;
-    return movement && stepsElapsed % movement.period === 0
-      ? bounds.offset(movement.direction)
-      : bounds;
-  }
-
-  private applyEdgeMovements(
-    bounds: LifeGridBoundingRectangle,
-    steps: number
-  ): LifeGridBoundingRectangle {
-    const movements = this.params.boundsEdgeMovements;
-    return new LifeGridBoundingRectangle({
-      top: movements?.top?.move(bounds.top, steps) ?? bounds.top,
-      left: movements?.left?.move(bounds.left, steps) ?? bounds.left,
-      bottom: movements?.bottom?.move(bounds.bottom, steps) ?? bounds.bottom,
-      right: movements?.right?.move(bounds.right, steps) ?? bounds.right,
+    const bounds = this.params.source;
+    return new AtomicUpdateRegion({
+      ...this.params,
+      source: bounds.offset(position),
     });
   }
 
-  private shouldGenerateNewBounds(stepsElapsed: number): boolean {
-    if (!this.params.generate) {
-      return false;
-    }
-    return stepsElapsed % this.params.generate.period === 0;
+  next(stepsElapsed: number): AtomicUpdateRegion {
+    const existing = this.bounds.map((bounds) =>
+      bounds.next({
+        stepsElapsed,
+        movement: this.params.movement,
+        edgeMovements: this.params.boundsEdgeMovements,
+      })
+    );
+
+    return new AtomicUpdateRegion({
+      ...this.params,
+      bounds: this.shouldGenerate(stepsElapsed)
+        ? existing.concat(this.generate())
+        : existing,
+    });
+  }
+
+  get rectangles(): LifeGridBoundingRectangle[] {
+    return this.bounds.map((bounds) => bounds.rectangle);
   }
 
   static decoder: Decoder<unknown, AtomicUpdateRegion> = Functor.map(
     pipe(
       struct({
         bounds: LifeGridBoundingRectangle.decoder,
-        stepCriterion: stepCriterionDecoder,
       }),
       intersect(
         partial({
@@ -128,14 +72,23 @@ export class AtomicUpdateRegion {
         })
       )
     ),
-    (params) =>
-      new AtomicUpdateRegion(
-        {
-          ...params,
-          seed: params.bounds,
-          bounds: [params.bounds],
-        },
-        0
-      )
+    ({ bounds, movement, boundsEdgeMovements, generate }) =>
+      new AtomicUpdateRegion({
+        source: bounds,
+        movement: movement,
+        boundsEdgeMovements: boundsEdgeMovements,
+        generate: generate,
+      })
   );
+
+  private shouldGenerate(stepsElapsed: number): boolean {
+    if (!this.params.generate) {
+      return false;
+    }
+    return stepsElapsed % this.params.generate.period === 0;
+  }
+
+  private generate(): AtomicUpdateBounds {
+    return new AtomicUpdateBounds(this.params.source);
+  }
 }

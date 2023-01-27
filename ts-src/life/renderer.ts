@@ -35,7 +35,7 @@ export class LifeRenderer {
 export class Render {
   private cellsRenderer: CellsRenderer;
   private gridRenderer: GridRenderer;
-  private atomicUpdateRegionBoundsRenderer: BoundsRenderer;
+  private atomicUpdateBoundsRenderer: BoundsRenderer;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -53,13 +53,11 @@ export class Render {
       state.cells
     );
     this.gridRenderer = new GridRenderer(context, layoutParams, gridViewport);
-    this.atomicUpdateRegionBoundsRenderer = new BoundsRenderer(
+    this.atomicUpdateBoundsRenderer = new BoundsRenderer(
       context,
       layoutParams,
       gridViewport,
-      state.atomicUpdateRegions.flatMap(
-        (atomicUpdateRegion) => atomicUpdateRegion.bounds
-      )
+      state.atomicUpdates.flatMap((atomicUpdate) => atomicUpdate.bounds)
     );
   }
 
@@ -75,7 +73,7 @@ export class Render {
       this.gridRenderer.render();
     }
     if (this.debug.atomicUpdates) {
-      this.atomicUpdateRegionBoundsRenderer.render();
+      this.atomicUpdateBoundsRenderer.render();
     }
   }
 

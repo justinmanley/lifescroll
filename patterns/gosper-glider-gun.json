@@ -3,25 +3,35 @@
         "width": 36,
         "height": 9
     },
-    "atomicUpdateRegions": [
-        {
-            "bounds": {
-                "top": 0,
-                "left": 0,
-                "bottom": 9,
-                "right": 36
-            },
-            "boundsEdgeMovements": {
-                "bottom": {
-                    "direction": 1,
-                    "period": 4
-                },
-                "right": {
-                    "direction": 1,
-                    "period": 4
+    "atomicUpdate": {
+        "regions": [
+            {
+                "bounds": {
+                    "top": 0,
+                    "left": 0,
+                    "bottom": 9,
+                    "right": 36
                 }
             },
-            "stepCriterion": "AnyIntersectionWithSteppableRegion"
-        }
-    ]
+            {
+                "bounds": {
+                    "top": 1,
+                    "left": 15,
+                    "bottom": 5,
+                    "right": 19
+                },
+                "movement": {
+                    "direction": {
+                        "x": 1,
+                        "y": 1
+                    },
+                    "period": 4
+                },
+                "generate": {
+                    "period": 30
+                }
+            }
+        ],
+        "stepCriterion": "AnyIntersectionWithSteppableRegion"
+    } 
 }
