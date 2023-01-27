@@ -55,7 +55,7 @@ export class ScrollingGameOfLife {
     // the other type?
     const isCellSteppable = (cell: LifeGridVector2): boolean => {
       const containsCell = (atomicUpdateRegion: AtomicUpdateRegion): boolean =>
-        atomicUpdateRegion.bounds.contains(cell);
+        atomicUpdateRegion.bounds.some((bounds) => bounds.contains(cell));
       return steppable.contains(cell.y)
         ? !notSteppableRegions.some(containsCell)
         : steppableRegions.some(containsCell);

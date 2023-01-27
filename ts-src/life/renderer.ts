@@ -57,7 +57,7 @@ export class Render {
       context,
       layoutParams,
       gridViewport,
-      state.atomicUpdateRegions.map(
+      state.atomicUpdateRegions.flatMap(
         (atomicUpdateRegion) => atomicUpdateRegion.bounds
       )
     );
