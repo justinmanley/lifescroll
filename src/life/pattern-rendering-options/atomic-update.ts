@@ -2,12 +2,24 @@ import { LifeGridBoundingRectangle } from "../coordinates/bounding-rectangle";
 import { LifeGridInterval } from "../coordinates/interval";
 import { LifeGridVector2 } from "../coordinates/vector2";
 import { StepCriterion, stepCriterionDecoder } from "./step-criterion";
-import { Decoder, Functor, struct, array } from "io-ts/Decoder";
+import {
+  Decoder,
+  Functor,
+  struct,
+  array,
+  intersect,
+  partial,
+  number,
+} from "io-ts/Decoder";
+import { pipe } from "fp-ts/function";
 import { AtomicUpdateRegion } from "./atomic-update-region";
 
 interface AtomicUpdateParams {
   regions: AtomicUpdateRegion[];
   stepCriterion: StepCriterion;
+  // May be a set to a number in [0, 1] representing a vertical position
+  // within the viewport (0 corresponds to the top, 1 to the bottom).
+  delayUntilAboveViewportRatio?: number;
 }
 
 export class AtomicUpdate {
@@ -27,6 +39,13 @@ export class AtomicUpdate {
   }
 
   isSteppable(viewportVerticalBounds: LifeGridInterval): boolean {
+    return (
+      this.hasDelayElapsed(viewportVerticalBounds) &&
+      this.isSteppableAfterDelay(viewportVerticalBounds)
+    );
+  }
+
+  isSteppableAfterDelay(viewportVerticalBounds: LifeGridInterval): boolean {
     switch (this.stepCriterion) {
       case StepCriterion.AnyIntersectionWithSteppableRegion:
         return this.bounds.some((bounds) =>
@@ -62,11 +81,41 @@ export class AtomicUpdate {
     return this.params.stepCriterion;
   }
 
+  private hasDelayElapsed(viewportVerticalBounds: LifeGridInterval): boolean {
+    const delayUntilAboveViewport = this.params.delayUntilAboveViewportRatio;
+    if (delayUntilAboveViewport === undefined) {
+      // No delay.
+      return true;
+    }
+
+    if (this.stepsElapsed > 0) {
+      return true;
+    }
+
+    const viewportThreshold = viewportVerticalBounds.interpolate(
+      delayUntilAboveViewport
+    );
+
+    switch (this.stepCriterion) {
+      case StepCriterion.AnyIntersectionWithSteppableRegion:
+        return this.bounds.some((bounds) => bounds.top < viewportThreshold);
+      case StepCriterion.FullyContainedWithinSteppableRegion:
+        return this.bounds.every((bounds) => bounds.bottom < viewportThreshold);
+    }
+  }
+
   static decoder: Decoder<unknown, AtomicUpdate> = Functor.map(
-    struct({
-      regions: array(AtomicUpdateRegion.decoder),
-      stepCriterion: stepCriterionDecoder,
-    }),
+    pipe(
+      struct({
+        regions: array(AtomicUpdateRegion.decoder),
+        stepCriterion: stepCriterionDecoder,
+      }),
+      intersect(
+        partial({
+          delayUntilAboveViewportRatio: number,
+        })
+      )
+    ),
     (params) => new AtomicUpdate(params, 0)
   );
 }

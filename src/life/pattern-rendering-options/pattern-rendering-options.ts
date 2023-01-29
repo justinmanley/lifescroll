@@ -1,13 +1,6 @@
 import { LifeGridSize2 } from "../coordinates/size2";
 import { AtomicUpdate } from "./atomic-update";
-import {
-  Decoder,
-  Functor,
-  struct,
-  array,
-  intersect,
-  partial,
-} from "io-ts/Decoder";
+import { Decoder, Functor, struct, intersect, partial } from "io-ts/Decoder";
 import { LifeGridBoundingRectangle } from "../coordinates/bounding-rectangle";
 import { pipe } from "fp-ts/function";
 

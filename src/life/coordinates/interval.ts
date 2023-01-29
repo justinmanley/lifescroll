@@ -25,4 +25,8 @@ export class LifeGridInterval {
     }
     return this.start <= other.start && other.end <= this.end;
   }
+
+  interpolate(ratio: number): number {
+    return this.start + Math.floor(ratio * this.length);
+  }
 }
