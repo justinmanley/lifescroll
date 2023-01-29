@@ -32,11 +32,11 @@ export class LifeGridBoundingRectangle {
   }
 
   toPage(cellSizeInPixels: number): BoundingRectangle {
-    return this.map(toPage(cellSizeInPixels));
+    return new BoundingRectangle(this.params).map(toPage(cellSizeInPixels));
   }
 
-  map(fn: (value: number) => number): BoundingRectangle {
-    return new BoundingRectangle({
+  map(fn: (value: number) => number): LifeGridBoundingRectangle {
+    return new LifeGridBoundingRectangle({
       top: fn(this.top),
       left: fn(this.left),
       bottom: fn(this.bottom),

@@ -119,8 +119,12 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
     const layoutParams = this.layoutParams(cellSizeInPixels);
     const patterns = await this.patterns(layoutParams);
+    const viewport = this.viewport();
 
-    this.life = new ScrollingGameOfLife(patterns);
+    this.life = new ScrollingGameOfLife(
+      patterns,
+      LifeGridBoundingRectangle.fromPage(viewport, cellSizeInPixels)
+    );
 
     const context = this.canvas.getContext("2d");
     if (!context) {
@@ -135,7 +139,6 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       this.debug
     );
 
-    const viewport = this.viewport();
     this.renderer.render(viewport, this.life.state);
   }
 

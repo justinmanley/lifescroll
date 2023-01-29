@@ -19,25 +19,41 @@ export interface LifeState {
 }
 
 const NUM_PROTECTED_BOTTOM_GRID_CELLS = 6;
+const CELLS_PER_STEP = 2;
 
 export class ScrollingGameOfLife {
   private cells: LifeGridVector2[];
   private atomicUpdates: AtomicUpdate[];
   private rule: GameOfLife;
 
-  private mostRecentViewport?: LifeGridBoundingRectangle;
+  private mostRecentViewport: LifeGridBoundingRectangle;
+  private lastStepViewport: LifeGridBoundingRectangle;
 
-  constructor(patterns: LaidOutPattern[]) {
+  constructor(
+    patterns: LaidOutPattern[],
+    initialViewport: LifeGridBoundingRectangle
+  ) {
     this.cells = ([] as LifeGridVector2[]).concat(
       ...patterns.map((pattern) => pattern.cells)
     );
     this.atomicUpdates = patterns.map((pattern) => pattern.atomicUpdate);
     this.rule = new GameOfLife();
+    this.mostRecentViewport = initialViewport;
+    this.lastStepViewport = initialViewport;
   }
 
   public scroll(viewport: LifeGridBoundingRectangle): LifeState {
-    if (!this.hasAdvanced(viewport)) {
+    if (viewport.top <= this.mostRecentViewport.top) {
       this.mostRecentViewport = viewport;
+      return this.state;
+    }
+
+    const mostRecentViewportTopInSteps = this.topInSteps(
+      this.mostRecentViewport
+    );
+    const viewportTopInSteps = this.topInSteps(viewport);
+
+    if (viewportTopInSteps - mostRecentViewportTopInSteps <= 0) {
       return this.state;
     }
     this.mostRecentViewport = viewport;
@@ -100,12 +116,6 @@ export class ScrollingGameOfLife {
     };
   }
 
-  private hasAdvanced(viewport: LifeGridBoundingRectangle): boolean {
-    return (
-      !!this.mostRecentViewport && viewport.top > this.mostRecentViewport.top
-    );
-  }
-
   private steppableVerticalBounds(
     viewport: LifeGridBoundingRectangle
   ): LifeGridInterval {
@@ -114,5 +124,9 @@ export class ScrollingGameOfLife {
       viewportVertical.start,
       viewportVertical.end - NUM_PROTECTED_BOTTOM_GRID_CELLS
     );
+  }
+
+  private topInSteps(bounds: LifeGridBoundingRectangle) {
+    return Math.floor(bounds.top / CELLS_PER_STEP);
   }
 }
