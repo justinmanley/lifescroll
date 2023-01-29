@@ -4,13 +4,11 @@
   "description": "Animate patterns from Conway's Game of Life in the margins of a webpage.",
   "main": "src/Main.elm",
   "dependencies": {
-    "@types/kdbush": "^3.0.2",
     "@types/lodash": "^4.14.191",
     "@types/parsimmon": "^1.10.6",
     "elm-canvas": "^2.2.4",
     "fp-ts": "^2.13.1",
     "io-ts": "^2.2.20",
-    "kdbush": "^3.0.0",
     "lodash": "^4.17.21",
     "parsimmon": "^1.18.1",
     "typescript": "^4.9.4",
