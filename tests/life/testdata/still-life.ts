@@ -1,4 +1,4 @@
-import { LifeGridVector2 } from "../../../ts-src/life/coordinates/vector2";
+import { LifeGridVector2 } from "../../../src/life/coordinates/vector2";
 import { toLifeGridVector2s } from "./pattern";
 
 interface StillLife<T> {

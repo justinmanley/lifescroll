@@ -1,4 +1,4 @@
-import { vec2, Vector2 } from "../../../ts-src/math/linear-algebra/vector2";
+import { vec2, Vector2 } from "../../../src/math/linear-algebra/vector2";
 import { toLifeGridVector2s } from "./pattern";
 
 interface Spaceship<T> {

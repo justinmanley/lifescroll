@@ -1,4 +1,4 @@
-import { parse } from "../../ts-src/life/rle-parser";
+import { parse } from "../../src/life/rle-parser";
 
 describe("RLE parser", () => {
   describe("parse", () => {

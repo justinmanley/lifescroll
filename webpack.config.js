@@ -1,6 +1,6 @@
 const path = require('path');
 module.exports = {
-    entry: './ts-src/elements/scrolling-game-of-life.ts',
+    entry: './src/elements/scrolling-game-of-life.ts',
     devtool: "inline-source-map",
     module: {
         rules: [

@@ -1,4 +1,4 @@
-import { LifeGridInterval } from "../../../ts-src/life/coordinates/interval";
+import { LifeGridInterval } from "../../../src/life/coordinates/interval";
 
 describe("Interval", () => {
   describe("intersects", () => {

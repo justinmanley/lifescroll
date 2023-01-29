@@ -1,12 +1,12 @@
 import { property, assert, integer, uint8Array } from "fast-check";
-import { vec2 } from "../../ts-src/math/linear-algebra/vector2";
-import { vec4 } from "../../ts-src/math/linear-algebra/vector4";
+import { vec2 } from "../../src/math/linear-algebra/vector2";
+import { vec4 } from "../../src/math/linear-algebra/vector4";
 import {
   NUM_CHANNELS,
   WebGlInputMatrix,
   WebGlOutputMatrix,
-} from "../../ts-src/webgl/matrix";
-import { WebGlMatrixTransformer } from "../../ts-src/webgl/matrix-transformer";
+} from "../../src/webgl/matrix";
+import { WebGlMatrixTransformer } from "../../src/webgl/matrix-transformer";
 
 const uint8Matrix = () =>
   integer({ min: 1, max: 10 }).chain((width) =>

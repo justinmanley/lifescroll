@@ -1,4 +1,4 @@
-import { Uint8Matrix } from "../../../ts-src/math/linear-algebra/uint8-matrix";
+import { Uint8Matrix } from "../../../src/math/linear-algebra/uint8-matrix";
 import { assert, property, integer, nat, array, tuple } from "fast-check";
 
 const uint8 = () => integer({ min: -128, max: 127 });

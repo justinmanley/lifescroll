@@ -1,5 +1,5 @@
-import { LifeGridVector2 } from "../../ts-src/life/coordinates/vector2";
-import { GameOfLife } from "../../ts-src/life/game-of-life";
+import { LifeGridVector2 } from "../../src/life/coordinates/vector2";
+import { GameOfLife } from "../../src/life/game-of-life";
 import { oscillators } from "./testdata/oscillator";
 import { stillLives } from "./testdata/still-life";
 import { assert, property, integer } from "fast-check";
