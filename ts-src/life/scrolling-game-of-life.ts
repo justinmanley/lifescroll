@@ -75,6 +75,16 @@ export class ScrollingGameOfLife {
     return this.state;
   }
 
+  toggleCell(cell: LifeGridVector2): LifeState {
+    const cellIndex = this.cells.findIndex((existing) => existing.equals(cell));
+    if (cellIndex === -1) {
+      this.cells.push(cell);
+    } else {
+      this.cells.splice(cellIndex, 1);
+    }
+    return this.state;
+  }
+
   get state() {
     return {
       cells: this.cells,

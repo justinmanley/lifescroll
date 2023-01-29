@@ -8,6 +8,8 @@ import { LifeRenderer } from "../life/renderer";
 import { DebugSettings } from "../life/debug-settings";
 import { LifeGridBoundingRectangle } from "../life/coordinates/bounding-rectangle";
 import { LaidOutPattern } from "../life/pattern";
+import { LifeGridVector2 } from "../life/coordinates/vector2";
+import { vec2 } from "../math/linear-algebra/vector2";
 
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale: Promise<number>;
@@ -40,6 +42,10 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       this.onScroll();
     });
 
+    window.addEventListener("click", (event) => {
+      this.onClick(event);
+    });
+
     this.canvas = document.createElement("canvas");
     // Must be set up-front to take the canvas out of the flow and prevent
     // the page layout params from containing an additional unnecessary offset.
@@ -54,6 +60,20 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       );
       if (state) {
         this.renderer?.render(viewport, state);
+      }
+    });
+  }
+
+  private onClick(event: MouseEvent) {
+    this.cellSizeInPixels.then((cellSizeInPixels) => {
+      const state = this.life?.toggleCell(
+        LifeGridVector2.fromPage(
+          vec2(window.scrollX + event.clientX, window.scrollY + event.clientY),
+          cellSizeInPixels
+        )
+      );
+      if (state) {
+        this.renderer?.render(this.viewport(), state);
       }
     });
   }

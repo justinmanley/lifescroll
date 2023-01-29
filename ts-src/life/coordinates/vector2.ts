@@ -37,6 +37,10 @@ export class LifeGridVector2 {
     return new LifeGridVector2(fn(this.x), fn(this.y));
   }
 
+  equals(other: LifeGridVector2): boolean {
+    return other.x === this.x && other.y === this.y;
+  }
+
   static decoder: Decoder<unknown, LifeGridVector2> = Functor.map(
     struct({ x: number, y: number }),
     ({ x, y }) => new LifeGridVector2(x, y)
