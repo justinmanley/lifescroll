@@ -132,10 +132,13 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       return;
     }
 
+    const color = window.getComputedStyle(this).getPropertyValue("color");
+
     this.renderer = new LifeRenderer(
       this.canvas,
       context,
       layoutParams,
+      color,
       this.debug
     );
 

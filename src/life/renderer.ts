@@ -1,6 +1,5 @@
 import { BoundingRectangle } from "../math/geometry/bounding-rectangle";
 import { Vector2 } from "../math/linear-algebra/vector2";
-import { Cells } from "./cells";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
 import { LifeGridVector2 } from "./coordinates/vector2";
 import { DebugSettings } from "./debug-settings";
@@ -11,6 +10,7 @@ export class LifeRenderer {
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
+    private readonly cellColor: string,
     private readonly debug: DebugSettings
   ) {
     this.canvas.style.position = "fixed";
@@ -25,6 +25,7 @@ export class LifeRenderer {
       this.canvas,
       this.context,
       this.layoutParams,
+      this.cellColor,
       this.debug,
       viewport,
       state
@@ -41,6 +42,7 @@ export class Render {
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
+    cellColor: string,
     private readonly debug: DebugSettings,
     private readonly viewport: BoundingRectangle,
     state: LifeState
@@ -50,7 +52,8 @@ export class Render {
       context,
       layoutParams,
       gridViewport,
-      state.cells
+      state.cells,
+      cellColor
     );
     this.gridRenderer = new GridRenderer(context, layoutParams, gridViewport);
     this.atomicUpdateBoundsRenderer = new BoundsRenderer(
@@ -101,11 +104,12 @@ class CellsRenderer {
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
     private readonly viewport: LifeGridBoundingRectangle,
-    private readonly cells: LifeGridVector2[]
+    private readonly cells: LifeGridVector2[],
+    private readonly cellColor: string
   ) {}
 
   public render() {
-    this.context.fillStyle = "black";
+    this.context.fillStyle = this.cellColor ?? "black";
     this.cells
       .filter((cell) => this.viewport.contains(cell))
       .forEach((cell) => this.renderCell(cell));
