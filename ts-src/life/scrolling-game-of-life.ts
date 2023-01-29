@@ -25,6 +25,8 @@ export class ScrollingGameOfLife {
   private atomicUpdates: AtomicUpdate[];
   private rule: GameOfLife;
 
+  private mostRecentViewport?: LifeGridBoundingRectangle;
+
   constructor(patterns: LaidOutPattern[]) {
     this.cells = ([] as LifeGridVector2[]).concat(
       ...patterns.map((pattern) => pattern.cells)
@@ -34,6 +36,12 @@ export class ScrollingGameOfLife {
   }
 
   public scroll(viewport: LifeGridBoundingRectangle): LifeState {
+    if (!this.hasAdvanced(viewport)) {
+      this.mostRecentViewport = viewport;
+      return this.state;
+    }
+    this.mostRecentViewport = viewport;
+
     const steppable = this.steppableVerticalBounds(viewport);
 
     const [steppableRegions, notSteppableRegions] = partition(
@@ -90,6 +98,12 @@ export class ScrollingGameOfLife {
       cells: this.cells,
       atomicUpdates: this.atomicUpdates,
     };
+  }
+
+  private hasAdvanced(viewport: LifeGridBoundingRectangle): boolean {
+    return (
+      !!this.mostRecentViewport && viewport.top > this.mostRecentViewport.top
+    );
   }
 
   private steppableVerticalBounds(
