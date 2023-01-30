@@ -28,8 +28,6 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   private life?: ScrollingGameOfLife;
   private renderer?: LifeRenderer;
 
-  private interactionPrompts: LifeGridVector2[] = [];
-
   private readonly debug = new DebugSettings();
 
   constructor() {
@@ -58,12 +56,14 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
   private onScroll() {
     this.cellSizeInPixels.then((cellSizeInPixels) => {
-      const viewport = this.viewport();
       const state = this.life?.scroll(
         LifeGridBoundingRectangle.fromPage(this.viewport(), cellSizeInPixels)
       );
-      if (state) {
-        this.renderer?.render(viewport, state);
+      if (this.renderer) {
+        this.renderer.viewport = this.viewport();
+        if (state) {
+          this.renderer.lifeState = state;
+        }
       }
     });
   }
@@ -76,9 +76,8 @@ class ScrollingGameOfLifeElement extends HTMLElement {
           cellSizeInPixels
         )
       );
-      this.interactionPrompts = [];
-      if (state) {
-        this.renderer?.render(this.viewport(), state);
+      if (this.renderer && state) {
+        this.renderer.interactionPrompts = [];
       }
     });
   }
@@ -130,9 +129,6 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       allPatterns,
       (pattern) => pattern.role === Role.Pattern
     );
-    this.interactionPrompts = interactionPrompts.flatMap(
-      (pattern) => pattern.cells
-    );
 
     this.life = new ScrollingGameOfLife(
       patterns,
@@ -155,11 +151,13 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       this.debug
     );
 
-    this.renderer.render(viewport, this.life.state);
-    this.renderer.startAnimation(
-      () => this.viewport(),
-      () => this.interactionPrompts
+    this.renderer.viewport = viewport;
+    this.renderer.interactionPrompts = interactionPrompts.flatMap(
+      (pattern) => pattern.cells
     );
+    this.renderer.lifeState = this.life.state;
+
+    this.renderer.start();
   }
 
   private async getCellSizeInPixels(): Promise<number> {

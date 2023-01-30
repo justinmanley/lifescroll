@@ -31,6 +31,15 @@ export class LifeGridBoundingRectangle {
     });
   }
 
+  static empty(): LifeGridBoundingRectangle {
+    return new LifeGridBoundingRectangle({
+      top: 0,
+      left: 0,
+      bottom: 0,
+      right: 0,
+    });
+  }
+
   toPage(cellSizeInPixels: number): BoundingRectangle {
     return new BoundingRectangle(this.params).map(toPage(cellSizeInPixels));
   }

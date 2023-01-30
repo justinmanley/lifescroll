@@ -6,8 +6,23 @@ import { DebugSettings } from "./debug-settings";
 import { LayoutParams, LifeState } from "./scrolling-game-of-life";
 import Color from "colorjs.io";
 
+type ColorInterpolator = (percentage: number) => Color;
+
 export class LifeRenderer {
   private interactionPromptRenderer: ColorAnimatingCellsRenderer;
+
+  private isRenderRequired = false;
+
+  private _viewport = BoundingRectangle.empty();
+  private _gridViewport = LifeGridBoundingRectangle.empty();
+  private _lifeState: LifeState = {
+    cells: [],
+    atomicUpdates: [],
+  };
+  private _interactionPrompts: LifeGridVector2[] = [];
+
+  private timeElapsed = 0;
+  private viewportLastUpdatedTime = 0;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -23,57 +38,58 @@ export class LifeRenderer {
     this.canvas.style.left = "0";
 
     const startColor = new Color(cellColor);
-    const endColor = startColor.range(new Color("white")) as unknown as (
-      percentage: number
-    ) => Color;
-    const interpolation = startColor.range(endColor(0.5), {
-      outputSpace: "srgb",
-    }) as unknown as (percentage: number) => Color;
+    const endColor = Color.range(
+      startColor,
+      new Color("white")
+    ) as unknown as ColorInterpolator;
 
     this.interactionPromptRenderer = new ColorAnimatingCellsRenderer(
       context,
       layoutParams,
-      interpolation,
-      400
+      { start: startColor, end: endColor(0.5) },
+      4
     );
   }
 
-  public render(viewport: BoundingRectangle, state: LifeState) {
-    const gridViewport = this.getGridViewport(viewport);
-    new Render(
-      this.canvas,
-      this.context,
-      this.layoutParams,
-      this.cellColor,
-      this.debug,
-      viewport,
-      gridViewport,
-      state
-    ).run();
+  public start() {
+    requestAnimationFrame((timeInMs) => this.render(timeInMs));
   }
 
-  public startAnimation(
-    getViewport: () => BoundingRectangle,
-    getInteractionPrompts: () => LifeGridVector2[]
-  ) {
-    requestAnimationFrame((timeInMs) =>
-      this.animate(timeInMs, getViewport, getInteractionPrompts)
-    );
-  }
+  private render(timeInMs: number) {
+    if (this.isRenderRequired) {
+      new Render(
+        this.canvas,
+        this.context,
+        this.layoutParams,
+        this.cellColor,
+        this.debug,
+        this._viewport,
+        this._gridViewport,
+        this._lifeState
+      ).run();
+    }
 
-  private animate(
-    timeInMs: number,
-    getViewport: () => BoundingRectangle,
-    getInteractionPrompts: () => LifeGridVector2[]
-  ) {
-    this.interactionPromptRenderer.render(
-      this.getGridViewport(getViewport()),
-      getInteractionPrompts(),
-      timeInMs
-    );
-    requestAnimationFrame((t: number) =>
-      this.animate(t, getViewport, getInteractionPrompts)
-    );
+    const viewportIsStationary = timeInMs - this.viewportLastUpdatedTime > 100;
+    if (this.isRenderRequired || viewportIsStationary) {
+      // For performance reasons (to prevent the cells from looking like they
+      // are sliding around on top of the text), we only want to run this if a
+      // render is actually required. Running it more frequently than necessary
+      // slows down rendering. However, scrolling is normally the only thing
+      // that would require a render, and we want the interaction prompt
+      // animation to render even when the page is stationary. In that case, we
+      // don't need to worry as much about performance.
+      this.interactionPromptRenderer.render(
+        this._gridViewport,
+        this._interactionPrompts,
+        timeInMs
+      );
+    }
+
+    this.isRenderRequired = false;
+
+    this.timeElapsed = timeInMs;
+
+    requestAnimationFrame((t) => this.render(t));
   }
 
   private getGridViewport(
@@ -93,10 +109,27 @@ export class LifeRenderer {
       right: gridViewport.right,
     });
   }
+
+  set viewport(bounds: BoundingRectangle) {
+    this._viewport = bounds;
+    this._gridViewport = this.getGridViewport(bounds);
+    this.viewportLastUpdatedTime = this.timeElapsed;
+    this.isRenderRequired = true;
+  }
+
+  set lifeState(lifeState: LifeState) {
+    this._lifeState = lifeState;
+    this.isRenderRequired = true;
+  }
+
+  set interactionPrompts(positions: LifeGridVector2[]) {
+    this._interactionPrompts = positions;
+    this.isRenderRequired = true;
+  }
 }
 
 export class Render {
-  private cellsRenderer: PatternCellsRenderer;
+  private cellsRenderer: CellsRenderer;
   private gridRenderer: GridRenderer;
   private atomicUpdateBoundsRenderer: BoundsRenderer;
 
@@ -110,11 +143,12 @@ export class Render {
     gridViewport: LifeGridBoundingRectangle,
     state: LifeState
   ) {
-    this.cellsRenderer = new PatternCellsRenderer(
+    this.cellsRenderer = new CellsRenderer(
       context,
       layoutParams,
       gridViewport,
-      state.cells
+      state.cells,
+      cellColor
     );
 
     this.gridRenderer = new GridRenderer(context, layoutParams, gridViewport);
@@ -133,7 +167,7 @@ export class Render {
     this.context.setTransform(
       translate(this.viewport.start().map((coord) => coord * -1))
     );
-    this.cellsRenderer.render(this.cellColor);
+    this.cellsRenderer.render();
     if (this.debug.grid) {
       this.gridRenderer.render();
     }
@@ -143,11 +177,21 @@ export class Render {
   }
 }
 
-abstract class CellsRenderer {
+class CellsRenderer {
   constructor(
-    protected readonly context: CanvasRenderingContext2D,
-    protected readonly layoutParams: LayoutParams
+    private readonly context: CanvasRenderingContext2D,
+    private readonly layoutParams: LayoutParams,
+    private readonly viewport: LifeGridBoundingRectangle,
+    private readonly cells: LifeGridVector2[],
+    private readonly cellColor: string
   ) {}
+
+  public render() {
+    this.context.fillStyle = this.cellColor ?? "black";
+    this.cells
+      .filter((cell) => this.viewport.contains(cell))
+      .forEach((cell) => this.renderCell(cell));
+  }
 
   protected renderCell(cell: LifeGridVector2) {
     const cellSize = this.layoutParams.cellSizeInPixels;
@@ -162,32 +206,24 @@ abstract class CellsRenderer {
   }
 }
 
-class PatternCellsRenderer extends CellsRenderer {
-  constructor(
-    protected readonly context: CanvasRenderingContext2D,
-    protected readonly layoutParams: LayoutParams,
-    protected readonly viewport: LifeGridBoundingRectangle,
-    private readonly cells: LifeGridVector2[]
-  ) {
-    super(context, layoutParams);
-  }
+class ColorAnimatingCellsRenderer {
+  private colorSteps: string[];
 
-  public render(cellColor: string) {
-    this.context.fillStyle = cellColor ?? "black";
-    this.cells
-      .filter((cell) => this.viewport.contains(cell))
-      .forEach((cell) => this.renderCell(cell));
-  }
-}
-
-class ColorAnimatingCellsRenderer extends CellsRenderer {
   constructor(
-    protected readonly context: CanvasRenderingContext2D,
-    layoutParams: LayoutParams,
-    private readonly color: (percentage: number) => Color,
+    private readonly context: CanvasRenderingContext2D,
+    private readonly layoutParams: LayoutParams,
+    { start, end }: { start: Color; end: Color },
     private frequencyInMs: number
   ) {
-    super(context, layoutParams);
+    const steps = Color.steps(start, end, {
+      outputSpace: "srgb",
+      steps: 256,
+    }).map((color) =>
+      color.toString({
+        format: "hex",
+      })
+    );
+    this.colorSteps = steps.concat([...steps].reverse());
   }
 
   public render(
@@ -195,12 +231,17 @@ class ColorAnimatingCellsRenderer extends CellsRenderer {
     cells: LifeGridVector2[],
     timeInMs: number
   ) {
-    this.context.fillStyle = this.color(
-      Math.cos(timeInMs / this.frequencyInMs) / 2 + 0.5
-    ).toString({ format: "hex" });
-    cells
-      .filter((cell) => viewport.contains(cell))
-      .forEach((cell) => this.renderCell(cell));
+    const color =
+      this.colorSteps[
+        Math.floor((timeInMs / this.frequencyInMs) % this.colorSteps.length)
+      ];
+    new CellsRenderer(
+      this.context,
+      this.layoutParams,
+      viewport,
+      cells,
+      color
+    ).render();
   }
 }
 
