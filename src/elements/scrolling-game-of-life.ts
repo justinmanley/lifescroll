@@ -10,6 +10,8 @@ import { LifeGridBoundingRectangle } from "../life/coordinates/bounding-rectangl
 import { LaidOutPattern } from "../life/pattern";
 import { LifeGridVector2 } from "../life/coordinates/vector2";
 import { vec2 } from "../math/linear-algebra/vector2";
+import { partition } from "lodash";
+import { Role } from "../life/pattern-rendering-options/role";
 
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale: Promise<number>;
@@ -25,6 +27,8 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
   private life?: ScrollingGameOfLife;
   private renderer?: LifeRenderer;
+
+  private interactionPrompts: LifeGridVector2[] = [];
 
   private readonly debug = new DebugSettings();
 
@@ -72,6 +76,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
           cellSizeInPixels
         )
       );
+      this.interactionPrompts = [];
       if (state) {
         this.renderer?.render(this.viewport(), state);
       }
@@ -118,8 +123,16 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     this.resolveCellSizeInPixels(cellSizeInPixels);
 
     const layoutParams = this.layoutParams(cellSizeInPixels);
-    const patterns = await this.patterns(layoutParams);
+    const allPatterns = await this.patterns(layoutParams);
     const viewport = this.viewport();
+
+    const [patterns, interactionPrompts] = partition(
+      allPatterns,
+      (pattern) => pattern.role === Role.Pattern
+    );
+    this.interactionPrompts = interactionPrompts.flatMap(
+      (pattern) => pattern.cells
+    );
 
     this.life = new ScrollingGameOfLife(
       patterns,
@@ -143,6 +156,10 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     );
 
     this.renderer.render(viewport, this.life.state);
+    this.renderer.startAnimation(
+      () => this.viewport(),
+      () => this.interactionPrompts
+    );
   }
 
   private async getCellSizeInPixels(): Promise<number> {

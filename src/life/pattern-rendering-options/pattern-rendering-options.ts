@@ -3,12 +3,14 @@ import { AtomicUpdate } from "./atomic-update";
 import { Decoder, Functor, struct, intersect, partial } from "io-ts/Decoder";
 import { LifeGridBoundingRectangle } from "../coordinates/bounding-rectangle";
 import { pipe } from "fp-ts/function";
+import { Role, roleDecoder } from "./role";
 
 interface PatternRenderingOptionsParams {
   // How much space to reserve on the page.
   reserve: LifeGridSize2;
   atomicUpdate: AtomicUpdate;
   focusRegion?: LifeGridBoundingRectangle;
+  role: Role;
 }
 
 export class PatternRenderingOptions {
@@ -23,16 +25,23 @@ export class PatternRenderingOptions {
       intersect(
         partial({
           focusRegion: LifeGridBoundingRectangle.decoder,
+          role: roleDecoder,
         })
       )
     ),
-    (params) => new PatternRenderingOptions(params)
+    (params) =>
+      new PatternRenderingOptions({
+        ...params,
+        role: params.role ?? Role.Pattern,
+      })
   );
 
   get reserve(): LifeGridSize2 {
     return new LifeGridSize2(
       this.params.reserve.width,
-      this.params.reserve.height + 2 * verticalPadding
+      this.role === Role.Pattern
+        ? this.params.reserve.height + 2 * verticalPadding
+        : this.params.reserve.height
     );
   }
 
@@ -42,6 +51,10 @@ export class PatternRenderingOptions {
 
   get focusRegion(): LifeGridBoundingRectangle | undefined {
     return this.params.focusRegion;
+  }
+
+  get role(): Role {
+    return this.params.role;
   }
 }
 

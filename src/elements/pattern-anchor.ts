@@ -4,6 +4,7 @@ import { PatternRenderingOptions } from "../life/pattern-rendering-options/patte
 import { parse } from "../life/rle-parser";
 import { isRight } from "fp-ts/Either";
 import { draw } from "io-ts/Decoder";
+import { Role } from "../life/pattern-rendering-options/role";
 
 export class PatternAnchorElement extends HTMLElement {
   private cells: Promise<LifeGridVector2[]>;
@@ -105,6 +106,10 @@ export class PatternAnchorElement extends HTMLElement {
   }): Promise<void> {
     const renderingOptions = await this.renderingOptions;
     this.style.height = `${cellSizeInPixels * renderingOptions.reserve.height}`;
+    if (renderingOptions.role === Role.Pattern) {
+      this.style.display = "block";
+      this.style.width = "100%";
+    }
   }
 }
 

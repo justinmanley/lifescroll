@@ -4,8 +4,11 @@ import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
 import { LifeGridVector2 } from "./coordinates/vector2";
 import { DebugSettings } from "./debug-settings";
 import { LayoutParams, LifeState } from "./scrolling-game-of-life";
+import Color from "colorjs.io";
 
 export class LifeRenderer {
+  private interactionPromptRenderer: ColorAnimatingCellsRenderer;
+
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
@@ -18,9 +21,25 @@ export class LifeRenderer {
     this.canvas.style.width = "100%";
     this.canvas.style.top = "0";
     this.canvas.style.left = "0";
+
+    const startColor = new Color(cellColor);
+    const endColor = startColor.range(new Color("white")) as unknown as (
+      percentage: number
+    ) => Color;
+    const interpolation = startColor.range(endColor(0.5), {
+      outputSpace: "srgb",
+    }) as unknown as (percentage: number) => Color;
+
+    this.interactionPromptRenderer = new ColorAnimatingCellsRenderer(
+      context,
+      layoutParams,
+      interpolation,
+      400
+    );
   }
 
   public render(viewport: BoundingRectangle, state: LifeState) {
+    const gridViewport = this.getGridViewport(viewport);
     new Render(
       this.canvas,
       this.context,
@@ -28,56 +47,33 @@ export class LifeRenderer {
       this.cellColor,
       this.debug,
       viewport,
+      gridViewport,
       state
     ).run();
   }
-}
 
-export class Render {
-  private cellsRenderer: CellsRenderer;
-  private gridRenderer: GridRenderer;
-  private atomicUpdateBoundsRenderer: BoundsRenderer;
-
-  constructor(
-    private readonly canvas: HTMLCanvasElement,
-    private readonly context: CanvasRenderingContext2D,
-    private readonly layoutParams: LayoutParams,
-    cellColor: string,
-    private readonly debug: DebugSettings,
-    private readonly viewport: BoundingRectangle,
-    state: LifeState
+  public startAnimation(
+    getViewport: () => BoundingRectangle,
+    getInteractionPrompts: () => LifeGridVector2[]
   ) {
-    const gridViewport = this.getGridViewport(viewport);
-    this.cellsRenderer = new CellsRenderer(
-      context,
-      layoutParams,
-      gridViewport,
-      state.cells,
-      cellColor
-    );
-    this.gridRenderer = new GridRenderer(context, layoutParams, gridViewport);
-    this.atomicUpdateBoundsRenderer = new BoundsRenderer(
-      context,
-      layoutParams,
-      gridViewport,
-      state.atomicUpdates.flatMap((atomicUpdate) => atomicUpdate.bounds)
+    requestAnimationFrame((timeInMs) =>
+      this.animate(timeInMs, getViewport, getInteractionPrompts)
     );
   }
 
-  run() {
-    this.context.clearRect(0, 0, this.viewport.width, this.viewport.height);
-    this.canvas.width = this.viewport.width;
-    this.canvas.height = this.viewport.height;
-    this.context.setTransform(
-      translate(this.viewport.start().map((coord) => coord * -1))
+  private animate(
+    timeInMs: number,
+    getViewport: () => BoundingRectangle,
+    getInteractionPrompts: () => LifeGridVector2[]
+  ) {
+    this.interactionPromptRenderer.render(
+      this.getGridViewport(getViewport()),
+      getInteractionPrompts(),
+      timeInMs
     );
-    this.cellsRenderer.render();
-    if (this.debug.grid) {
-      this.gridRenderer.render();
-    }
-    if (this.debug.atomicUpdates) {
-      this.atomicUpdateBoundsRenderer.render();
-    }
+    requestAnimationFrame((t: number) =>
+      this.animate(t, getViewport, getInteractionPrompts)
+    );
   }
 
   private getGridViewport(
@@ -99,23 +95,61 @@ export class Render {
   }
 }
 
-class CellsRenderer {
+export class Render {
+  private cellsRenderer: PatternCellsRenderer;
+  private gridRenderer: GridRenderer;
+  private atomicUpdateBoundsRenderer: BoundsRenderer;
+
   constructor(
+    private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
     private readonly layoutParams: LayoutParams,
-    private readonly viewport: LifeGridBoundingRectangle,
-    private readonly cells: LifeGridVector2[],
-    private readonly cellColor: string
-  ) {}
+    private readonly cellColor: string,
+    private readonly debug: DebugSettings,
+    private readonly viewport: BoundingRectangle,
+    gridViewport: LifeGridBoundingRectangle,
+    state: LifeState
+  ) {
+    this.cellsRenderer = new PatternCellsRenderer(
+      context,
+      layoutParams,
+      gridViewport,
+      state.cells
+    );
 
-  public render() {
-    this.context.fillStyle = this.cellColor ?? "black";
-    this.cells
-      .filter((cell) => this.viewport.contains(cell))
-      .forEach((cell) => this.renderCell(cell));
+    this.gridRenderer = new GridRenderer(context, layoutParams, gridViewport);
+    this.atomicUpdateBoundsRenderer = new BoundsRenderer(
+      context,
+      layoutParams,
+      gridViewport,
+      state.atomicUpdates.flatMap((atomicUpdate) => atomicUpdate.bounds)
+    );
   }
 
-  private renderCell(cell: LifeGridVector2) {
+  run() {
+    this.context.clearRect(0, 0, this.viewport.width, this.viewport.height);
+    this.canvas.width = this.viewport.width;
+    this.canvas.height = this.viewport.height;
+    this.context.setTransform(
+      translate(this.viewport.start().map((coord) => coord * -1))
+    );
+    this.cellsRenderer.render(this.cellColor);
+    if (this.debug.grid) {
+      this.gridRenderer.render();
+    }
+    if (this.debug.atomicUpdates) {
+      this.atomicUpdateBoundsRenderer.render();
+    }
+  }
+}
+
+abstract class CellsRenderer {
+  constructor(
+    protected readonly context: CanvasRenderingContext2D,
+    protected readonly layoutParams: LayoutParams
+  ) {}
+
+  protected renderCell(cell: LifeGridVector2) {
     const cellSize = this.layoutParams.cellSizeInPixels;
     this.fillSquare(
       cell.map((coord) => coord * cellSize + gridLineHalfWidth),
@@ -123,8 +157,50 @@ class CellsRenderer {
     );
   }
 
-  private fillSquare(coordinates: Vector2, size: number) {
+  protected fillSquare(coordinates: Vector2, size: number) {
     this.context.fillRect(coordinates.x, coordinates.y, size, size);
+  }
+}
+
+class PatternCellsRenderer extends CellsRenderer {
+  constructor(
+    protected readonly context: CanvasRenderingContext2D,
+    protected readonly layoutParams: LayoutParams,
+    protected readonly viewport: LifeGridBoundingRectangle,
+    private readonly cells: LifeGridVector2[]
+  ) {
+    super(context, layoutParams);
+  }
+
+  public render(cellColor: string) {
+    this.context.fillStyle = cellColor ?? "black";
+    this.cells
+      .filter((cell) => this.viewport.contains(cell))
+      .forEach((cell) => this.renderCell(cell));
+  }
+}
+
+class ColorAnimatingCellsRenderer extends CellsRenderer {
+  constructor(
+    protected readonly context: CanvasRenderingContext2D,
+    layoutParams: LayoutParams,
+    private readonly color: (percentage: number) => Color,
+    private frequencyInMs: number
+  ) {
+    super(context, layoutParams);
+  }
+
+  public render(
+    viewport: LifeGridBoundingRectangle,
+    cells: LifeGridVector2[],
+    timeInMs: number
+  ) {
+    this.context.fillStyle = this.color(
+      Math.cos(timeInMs / this.frequencyInMs) / 2 + 0.5
+    ).toString({ format: "hex" });
+    cells
+      .filter((cell) => viewport.contains(cell))
+      .forEach((cell) => this.renderCell(cell));
   }
 }
 

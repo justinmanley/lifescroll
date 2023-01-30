@@ -6,6 +6,7 @@
   "dependencies": {
     "@types/lodash": "^4.14.191",
     "@types/parsimmon": "^1.10.6",
+    "colorjs.io": "^0.4.3",
     "elm-canvas": "^2.2.4",
     "fp-ts": "^2.13.1",
     "io-ts": "^2.2.20",

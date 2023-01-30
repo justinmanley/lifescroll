@@ -8,7 +8,7 @@
         .body {
             margin: 0;
             position: relative;
-            background-color: #36454F;
+            /* background-color: #36454F; */
             overscroll-behavior: none;
         }
 
@@ -16,13 +16,9 @@
             margin: 0;
         }
 
-        pattern-anchor {
-            display: block;
-            width: 100%;
-        }
-
         scrolling-game-of-life {
             display: block;
+            color: grey;
         }
     </style>
 </head>
@@ -124,6 +120,11 @@
                 indeed your sun shines bright upon them revealing the projections and retirements by means of light
                 and
                 shade), nothing but a grey unbroken line upon the water.
+            </p>
+
+            <p>
+                Tap anywhere to add or remove cells
+                <pattern-anchor src="patterns/interaction-prompt.txt" rendering-options="patterns/interaction-prompt.json"></pattern-anchor>
             </p>
 
             <p>
