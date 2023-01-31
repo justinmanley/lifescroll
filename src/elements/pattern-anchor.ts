@@ -110,6 +110,9 @@ export class PatternAnchorElement extends HTMLElement {
       this.style.display = "block";
       this.style.width = "100%";
     }
+    if (renderingOptions.role === Role.InteractionPrompt) {
+      this.style.display = "inline-block";
+    }
   }
 }
 
