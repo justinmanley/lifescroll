@@ -9,9 +9,10 @@ import { DebugSettings } from "../life/debug-settings";
 import { LifeGridBoundingRectangle } from "../life/coordinates/bounding-rectangle";
 import { LaidOutPattern } from "../life/pattern";
 import { LifeGridVector2 } from "../life/coordinates/vector2";
-import { vec2 } from "../math/linear-algebra/vector2";
+import { vec2, Vector2 } from "../math/linear-algebra/vector2";
 import { partition } from "lodash";
 import { Role } from "../life/pattern-rendering-options/role";
+import { Interval } from "../math/geometry/interval";
 
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale: Promise<number>;
@@ -27,6 +28,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
   private life?: ScrollingGameOfLife;
   private renderer?: LifeRenderer;
+  private verticalBounds?: Interval;
 
   private readonly debug = new DebugSettings();
 
@@ -45,7 +47,13 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     });
 
     window.addEventListener("click", (event) => {
-      this.onClick(event);
+      const position = vec2(
+        window.scrollX + event.clientX,
+        window.scrollY + event.clientY
+      );
+      if (this.verticalBounds?.contains(position.y)) {
+        this.onClick(position);
+      }
     });
 
     this.canvas = document.createElement("canvas");
@@ -68,13 +76,10 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     });
   }
 
-  private onClick(event: MouseEvent) {
+  private onClick(position: Vector2) {
     this.cellSizeInPixels.then((cellSizeInPixels) => {
       const state = this.life?.toggleCell(
-        LifeGridVector2.fromPage(
-          vec2(window.scrollX + event.clientX, window.scrollY + event.clientY),
-          cellSizeInPixels
-        )
+        LifeGridVector2.fromPage(position, cellSizeInPixels)
       );
       if (this.renderer && state) {
         this.renderer.interactionPrompts = [];
@@ -125,10 +130,14 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     const allPatterns = await this.patterns(layoutParams);
     const viewport = this.viewport();
 
+    const bounds = boundingRectangleWithRespectToDocument(this);
+
     const [patterns, interactionPrompts] = partition(
       allPatterns,
       (pattern) => pattern.role === Role.Pattern
     );
+
+    this.verticalBounds = bounds.vertical();
 
     this.life = new ScrollingGameOfLife(
       patterns,
@@ -146,6 +155,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     this.renderer = new LifeRenderer(
       this.canvas,
       context,
+      this,
       layoutParams,
       color,
       this.debug
@@ -183,7 +193,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
   private async patterns({
     cellSizeInPixels,
-    center,
+    full,
   }: LayoutParams): Promise<LaidOutPattern[]> {
     const patternAnchors = this.patternAnchors();
     await Promise.all(
@@ -200,7 +210,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
         return pattern.layout({
           cellSizeInPixels,
-          preferredHorizontalRange: center.horizontal(),
+          preferredHorizontalRange: full.horizontal(),
           anchorStart:
             boundingRectangleWithRespectToDocument(patternAnchor).start(),
         });
@@ -209,18 +219,8 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   }
 
   private layoutParams(cellSizeInPixels: number): LayoutParams {
-    const centerElement = this.querySelector(`[${CENTER_ATTRIBUTE}]`);
-    if (!centerElement) {
-      console.warn(
-        `Could not find center element with attribute ${CENTER_ATTRIBUTE}`
-      );
-    }
-
     return {
       full: boundingRectangleWithRespectToDocument(this),
-      center: centerElement
-        ? boundingRectangleWithRespectToDocument(centerElement)
-        : BoundingRectangle.empty(),
       cellSizeInPixels,
     };
   }
@@ -239,7 +239,5 @@ const boundingRectangleWithRespectToDocument = (
     right: window.scrollX + right,
   });
 };
-
-const CENTER_ATTRIBUTE = "scrolling-game-of-life-center";
 
 customElements.define("scrolling-game-of-life", ScrollingGameOfLifeElement);

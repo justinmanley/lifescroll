@@ -9,7 +9,6 @@ import { partition } from "lodash";
 
 export interface LayoutParams {
   full: BoundingRectangle;
-  center: BoundingRectangle;
   cellSizeInPixels: number;
 }
 

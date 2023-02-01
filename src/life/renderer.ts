@@ -1,12 +1,10 @@
 import { BoundingRectangle } from "../math/geometry/bounding-rectangle";
-import { Vector2 } from "../math/linear-algebra/vector2";
+import { vec2, Vector2 } from "../math/linear-algebra/vector2";
 import { LifeGridBoundingRectangle } from "./coordinates/bounding-rectangle";
 import { LifeGridVector2 } from "./coordinates/vector2";
 import { DebugSettings } from "./debug-settings";
 import { LayoutParams, LifeState } from "./scrolling-game-of-life";
 import Color from "colorjs.io";
-
-type ColorInterpolator = (percentage: number) => Color;
 
 export class LifeRenderer {
   private interactionPromptRenderer: ColorAnimatingCellsRenderer;
@@ -24,9 +22,13 @@ export class LifeRenderer {
   private timeElapsed = 0;
   private viewportLastUpdatedTime = 0;
 
+  private initialElementTop = 0;
+  private previousElementTopOffset = 0;
+
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
+    private readonly element: HTMLElement,
     private readonly layoutParams: LayoutParams,
     private readonly cellColor: string,
     private readonly debug: DebugSettings
@@ -38,17 +40,16 @@ export class LifeRenderer {
     this.canvas.style.left = "0";
 
     const startColor = new Color(cellColor);
-    const endColor = Color.range(
-      startColor,
-      new Color("white")
-    ) as unknown as ColorInterpolator;
+    const endColor = new Color("white");
 
     this.interactionPromptRenderer = new ColorAnimatingCellsRenderer(
       context,
       layoutParams,
-      { start: startColor, end: endColor(0.5) },
+      { start: startColor, end: endColor },
       4
     );
+
+    this.initialElementTop = this.elementTop();
   }
 
   public start() {
@@ -56,6 +57,10 @@ export class LifeRenderer {
   }
 
   private render(timeInMs: number) {
+    const offset = this.elementTopOffset();
+    this.isRenderRequired =
+      this.isRenderRequired || offset !== this.previousElementTopOffset;
+
     if (this.isRenderRequired) {
       new Render(
         this.canvas,
@@ -63,6 +68,7 @@ export class LifeRenderer {
         this.layoutParams,
         this.cellColor,
         this.debug,
+        offset,
         this._viewport,
         this._gridViewport,
         this._lifeState
@@ -90,6 +96,14 @@ export class LifeRenderer {
     this.timeElapsed = timeInMs;
 
     requestAnimationFrame((t) => this.render(t));
+  }
+
+  private elementTopOffset(): number {
+    return this.elementTop() - this.initialElementTop;
+  }
+
+  private elementTop(): number {
+    return this.element.getBoundingClientRect().top + window.scrollY;
   }
 
   private getGridViewport(
@@ -136,9 +150,10 @@ export class Render {
   constructor(
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
-    private readonly layoutParams: LayoutParams,
-    private readonly cellColor: string,
+    layoutParams: LayoutParams,
+    cellColor: string,
     private readonly debug: DebugSettings,
+    private readonly yOffset: number,
     private readonly viewport: BoundingRectangle,
     gridViewport: LifeGridBoundingRectangle,
     state: LifeState
@@ -165,7 +180,12 @@ export class Render {
     this.canvas.width = this.viewport.width;
     this.canvas.height = this.viewport.height;
     this.context.setTransform(
-      translate(this.viewport.start().map((coord) => coord * -1))
+      translate(
+        this.viewport
+          .start()
+          .map((coord) => coord * -1)
+          .plus(vec2(0, this.yOffset))
+      )
     );
     this.cellsRenderer.render();
     if (this.debug.grid) {

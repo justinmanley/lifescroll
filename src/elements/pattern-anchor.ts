@@ -105,7 +105,9 @@ export class PatternAnchorElement extends HTMLElement {
     cellSizeInPixels: number;
   }): Promise<void> {
     const renderingOptions = await this.renderingOptions;
-    this.style.height = `${cellSizeInPixels * renderingOptions.reserve.height}`;
+    this.style.height = `${
+      cellSizeInPixels * renderingOptions.reserve.height
+    }px`;
     if (renderingOptions.role === Role.Pattern) {
       this.style.display = "block";
       this.style.width = "100%";
