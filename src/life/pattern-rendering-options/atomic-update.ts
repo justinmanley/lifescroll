@@ -10,6 +10,7 @@ import {
   intersect,
   partial,
   number,
+  boolean,
 } from "io-ts/Decoder";
 import { pipe } from "fp-ts/function";
 import { AtomicUpdateRegion } from "./atomic-update-region";
@@ -20,6 +21,7 @@ interface AtomicUpdateParams {
   // May be a set to a number in [0, 1] representing a vertical position
   // within the viewport (0 corresponds to the top, 1 to the bottom).
   delayUntilAboveViewportRatio?: number;
+  visualize?: boolean;
 }
 
 export class AtomicUpdate {
@@ -81,6 +83,10 @@ export class AtomicUpdate {
     return this.params.stepCriterion;
   }
 
+  get visualize(): boolean {
+    return !!this.params.visualize;
+  }
+
   private hasDelayElapsed(viewportVerticalBounds: LifeGridInterval): boolean {
     const delayUntilAboveViewport = this.params.delayUntilAboveViewportRatio;
     if (delayUntilAboveViewport === undefined) {
@@ -113,6 +119,7 @@ export class AtomicUpdate {
       intersect(
         partial({
           delayUntilAboveViewportRatio: number,
+          visualize: boolean,
         })
       )
     ),

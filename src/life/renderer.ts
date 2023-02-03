@@ -171,7 +171,11 @@ export class Render {
       context,
       layoutParams,
       gridViewport,
-      state.atomicUpdates.flatMap((atomicUpdate) => atomicUpdate.bounds)
+      state.atomicUpdates.flatMap((atomicUpdate) => {
+        return this.debug.atomicUpdates || atomicUpdate.visualize
+          ? atomicUpdate.bounds
+          : [];
+      })
     );
   }
 
@@ -191,9 +195,7 @@ export class Render {
     if (this.debug.grid) {
       this.gridRenderer.render();
     }
-    if (this.debug.atomicUpdates) {
-      this.atomicUpdateBoundsRenderer.render();
-    }
+    this.atomicUpdateBoundsRenderer.render();
   }
 }
 
