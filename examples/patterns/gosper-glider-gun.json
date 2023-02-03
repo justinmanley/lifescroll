@@ -32,6 +32,7 @@
                 }
             }
         ],
-        "stepCriterion": "AnyIntersectionWithSteppableRegion"
-    } 
+        "stepCriterion": "AnyIntersectionWithSteppableRegion",
+        "visualize": true
+    }
 }
