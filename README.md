@@ -12,17 +12,19 @@ See "[Life Story](http://justinmanley.work/projects/lifestory/version/1)" for an
 
 ## Usage
 
-To interleave patterns from Conway's Game of Life with text, add a <scrolling-game-of-life id="life"> tag to your page and call `document.getElementById("life").initialize()` in a `<script>` tag at the end of the page. You'll need to specify the `grid-scale` on the `scrolling-game-of-life` element, which controls the size of the Life cells relative to the height of a line of text.
+To interleave patterns from Conway's Game of Life with text, add a `<scrolling-game-of-life id="life">` tag to your page and call `document.getElementById("life").initialize()` in a `<script>` tag at the end of the page. You'll need to specify the `grid-scale` on the `scrolling-game-of-life` element, which controls the size of the Life cells relative to the height of a line of text.
 
 A pattern can be laid out on the page by including a `<pattern-anchor>` tag within the `scrolling-game-of-life` element.
 
-Working examples can be found in the `examples/` directory.
+Examples can be found in the `examples/` [directory](https://github.com/justinmanley/lifescroll/tree/main/examples).
 
 ## Architecture
 
 ### ScrollingGameOfLife
 
 The entrypoint to the library is the `<scrolling-game-of-life>` custom HTML element. Because this element creates a `<canvas>` element and sets it to the size of the viewport, there should be at most one `<scrolling-game-of-life>` element per page.
+
+The `<scrolling-game-of-life>` element collects patterns from all the `<pattern-anchor>` elements nested inside it.
 
 ### PatternAnchor
 
