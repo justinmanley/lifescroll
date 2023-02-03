@@ -1,8 +1,6 @@
-import { JsonMissingFieldError, JsonWrongTypeError } from "../../json/decoding";
 import { Vector2 } from "../linear-algebra/vector2";
 import { Interval } from "./interval";
 import { Decoder, number, struct } from "io-ts/Decoder";
-import { intersect } from "io-ts/lib/Kleisli";
 
 export interface BoundingRectangleParams {
   top: number;
