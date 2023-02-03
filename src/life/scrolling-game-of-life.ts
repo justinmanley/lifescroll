@@ -26,7 +26,6 @@ export class ScrollingGameOfLife {
   private rule: GameOfLife;
 
   private mostRecentViewport: LifeGridBoundingRectangle;
-  private lastStepViewport: LifeGridBoundingRectangle;
 
   constructor(
     patterns: LaidOutPattern[],
@@ -38,7 +37,6 @@ export class ScrollingGameOfLife {
     this.atomicUpdates = patterns.map((pattern) => pattern.atomicUpdate);
     this.rule = new GameOfLife();
     this.mostRecentViewport = initialViewport;
-    this.lastStepViewport = initialViewport;
   }
 
   public scroll(viewport: LifeGridBoundingRectangle): LifeState {
