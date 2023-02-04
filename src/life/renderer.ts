@@ -37,7 +37,7 @@ export class LifeRenderer {
     private readonly context: CanvasRenderingContext2D,
     private readonly element: HTMLElement,
     private readonly layoutParams: LayoutParams,
-    private readonly cellColor: string,
+    cellColor: string,
     private readonly debug: DebugSettings
   ) {
     this.canvas.style.position = "fixed";

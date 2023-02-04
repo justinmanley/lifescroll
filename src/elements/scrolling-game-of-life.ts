@@ -40,6 +40,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   };
   private patternAnchorVerticalBounds: Interval[] = [];
 
+  private showDeceased = false;
   private readonly deceasedCells: Vector2Set<LifeGridVector2> =
     new Vector2Set();
 
@@ -98,7 +99,9 @@ class ScrollingGameOfLifeElement extends HTMLElement {
         if (state) {
           // These cells aren't technically deceased yet, but we render the live cells
           // on top of the deceased cells, so it doesn't matter.
-          this.deceasedCells.addAll(state.cells);
+          if (this.showDeceased) {
+            this.deceasedCells.addAll(state.cells);
+          }
           this.renderer.lifeState = {
             ...state,
             deceased: this.deceasedCells.asArray(LifeGridVector2),
@@ -151,12 +154,15 @@ class ScrollingGameOfLifeElement extends HTMLElement {
           `Failed to parse interactivity ${newValue}: ${draw(result.left)}`
         );
       }
-      interactivityDecoder.decode(newValue);
+    }
+
+    if (name === "show-deceased") {
+      this.showDeceased = true;
     }
   }
 
   static get observedAttributes() {
-    return ["grid-scale", "interactivity"];
+    return ["grid-scale", "interactivity", "show-deceased"];
   }
 
   connectedCallback() {
@@ -216,7 +222,9 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     );
     // These cells aren't technically deceased yet, but we render the live cells
     // on top of the deceased cells, so it doesn't matter.
-    this.deceasedCells.addAll(this.life.state.cells);
+    if (this.showDeceased) {
+      this.deceasedCells.addAll(this.life.state.cells);
+    }
     this.renderer.lifeState = {
       ...this.life.state,
       deceased: this.deceasedCells.asArray(LifeGridVector2),
