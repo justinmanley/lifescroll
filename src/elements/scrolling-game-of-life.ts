@@ -20,6 +20,7 @@ import {
 } from "../life/interactivity";
 import { isRight } from "fp-ts/Either";
 import { draw } from "io-ts/Decoder";
+import { Vector2Set } from "../math/linear-algebra/vector2-set";
 
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale: Promise<number>;
@@ -38,6 +39,9 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     [Interactivity.FullPage]: () => true,
   };
   private patternAnchorVerticalBounds: Interval[] = [];
+
+  private readonly deceasedCells: Vector2Set<LifeGridVector2> =
+    new Vector2Set();
 
   private resolveGridScale: (value: number | PromiseLike<number>) => void =
     () => {};
@@ -92,7 +96,13 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       if (this.renderer) {
         this.renderer.viewport = this.viewport();
         if (state) {
-          this.renderer.lifeState = state;
+          // These cells aren't technically deceased yet, but we render the live cells
+          // on top of the deceased cells, so it doesn't matter.
+          this.deceasedCells.addAll(state.cells);
+          this.renderer.lifeState = {
+            ...state,
+            deceased: this.deceasedCells.asArray(LifeGridVector2),
+          };
         }
       }
     });
@@ -204,7 +214,13 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     this.renderer.interactionPrompts = interactionPrompts.flatMap(
       (pattern) => pattern.cells
     );
-    this.renderer.lifeState = this.life.state;
+    // These cells aren't technically deceased yet, but we render the live cells
+    // on top of the deceased cells, so it doesn't matter.
+    this.deceasedCells.addAll(this.life.state.cells);
+    this.renderer.lifeState = {
+      ...this.life.state,
+      deceased: this.deceasedCells.asArray(LifeGridVector2),
+    };
 
     this.renderer.start();
   }

@@ -6,6 +6,10 @@ import { DebugSettings } from "./debug-settings";
 import { LayoutParams, LifeState } from "./scrolling-game-of-life";
 import Color from "colorjs.io";
 
+interface RendererLifeState extends LifeState {
+  deceased: LifeGridVector2[];
+}
+
 export class LifeRenderer {
   private interactionPromptRenderer: ColorAnimatingCellsRenderer;
 
@@ -13,8 +17,9 @@ export class LifeRenderer {
 
   private _viewport = BoundingRectangle.empty();
   private _gridViewport = LifeGridBoundingRectangle.empty();
-  private _lifeState: LifeState = {
+  private _lifeState: RendererLifeState = {
     cells: [],
+    deceased: [],
     atomicUpdates: [],
   };
   private _interactionPrompts: LifeGridVector2[] = [];
@@ -24,6 +29,8 @@ export class LifeRenderer {
 
   private initialElementTop = 0;
   private previousElementTopOffset = 0;
+
+  private readonly cellRenderingOptions: CellRenderingOptions;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -39,9 +46,13 @@ export class LifeRenderer {
     this.canvas.style.top = "0";
     this.canvas.style.left = "0";
 
+    this.cellRenderingOptions = {
+      color: cellColor,
+      margin: gridLineHalfWidth,
+    };
+
     const startColor = new Color(cellColor);
     const endColor = new Color("white");
-
     this.interactionPromptRenderer = new ColorAnimatingCellsRenderer(
       context,
       layoutParams,
@@ -66,7 +77,7 @@ export class LifeRenderer {
         this.canvas,
         this.context,
         this.layoutParams,
-        this.cellColor,
+        this.cellRenderingOptions,
         this.debug,
         offset,
         this._viewport,
@@ -131,7 +142,7 @@ export class LifeRenderer {
     this.isRenderRequired = true;
   }
 
-  set lifeState(lifeState: LifeState) {
+  set lifeState(lifeState: RendererLifeState) {
     this._lifeState = lifeState;
     this.isRenderRequired = true;
   }
@@ -143,7 +154,8 @@ export class LifeRenderer {
 }
 
 export class Render {
-  private cellsRenderer: CellsRenderer;
+  private liveCellsRenderer: CellsRenderer;
+  private deceasedCellsRenderer: CellsRenderer;
   private gridRenderer: GridRenderer;
   private atomicUpdateBoundsRenderer: BoundsRenderer;
 
@@ -151,19 +163,26 @@ export class Render {
     private readonly canvas: HTMLCanvasElement,
     private readonly context: CanvasRenderingContext2D,
     layoutParams: LayoutParams,
-    cellColor: string,
+    cellRenderingOptions: CellRenderingOptions,
     private readonly debug: DebugSettings,
     private readonly yOffset: number,
     private readonly viewport: BoundingRectangle,
     gridViewport: LifeGridBoundingRectangle,
-    state: LifeState
+    state: RendererLifeState
   ) {
-    this.cellsRenderer = new CellsRenderer(
+    this.liveCellsRenderer = new CellsRenderer(
       context,
       layoutParams,
       gridViewport,
       state.cells,
-      cellColor
+      cellRenderingOptions
+    );
+    this.deceasedCellsRenderer = new CellsRenderer(
+      context,
+      layoutParams,
+      gridViewport,
+      state.deceased,
+      { color: "white", margin: -1 }
     );
 
     this.gridRenderer = new GridRenderer(context, layoutParams, gridViewport);
@@ -191,12 +210,18 @@ export class Render {
           .plus(vec2(0, this.yOffset))
       )
     );
-    this.cellsRenderer.render();
+    this.deceasedCellsRenderer.render();
+    this.liveCellsRenderer.render();
     if (this.debug.grid) {
       this.gridRenderer.render();
     }
     this.atomicUpdateBoundsRenderer.render();
   }
+}
+
+interface CellRenderingOptions {
+  color: string;
+  margin: number;
 }
 
 class CellsRenderer {
@@ -205,11 +230,11 @@ class CellsRenderer {
     private readonly layoutParams: LayoutParams,
     private readonly viewport: LifeGridBoundingRectangle,
     private readonly cells: LifeGridVector2[],
-    private readonly cellColor: string
+    private readonly options: CellRenderingOptions
   ) {}
 
   public render() {
-    this.context.fillStyle = this.cellColor ?? "black";
+    this.context.fillStyle = this.options.color ?? "black";
     this.cells
       .filter((cell) => this.viewport.contains(cell))
       .forEach((cell) => this.renderCell(cell));
@@ -218,8 +243,8 @@ class CellsRenderer {
   protected renderCell(cell: LifeGridVector2) {
     const cellSize = this.layoutParams.cellSizeInPixels;
     this.fillSquare(
-      cell.map((coord) => coord * cellSize + gridLineHalfWidth),
-      cellSize - 2 * gridLineHalfWidth
+      cell.map((coord) => coord * cellSize + this.options.margin),
+      cellSize - 2 * this.options.margin
     );
   }
 
@@ -257,13 +282,10 @@ class ColorAnimatingCellsRenderer {
       this.colorSteps[
         Math.floor((timeInMs / this.frequencyInMs) % this.colorSteps.length)
       ];
-    new CellsRenderer(
-      this.context,
-      this.layoutParams,
-      viewport,
-      cells,
-      color
-    ).render();
+    new CellsRenderer(this.context, this.layoutParams, viewport, cells, {
+      color,
+      margin: gridLineHalfWidth,
+    }).render();
   }
 }
 
