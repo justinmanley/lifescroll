@@ -95,17 +95,15 @@ class ScrollingGameOfLifeElement extends HTMLElement {
         LifeGridBoundingRectangle.fromPage(this.viewport(), cellSizeInPixels)
       );
       if (this.renderer) {
-        this.renderer.viewport = this.viewport();
+        const viewport = this.viewport();
+        this.renderer.viewport = viewport;
         if (state) {
           // These cells aren't technically deceased yet, but we render the live cells
           // on top of the deceased cells, so it doesn't matter.
           if (this.showDeceased) {
             this.deceasedCells.addAll(state.cells);
           }
-          this.renderer.lifeState = {
-            ...state,
-            deceased: this.deceasedCells.asArray(LifeGridVector2),
-          };
+          this.renderer.lifeState = state;
         }
       }
     });
@@ -212,6 +210,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
       context,
       this,
       layoutParams,
+      this.deceasedCells,
       color,
       this.debug
     );
@@ -225,10 +224,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     if (this.showDeceased) {
       this.deceasedCells.addAll(this.life.state.cells);
     }
-    this.renderer.lifeState = {
-      ...this.life.state,
-      deceased: this.deceasedCells.asArray(LifeGridVector2),
-    };
+    this.renderer.lifeState = this.life.state;
 
     this.renderer.start();
   }

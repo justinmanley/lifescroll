@@ -5,6 +5,7 @@ import { LifeGridVector2 } from "./coordinates/vector2";
 import { DebugSettings } from "./debug-settings";
 import { LayoutParams, LifeState } from "./scrolling-game-of-life";
 import Color from "colorjs.io";
+import { Vector2Set } from "../math/linear-algebra/vector2-set";
 
 interface RendererLifeState extends LifeState {
   deceased: LifeGridVector2[];
@@ -37,6 +38,7 @@ export class LifeRenderer {
     private readonly context: CanvasRenderingContext2D,
     private readonly element: HTMLElement,
     private readonly layoutParams: LayoutParams,
+    private readonly deceasedCells: Vector2Set<LifeGridVector2>,
     cellColor: string,
     private readonly debug: DebugSettings
   ) {
@@ -142,8 +144,14 @@ export class LifeRenderer {
     this.isRenderRequired = true;
   }
 
-  set lifeState(lifeState: RendererLifeState) {
-    this._lifeState = lifeState;
+  set lifeState(lifeState: LifeState) {
+    this._lifeState = {
+      ...lifeState,
+      deceased: this.deceasedCells.withinVerticalRange(
+        LifeGridVector2,
+        this._gridViewport.vertical()
+      ),
+    };
     this.isRenderRequired = true;
   }
 

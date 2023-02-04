@@ -3,8 +3,12 @@ interface XY {
   y: number;
 }
 
+interface Interval {
+  contains: (value: number) => boolean;
+}
+
 export class Vector2Set<T extends XY> {
-  private xsToYs: Map<number, Set<number>> = new Map();
+  private ysToXs: Map<number, Set<number>> = new Map();
 
   constructor(vectors: T[] = []) {
     this.addAll(vectors);
@@ -12,22 +16,21 @@ export class Vector2Set<T extends XY> {
 
   addAll(vectors: T[]) {
     vectors.forEach(({ x, y }) => {
-      const ys = this.xsToYs.get(x);
-      if (!ys) {
-        this.xsToYs.set(x, new Set([y]));
+      const xs = this.ysToXs.get(y);
+      if (!xs) {
+        this.ysToXs.set(y, new Set([x]));
       } else {
-        ys.add(y);
+        xs.add(x);
       }
     });
   }
 
-  asArray(Constructor: new (x: number, y: number) => T): T[] {
-    const vectors: T[] = [];
-    this.xsToYs.forEach((ys, x) => {
-      ys.forEach((y) => {
-        vectors.push(new Constructor(x, y));
-      });
-    });
-    return vectors;
+  withinVerticalRange(
+    Constructor: new (x: number, y: number) => T,
+    interval: Interval
+  ) {
+    return [...this.ysToXs.entries()]
+      .filter(([y, _]) => interval.contains(y))
+      .flatMap(([y, xs]) => [...xs].map((x) => new Constructor(x, y)));
   }
 }
