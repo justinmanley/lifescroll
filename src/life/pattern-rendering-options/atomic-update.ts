@@ -25,10 +25,14 @@ interface AtomicUpdateParams {
 }
 
 export class AtomicUpdate {
+  public readonly bounds: LifeGridBoundingRectangle[];
+
   constructor(
     private readonly params: AtomicUpdateParams,
     private readonly stepsElapsed: number
-  ) {}
+  ) {
+    this.bounds = this.regions.flatMap((region) => region.rectangles);
+  }
 
   offset(position: LifeGridVector2): AtomicUpdate {
     return new AtomicUpdate(
@@ -69,10 +73,6 @@ export class AtomicUpdate {
       },
       stepsElapsed
     );
-  }
-
-  get bounds(): LifeGridBoundingRectangle[] {
-    return this.regions.flatMap((region) => region.rectangles);
   }
 
   get regions(): AtomicUpdateRegion[] {
