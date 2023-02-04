@@ -13,10 +13,31 @@ import { vec2, Vector2 } from "../math/linear-algebra/vector2";
 import { partition } from "lodash";
 import { Role } from "../life/pattern-rendering-options/role";
 import { Interval } from "../math/geometry/interval";
+import {
+  ClickHandlingPredicates,
+  Interactivity,
+  interactivityDecoder,
+} from "../life/interactivity";
+import { isRight } from "fp-ts/Either";
+import { draw } from "io-ts/Decoder";
 
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale: Promise<number>;
   private cellSizeInPixels: Promise<number>;
+
+  private interactivity: Interactivity = Interactivity.None;
+  private clickHandlingPredicates: ClickHandlingPredicates = {
+    [Interactivity.None]: () => false,
+    [Interactivity.WithinPatternAnchorsOnly]: ({ y }: Vector2) => {
+      return this.patternAnchorVerticalBounds.some((bounds) =>
+        bounds.contains(y)
+      );
+    },
+    [Interactivity.WithinScrollingGameOfLife]: ({ y }: Vector2) =>
+      this.verticalBounds?.contains(y) ?? false,
+    [Interactivity.FullPage]: () => true,
+  };
+  private patternAnchorVerticalBounds: Interval[] = [];
 
   private resolveGridScale: (value: number | PromiseLike<number>) => void =
     () => {};
@@ -51,7 +72,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
         window.scrollX + event.clientX,
         window.scrollY + event.clientY
       );
-      if (this.verticalBounds?.contains(position.y)) {
+      if (this.shouldHandleClick(position)) {
         this.onClick(position);
       }
     });
@@ -60,6 +81,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     // Must be set up-front to take the canvas out of the flow and prevent
     // the page layout params from containing an additional unnecessary offset.
     this.canvas.style.position = "fixed";
+    this.canvas.style.pointerEvents = "none";
   }
 
   private onScroll() {
@@ -74,6 +96,11 @@ class ScrollingGameOfLifeElement extends HTMLElement {
         }
       }
     });
+  }
+
+  private shouldHandleClick(position: Vector2) {
+    const predicate = this.clickHandlingPredicates[this.interactivity];
+    return predicate(position);
   }
 
   private onClick(position: Vector2) {
@@ -104,10 +131,22 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     if (name === "grid-scale" && typeof newValue === "string") {
       this.resolveGridScale(parseInt(newValue, 10));
     }
+
+    if (name === "interactivity" && typeof newValue === "string") {
+      const result = interactivityDecoder.decode(newValue);
+      if (isRight(result)) {
+        this.interactivity = result.right;
+      } else {
+        throw new Error(
+          `Failed to parse interactivity ${newValue}: ${draw(result.left)}`
+        );
+      }
+      interactivityDecoder.decode(newValue);
+    }
   }
 
   static get observedAttributes() {
-    return ["grid-scale"];
+    return ["grid-scale", "interactivity"];
   }
 
   connectedCallback() {
@@ -204,15 +243,23 @@ class ScrollingGameOfLifeElement extends HTMLElement {
 
     // The document-relative bounds must be calculated only after all
     // PatternAnchor elements have updated their size (above).
+    const boundedPatterns = patternAnchors.map((patternAnchor) => ({
+      patternAnchor: patternAnchor,
+      bounds: boundingRectangleWithRespectToDocument(patternAnchor),
+    }));
+
+    this.patternAnchorVerticalBounds = boundedPatterns.map(({ bounds }) =>
+      bounds.vertical()
+    );
+
     return await Promise.all(
-      patternAnchors.map(async (patternAnchor) => {
+      boundedPatterns.map(async ({ patternAnchor, bounds }) => {
         const pattern = await patternAnchor.getPattern();
 
         return pattern.layout({
           cellSizeInPixels,
           preferredHorizontalRange: full.horizontal(),
-          anchorStart:
-            boundingRectangleWithRespectToDocument(patternAnchor).start(),
+          anchorStart: bounds.start(),
         });
       })
     );
