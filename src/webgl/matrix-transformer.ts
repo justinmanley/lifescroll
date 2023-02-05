@@ -14,12 +14,12 @@ const vertexShaderSource = `\
 export class WebGlMatrixTransformer {
   public readonly canvas: HTMLCanvasElement;
   private readonly program: WebGLProgram;
-  private readonly gl: WebGLRenderingContext;
+  private readonly gl: WebGL2RenderingContext;
 
   constructor(fragmentShaderSource: string) {
     this.canvas = document.createElement("canvas");
 
-    const context = this.canvas.getContext("webgl");
+    const context = this.canvas.getContext("webgl2");
     if (context === null) {
       throw new Error("Failed to get webgl context");
     }
@@ -29,7 +29,7 @@ export class WebGlMatrixTransformer {
     this.createFramebuffer();
   }
 
-  public transform(matrix: WebGlInputMatrix): WebGlOutputMatrix {
+  public async transform(matrix: WebGlInputMatrix): Promise<WebGlOutputMatrix> {
     // This is important! The canvas is 300x150 by default, and unless the viewport
     // is resized to fit the incoming matrix, the part of the matrix which lies
     // outside the viewport will be ignored.
@@ -48,7 +48,7 @@ export class WebGlMatrixTransformer {
     this.gl.drawArrays(this.gl.TRIANGLE_STRIP, 0, NUM_CHANNELS);
 
     const transformed = WebGlOutputMatrix.ofMinSize(matrix);
-    this.gl.readPixels(
+    await this.readPixelsAsync(
       0,
       0,
       transformed.size.width,
@@ -188,5 +188,78 @@ export class WebGlMatrixTransformer {
       texture,
       0
     );
+  }
+
+  private clientWaitAsync(
+    sync: WebGLSync,
+    flags: GLbitfield,
+    interval_ms: number
+  ): Promise<void> {
+    const gl = this.gl;
+    return new Promise((resolve, reject) => {
+      function test() {
+        const res = gl.clientWaitSync(sync, flags, 0);
+        if (res === gl.WAIT_FAILED) {
+          reject();
+          return;
+        }
+        if (res === gl.TIMEOUT_EXPIRED) {
+          setTimeout(test, interval_ms);
+          return;
+        }
+        resolve();
+      }
+      test();
+    });
+  }
+
+  private async getBufferSubDataAsync(
+    target: GLenum,
+    buffer: WebGLBuffer,
+    srcByteOffset: number,
+    dstBuffer: ArrayBufferView,
+    dstOffset?: number,
+    length?: number
+  ) {
+    const gl = this.gl;
+
+    const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+    if (sync === null) {
+      throw new Error(`Failed to create WebGL sync`);
+    }
+    gl.flush();
+
+    await this.clientWaitAsync(sync, 0, 10);
+    gl.deleteSync(sync);
+
+    gl.bindBuffer(target, buffer);
+    gl.getBufferSubData(target, srcByteOffset, dstBuffer, dstOffset, length);
+    gl.bindBuffer(target, null);
+  }
+
+  private async readPixelsAsync(
+    x: GLint,
+    y: GLint,
+    w: GLsizei,
+    h: GLsizei,
+    format: GLenum,
+    type: GLenum,
+    dest: ArrayBufferView
+  ) {
+    const gl = this.gl;
+    const buf = gl.createBuffer();
+    if (buf === null) {
+      throw new Error(`Failed to create buffer`);
+    }
+
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, buf);
+    gl.bufferData(gl.PIXEL_PACK_BUFFER, dest?.byteLength ?? 0, gl.STREAM_READ);
+    gl.readPixels(x, y, w, h, format, type, 0);
+    gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+
+    await this.getBufferSubDataAsync(gl.PIXEL_PACK_BUFFER, buf, 0, dest);
+
+    gl.deleteBuffer(buf);
+    return dest;
   }
 }

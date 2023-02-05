@@ -16,20 +16,21 @@ export class GameOfLife {
     this.transformer = new WebGlMatrixTransformer(fragmentShader);
   }
 
-  next(cells: LifeGridVector2[]): LifeGridVector2[] {
+  async next(cells: LifeGridVector2[]): Promise<LifeGridVector2[]> {
     const insideBounds = LifeGridBoundingRectangle.enclosing(cells);
     const insideStart = insideBounds.start();
 
-    return this.nextNormalized(
+    const transformed = await this.nextNormalized(
       cells.map((cell) => cell.minus(insideStart)),
       insideBounds.size()
-    ).map((cell) => cell.plus(insideStart));
+    );
+    return transformed.map((cell) => cell.plus(insideStart));
   }
 
-  private nextNormalized(
+  private async nextNormalized(
     cells: LifeGridVector2[],
     size: LifeGridSize2
-  ): LifeGridVector2[] {
+  ): Promise<LifeGridVector2[]> {
     const matrix = WebGlInputMatrix.ofSize(size.map((s) => s + 2 * MARGIN));
     cells.forEach((position) => {
       matrix.set(position.plus(offset), vec4(255, 0, 0, 0));
@@ -37,7 +38,8 @@ export class GameOfLife {
 
     const positions: LifeGridVector2[] = [];
 
-    this.transformer.transform(matrix).forEach((value, { x, y }) => {
+    const transformed = await this.transformer.transform(matrix);
+    transformed.forEach((value, { x, y }) => {
       if (value.x === 255) {
         positions.push(new LifeGridVector2(x, y).minus(offset));
       }

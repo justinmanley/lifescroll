@@ -39,7 +39,7 @@ export class ScrollingGameOfLife {
     this.mostRecentViewport = initialViewport;
   }
 
-  public scroll(viewport: LifeGridBoundingRectangle): LifeState {
+  public async scroll(viewport: LifeGridBoundingRectangle): Promise<LifeState> {
     if (viewport.top <= this.mostRecentViewport.top) {
       this.mostRecentViewport = viewport;
       return this.state;
@@ -86,7 +86,8 @@ export class ScrollingGameOfLife {
     );
 
     if (steppableCells.length > 0) {
-      this.cells = [...this.rule.next(steppableCells), ...notSteppableCells];
+      const stepped = await this.rule.next(steppableCells);
+      this.cells = [...stepped, ...notSteppableCells];
       this.atomicUpdates = [
         ...steppableRegions.map((region) => region.next()),
         ...notSteppableRegions,

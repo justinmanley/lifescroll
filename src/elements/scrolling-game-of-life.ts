@@ -89,24 +89,23 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     this.canvas.style.pointerEvents = "none";
   }
 
-  private onScroll() {
-    this.cellSizeInPixels.then((cellSizeInPixels) => {
-      const state = this.life?.scroll(
-        LifeGridBoundingRectangle.fromPage(this.viewport(), cellSizeInPixels)
-      );
-      if (this.renderer) {
-        const viewport = this.viewport();
-        this.renderer.viewport = viewport;
-        if (state) {
-          // These cells aren't technically deceased yet, but we render the live cells
-          // on top of the deceased cells, so it doesn't matter.
-          if (this.showDeceased) {
-            this.deceasedCells.addAll(state.cells);
-          }
-          this.renderer.lifeState = state;
+  private async onScroll() {
+    const cellSizeInPixels = await this.cellSizeInPixels;
+    const state = await this.life?.scroll(
+      LifeGridBoundingRectangle.fromPage(this.viewport(), cellSizeInPixels)
+    );
+    if (this.renderer) {
+      const viewport = this.viewport();
+      this.renderer.viewport = viewport;
+      if (state) {
+        // These cells aren't technically deceased yet, but we render the live cells
+        // on top of the deceased cells, so it doesn't matter.
+        if (this.showDeceased) {
+          this.deceasedCells.addAll(state.cells);
         }
+        this.renderer.lifeState = state;
       }
-    });
+    }
   }
 
   private shouldHandleClick(position: Vector2) {
