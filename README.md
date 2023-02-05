@@ -8,7 +8,7 @@ In order to integrate Life patterns into text as unobtrusively as possible, this
 
 Using the scroll interaction to apply the update rule has the added benefit that there is no need for additional UI (buttons, etc) which might distract from the content.
 
-See "[Life Story](http://justinmanley.work/projects/lifestory/version/1)" for an example using all the features of this library.
+See "[Life Story](http://justinmanley.work/projects/lifestory)" for an example using all the features of this library.
 
 ## Usage
 
