@@ -25,6 +25,7 @@ import { Vector2Set } from "../math/linear-algebra/vector2-set";
 class ScrollingGameOfLifeElement extends HTMLElement {
   private gridScale: Promise<number>;
   private cellSizeInPixels: Promise<number>;
+  private resourcesLoaded: Promise<void>;
 
   private interactivity: Interactivity = Interactivity.None;
   private clickHandlingPredicates: ClickHandlingPredicates = {
@@ -49,6 +50,7 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   private resolveCellSizeInPixels: (
     value: number | PromiseLike<number>
   ) => void = () => {};
+  private resolveResourcesLoaded: () => void = () => {};
 
   private canvas: HTMLCanvasElement;
 
@@ -67,9 +69,16 @@ class ScrollingGameOfLifeElement extends HTMLElement {
     this.cellSizeInPixels = new Promise((resolve) => {
       this.resolveCellSizeInPixels = resolve;
     });
+    this.resourcesLoaded = new Promise((resolve) => {
+      this.resolveResourcesLoaded = resolve;
+    });
 
     window.addEventListener("scroll", (event) => {
       this.onScroll();
+    });
+
+    window.addEventListener("load", (event) => {
+      this.resolveResourcesLoaded();
     });
 
     window.addEventListener("click", (event) => {
@@ -176,6 +185,11 @@ class ScrollingGameOfLifeElement extends HTMLElement {
   // --------------
 
   async initialize(): Promise<void> {
+    // It is important to wait to calculate the cell size and lay out patterns
+    // until the page has loaded in case font files or stylesheets change the
+    // line height of text, since that determines the cell size in pixels.
+    await this.resourcesLoaded;
+
     const cellSizeInPixels = await this.getCellSizeInPixels();
     this.resolveCellSizeInPixels(cellSizeInPixels);
 
